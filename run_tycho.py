@@ -145,7 +145,7 @@ def Create_King_Cluster(number_of_stars, number_of_binaries, w, write_file=True,
     # Return the Particle Set of Stars and the Unit Converter
     return stars, converter, cluster_name, w
 
-def Import_Cluster(file_path):
+def Import_Cluster(file_path)
     """
     This is a function created to read in a Cluster's Stellar Parcticle Set.
     The Function Returns: The Set of Stars, AMUSE Nbody Converter, Cluster Name, & King's Model W0 Value
