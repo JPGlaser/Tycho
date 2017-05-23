@@ -116,7 +116,7 @@ if __name__=="__main__":
     eps2 = 0.0 | nbody_system.length**2
     use_gpu = options.use_gpu
     gpu_ID = options.gpu_ID
-    global SMALLN
+#    global SMALLN
 
         # Setting PH4 as the Top-Level Gravity Code
     if use_gpu == 1:
@@ -155,13 +155,10 @@ if __name__=="__main__":
 # Initializing Kepler and SmallN
     kep = Kepler(None, redirection = "none")
     kep.initialize_code()
-    SMALLN = SmallN(redirection="none")
-    SMALLN.parameters.timestep_parameter = 0.05
-#    util.init_smalln()
+    util.init_smalln()
 
 # Initializing MULTIPLES
-#    multiples_code = multiples.Multiples(gravity, util.new_smalln, kep)
-    multiples_code = multiples.Multiples(gravity, SMALLN.reset(), kep)
+    multiples_code = multiples.Multiples(gravity, util.new_smalln, kep)
     multiples_code.neighbor_distance_factor = 1.0
     multiples_code.neighbor_veto = True
 
@@ -169,7 +166,6 @@ if __name__=="__main__":
     print '\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     print '-------------'
     sys.stdout.flush()
-    print time
 # Creates the Log File and Redirects all Print Statements
     orig_stdout = sys.stdout
     log_dir = os.getcwd()+"/Logs"
@@ -180,17 +176,14 @@ if __name__=="__main__":
     
     step_index = 0
     restart_flag = 0
+
 # Begin Evolving the Cluster
     while time < end_time:
-        print step_index
         sys.stdout.flush()
-        if restart_flag == 1:
-            MasterSet, time, multiples_code = read_state_from_file(restart_file, gravity, kep)
-            restart_flag = 0
-
         time += delta_t
         multiples_code.evolve_model(time)
         gravity.synchronize_model()
+
     # Copy values from the module to the set in memory.
         grav_channel.copy()
     
@@ -213,19 +206,14 @@ if __name__=="__main__":
             write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
             gravity.stop()
             kep.stop()
-            SMALLN.stop()
-#            util.stop_smalln()
+            util.stop_smalln()
 
         # Setting PH4 as the Top-Level Gravity Code
-            if use_gpu == 1:
-                gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
-            #try:
-                #gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gp$
-            #except Exception as ex:
-             #    gravity = ph4(number_of_workers = num_workers, redirection = "none")
-             #    print "*** GPU worker code not found. Reverting to non-GPU code. ***"
-            else:
-                gravity = grav(number_of_workers = num_workers, redirection = "none")
+        if use_gpu == 1:
+            gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
+        else:
+            gravity = grav(number_of_workers = num_workers, redirection = "none")
+
 
 # Initializing PH4 with Initial Conditions
             gravity.initialize_code()
@@ -253,20 +241,11 @@ if __name__=="__main__":
 # Initializing Kepler and SmallN
             kep = Kepler(None, redirection = "none")
             kep.initialize_code()
-#            SMALLN = None
-#            SMALLN = SmallN(redirection="none")
-#            SMALLN.parameters.timestep_parameter = 0.05
             util.init_smalln()
 
-# Initializing MULTIPLES
-            multiples_code = multiples.Multiples(gravity, util.new_smalln(), kep)
-#            multiples_code = multiples.Multiples(gravity, SMALLN.reset(), kep)
-            multiples_code.neighbor_distance_factor = 1.0
-            multiples_code.neighbor_veto = True
+            MasterSet = []
+            MasterSet, time, multiples_code = read.read_state_from_file(restart_file, gravity, kep)
 
-
-
-            restart_flag = 1
         step_index += 1
 
 
@@ -280,7 +259,7 @@ if __name__=="__main__":
 # Log that the simulation Ended & Switch to Terminal Output
     print '[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     sys.stdout = orig_stdout
-    f.close()
+#    f.close()
 
 # Alerts the Terminal User that the Run has Ended!
     print '[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
