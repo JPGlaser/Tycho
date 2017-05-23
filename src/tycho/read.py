@@ -63,10 +63,10 @@ def read_initial_state(file_prefix):
 
 def read_state_from_file(restart_file, gravity_code, kep):
 
-    stars = io.read_set_from_file(options.restart_file+".stars.hdf5",'hdf5',version='2.0', close_file=True).copy()
-    #single_stars = io.read_set_from_file(options.restart_file+".singles.hdf5",'hdf5',version='2.0')
-    #multiple_stars = io.read_set_from_file(options.restart_file+".coms.hdf5",'hdf5',version='2.0')
-    stars_python = io.read_set_from_file(options.restart_file+".stars_python.hdf5",'hdf5',version='2.0', close_file=True).copy()
+    stars = read_set_from_file(restart_file+".stars.hdf5",'hdf5',version='2.0', close_file=True).copy()
+    #single_stars = io.read_set_from_file(restart_file+".singles.hdf5",'hdf5',version='2.0')
+    #multiple_stars = io.read_set_from_file(restart_file+".coms.hdf5",'hdf5',version='2.0')
+    stars_python = read_set_from_file(restart_file+".stars_python.hdf5",'hdf5',version='2.0', close_file=True).copy()
     with open(restart_file + ".bookkeeping", "rb") as f:
         bookkeeping = pickle.load(f)
         f.close()
@@ -80,7 +80,7 @@ def read_state_from_file(restart_file, gravity_code, kep):
     #gravity_code.set_begin_time = bookkeeping['model_time']
 
 
-    multiples_code = multiples.Multiples(gravity_code, new_smalln, kep)
+    multiples_code = multiples.Multiples(gravity_code, util.new_smalln(), kep)
     #multiples_code.neighbor_distance_factor = 1.0
     #multiples_code.neighbor_veto = False
     #multiples_code.neighbor_distance_factor = 2.0
