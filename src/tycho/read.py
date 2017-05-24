@@ -6,6 +6,7 @@
 
 # Importing Necessary System Packages
 import math
+import io
 import numpy as np
 import matplotlib as plt
 import random as rp
@@ -18,6 +19,7 @@ from amuse.units import constants
 from amuse.datamodel import particle_attributes
 from amuse.io import *
 from amuse.lab import *
+from amuse.couple import multiples
 
 # Import the Amuse Stellar Packages
 from amuse.ic.kingmodel import new_king_model
@@ -29,6 +31,8 @@ try:
 except:
    import pickle
 
+# Tycho util import
+from tycho import util
 # ------------------------------------- #
 #           Defining Functions          #
 # ------------------------------------- #
@@ -61,11 +65,11 @@ def read_initial_state(file_prefix):
 #           RESTART FUNCTION           #
 # ------------------------------------ #
 
-def read_state_from_file(restart_file, gravity_code, kep):
+def read_state_from_file(restart_file, gravity_code, kep, SMALLN):
 
     stars = read_set_from_file(restart_file+".stars.hdf5",'hdf5',version='2.0', close_file=True).copy()
-    #single_stars = io.read_set_from_file(restart_file+".singles.hdf5",'hdf5',version='2.0')
-    #multiple_stars = io.read_set_from_file(restart_file+".coms.hdf5",'hdf5',version='2.0')
+#    single_stars = read_set_from_file(restart_file+".singles.hdf5",'hdf5',version='2.0')
+#    multiple_stars = read_set_from_file(restart_file+".coms.hdf5",'hdf5',version='2.0')
     stars_python = read_set_from_file(restart_file+".stars_python.hdf5",'hdf5',version='2.0', close_file=True).copy()
     with open(restart_file + ".bookkeeping", "rb") as f:
         bookkeeping = pickle.load(f)
@@ -76,15 +80,15 @@ def read_state_from_file(restart_file, gravity_code, kep):
         if hasattr(root, 'components') and not root.components is None:
             root_to_tree[root] = datamodel.trees.BinaryTreeOnParticle(root.components[0])
     gravity_code.particles.add_particles(stars)
-    #print bookkeeping['model_time']
-    #gravity_code.set_begin_time = bookkeeping['model_time']
+#    print bookkeeping['model_time']
+#    gravity_code.set_begin_time = bookkeeping['model_time']
 
 
-    multiples_code = multiples.Multiples(gravity_code, util.new_smalln(), kep)
-    #multiples_code.neighbor_distance_factor = 1.0
-    #multiples_code.neighbor_veto = False
-    #multiples_code.neighbor_distance_factor = 2.0
-    #multiples_code.neighbor_veto = True
+    multiples_code = multiples.Multiples(gravity_code, SMALLN, kep)
+#    multiples_code.neighbor_distance_factor = 1.0
+#    multiples_code.neighbor_veto = False
+#    multiples_code.neighbor_distance_factor = 2.0
+#    multiples_code.neighbor_veto = True
     multiples_code.neighbor_distance_factor = bookkeeping['neighbor_distance_factor']
     multiples_code.neighbor_veto = bookkeeping['neighbor_veto']
     multiples_code.multiples_external_tidal_correction = bookkeeping['multiples_external_tidal_correction']
@@ -92,6 +96,6 @@ def read_state_from_file(restart_file, gravity_code, kep):
     multiples_code.multiples_internal_tidal_correction = bookkeeping['multiples_internal_tidal_correction']
     multiples.root_index = bookkeeping['root_index']
     multiples_code.root_to_tree = root_to_tree
-    #multiples_code.set_model_time = bookkeeping['model_time']
+#    multiples_code.set_model_time = bookkeeping['model_time']
 
-    return stars_python, bookkeeping['model_time'], multiples_code
+    return stars_python, multiples_code
