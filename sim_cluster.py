@@ -116,7 +116,6 @@ if __name__=="__main__":
     eps2 = 0.0 | nbody_system.length**2
     use_gpu = options.use_gpu
     gpu_ID = options.gpu_ID
-#    global SMALLN
 
         # Setting PH4 as the Top-Level Gravity Code
     if use_gpu == 1:
@@ -175,7 +174,8 @@ if __name__=="__main__":
     sys.stdout = f
     
     step_index = 0
-    restart_flag = 0
+    # Dummy Variable so it doesn't restart at step 0
+    flag = 0
 
 # Begin Evolving the Cluster
     while time < end_time:
@@ -202,17 +202,17 @@ if __name__=="__main__":
             write.write_time_step(MasterSet, converter, time, cluster_name)
  	
     # Write out the restart file and restart from it every 10 time steps
-        if step_index%10 == 0:
+        if step_index%10 == 0 and flag == 1:
             write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
             gravity.stop()
             kep.stop()
             util.stop_smalln()
 
         # Setting PH4 as the Top-Level Gravity Code
-        if use_gpu == 1:
-            gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
-        else:
-            gravity = grav(number_of_workers = num_workers, redirection = "none")
+            if use_gpu == 1:
+                gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
+            else:
+                gravity = grav(number_of_workers = num_workers, redirection = "none")
 
 
 # Initializing PH4 with Initial Conditions
@@ -226,29 +226,31 @@ if __name__=="__main__":
             gravity.parameters.use_gpu = use_gpu
             gravity.parameters.gpu_id = gpu_ID
 
-# Setting Up the Stopping Conditions in PH4
-            stopping_condition = gravity.stopping_conditions.collision_detection
-            stopping_condition.enable()
-            sys.stdout.flush()
-
-# Adding and Committing Particles to PH4
-            gravity.particles.add_particles(MasterSet)
-            gravity.commit_particles()
-
-# Starting the AMUSE Channel for PH4
-            grav_channel = gravity.particles.new_channel_to(MasterSet)
-
 # Initializing Kepler and SmallN
             kep = Kepler(None, redirection = "none")
             kep.initialize_code()
             util.init_smalln()
 
             MasterSet = []
-            MasterSet, time, multiples_code = read.read_state_from_file(restart_file, gravity, kep)
+            MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln)
+
+# Setting Up the Stopping Conditions in PH4
+            stopping_condition = gravity.stopping_conditions.collision_detection
+            stopping_condition.enable()
+            sys.stdout.flush()
+
+# Starting the AMUSE Channel for PH4
+            grav_channel = gravity.particles.new_channel_to(MasterSet)
+
+
+            print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+            print '-------------'
+            sys.stdout.flush()
+            flag = 0
 
         step_index += 1
-
-
+        if step_index%10 == 0:
+            flag = 1
 
     # Log that a Step was Taken
         print '-------------'
