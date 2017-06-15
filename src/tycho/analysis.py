@@ -159,21 +159,10 @@ def GetValues(restart_base, num_files, num_workers = 1, use_gpu = 1, gpu_ID = 0,
         i+=1
     return Energy, Time, Kinetic, Potential, L, P
 
-# ------------------ #
-#       Graphs       #
-# ------------------ #
 
 # THE GRAPHS WILL BE IN WHATEVER UNIT YOU SAVE IN. IF YOU CHANGE ANYTHING THEY WILL NOT BE NBODY UNITS
-'''
-The Graphs use pyplot to graph and will check to see if the directory "Graphs" has been created. If it is not it will be
-created and the graphs will be saved there. The naming system for the graphs is cluster name followed by what type of graph
-you chose to made. e.g. "EnergyTest2_EnergyGraph". Currently the plt.tick_params is not working for some reason. As a result
-the grid lines are dotted. If you want non dotted grid lines move the Get Values function into its own script and save the
-output arrays in a dictionary and use tick_params in the other script. If that doesnt work it may be another issue and you
-can try pickleing the file and using a Python Notebook to read in the pickle file and make the graphs. This shouldn't matter
-until you are making a poster. The Notebook I have for this is called Diagnostics_for_Tycho.ipynb. It is in my Notebooks folder
-on draco.
-'''
+
+
 # Input the Time and Angular momentum as arrays for this function followed by a string of the cluster name. You may change the dpi for resolution purposes.
 def AngularMomentumGraph(Time, L, cluster_name, dpi = 150):
 # This function makes a graph of the angular momentum and saves it in the Graphs folder
@@ -191,7 +180,7 @@ def AngularMomentumGraph(Time, L, cluster_name, dpi = 150):
     plt.ylabel('Angular Momentum (Nbody Units)', fontsize=20)     
     plt.plot(Time, normL, color='green')
     plt.ioff()
-    plt.savefig("Graphs/"+cluster_name+'_AngularMomentumGraph.png', format="png", dpi=dpi)
+    plt.savefig("Graphs/"+cluster_name+'AngularMomentumGraph.png', format="png", dpi=dpi)
     plt.clf()
     plt.close('all')
 
@@ -212,7 +201,7 @@ def MomentumGraph(Time, P, cluster_name, dpi = 150):
     plt.ylabel('Momentum (Nbody Units)', fontsize=20)     
     plt.plot(Time, normP, color='green')
     plt.ioff()
-    plt.savefig("Graphs/"+cluster_name+'_MomentumGraph.png', format="png", dpi=dpi)
+    plt.savefig("Graphs/"+cluster_name+'MomentumGraph.png', format="png", dpi=dpi)
     plt.clf()
     plt.close('all')
 
@@ -233,6 +222,6 @@ def EnergyGraph(Time, Energy, T, U, cluster_name, dpi = 150):
     plt.plot(Time, T, color='green')
     plt.plot(Time, U, color='red')
     plt.ioff()
-    plt.savefig("Graphs/"+cluster_name+'_EnergyGraph.png', format="png", dpi=dpi)
+    plt.savefig("Graphs/"+cluster_name+'EnergyGraph.png', format="png", dpi=dpi)
     plt.clf()
     plt.close('all')

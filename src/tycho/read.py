@@ -7,6 +7,7 @@
 # Importing Necessary System Packages
 import math
 import io
+import os
 import numpy as np
 import matplotlib as plt
 import random as rp
@@ -57,7 +58,7 @@ def read_initial_state(file_prefix):
     total_smass = float(ic_array.total_smass) | units.kg
     viral_radius = float(ic_array.viral_radius) | units.m
 # Fifth, Define the Master Set's Converter
-    converter = nbody_system.nbody_to_si(total_mass, viral_radius)
+    converter = nbody_system.nbody_to_si(total_smass, viral_radius)
     return master_set, ic_array, converter
 
 
@@ -99,3 +100,43 @@ def read_state_from_file(restart_file, gravity_code, kep, SMALLN):
 #    multiples_code.set_model_time = bookkeeping['model_time']
 
     return stars_python, multiples_code
+
+# ------------------------------------------ #
+#           RESTART CRASH FUNCTION           #
+# ------------------------------------------ #
+
+def recover_crash(restart_file, gravity_code, kep, SMALLN):
+
+    stars = read_set_from_file(restart_file+".stars.hdf5",'hdf5',version='2.0', close_file=True).copy()
+    #single_stars = read_set_from_file(restart_file+".singles.hdf5",'hdf5',version='2.0')
+    #multiple_stars = read_set_from_file(restart_file+".coms.hdf5",'hdf5',version='2.0')
+    stars_python = read_set_from_file(restart_file+".stars_python.hdf5",'hdf5',version='2.0', close_file=True).copy()
+    with open(restart_file + ".bookkeeping", "rb") as f:
+        bookkeeping = pickle.load(f)
+        f.close()
+    print bookkeeping
+    root_to_tree = {}
+    for root in stars:
+        if hasattr(root, 'components') and not root.components is None:
+            root_to_tree[root] = datamodel.trees.BinaryTreeOnParticle(root.components[0])
+    gravity_code.particles.add_particles(stars)
+    #print bookkeeping['model_time']
+    #gravity_code.set_begin_time = bookkeeping['model_time']
+
+
+    multiples_code = multiples.Multiples(gravity_code, SMALLN, kep)
+    #multiples_code.neighbor_distance_factor = 1.0
+    #multiples_code.neighbor_veto = False
+    #multiples_code.neighbor_distance_factor = 2.0
+    #multiples_code.neighbor_veto = True
+    multiples_code.neighbor_distance_factor = bookkeeping['neighbor_distance_factor']
+    multiples_code.neighbor_veto = bookkeeping['neighbor_veto']
+    multiples_code.multiples_external_tidal_correction = bookkeeping['multiples_external_tidal_correction']
+    multiples_code.multiples_integration_energy_error = bookkeeping['multiples_integration_energy_error']
+    multiples_code.multiples_internal_tidal_correction = bookkeeping['multiples_internal_tidal_correction']
+    multiples.root_index = bookkeeping['root_index']
+    multiples_code.root_to_tree = root_to_tree
+    #multiples_code.set_model_time = bookkeeping['model_time']
+
+    return bookkeeping['model_time'], multiples_code    
+    

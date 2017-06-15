@@ -78,7 +78,7 @@ if __name__=="__main__":
     cluster_name = options.cluster_name
     restart_file = "Restart/"+cluster_name+options.restart_file
     write_file_base = restart_file
-
+    crash_file = "CrashSave/"+cluster_name+"_Save"
 # Try to Import the Cluster from File or Create a New One
     try:
         MasterSet, ic_array, converter = read.read_initial_state(options.cluster_name)
@@ -102,7 +102,7 @@ if __name__=="__main__":
 
 # Create Initial Conditions Array
     initial_conditions = util.store_ic(converter, options)
-
+        
 # Write the Initial State 
     if not read_from_file:
         write.write_initial_state(MasterSet, initial_conditions, cluster_name)
@@ -116,15 +116,11 @@ if __name__=="__main__":
     eps2 = 0.0 | nbody_system.length**2
     use_gpu = options.use_gpu
     gpu_ID = options.gpu_ID
-
-        # Setting PH4 as the Top-Level Gravity Code
+# Need to find a way ro recover time on crash    
+    
+            # Setting PH4 as the Top-Level Gravity Code
     if use_gpu == 1:
         gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
-    #try:
-        #gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gp$
-    #except Exception as ex:
-    #    gravity = ph4(number_of_workers = num_workers, redirection = "none")
-    #    print "*** GPU worker code not found. Reverting to non-GPU code. ***"
     else:
         gravity = grav(number_of_workers = num_workers, redirection = "none")
 
@@ -136,8 +132,19 @@ if __name__=="__main__":
     gravity.parameters.timestep_parameter = delta_t.number
 
 # Setting up the Code to Run with GPUs Provided by Command Line
-    gravity.parameters.use_gpu = use_gpu
+    gravity.parameters.use_gpu = use_gpu    
     gravity.parameters.gpu_id = gpu_ID
+
+# Initializing Kepler and SmallN
+    kep = Kepler(None, redirection = "none")
+    kep.initialize_code()
+    util.init_smalln()
+
+    if read_from_file:
+#        try:
+        # use glob to find the most up to date crash file here then load it
+        MasterSet = []
+        MasterSet, multiples_code, time = read.recover_crash(crash_file, gravity, kep, util.new_smalln)
 
 # Setting Up the Stopping Conditions in PH4
     stopping_condition = gravity.stopping_conditions.collision_detection
@@ -151,18 +158,10 @@ if __name__=="__main__":
 # Starting the AMUSE Channel for PH4
     grav_channel = gravity.particles.new_channel_to(MasterSet)
 
-# Initializing Kepler and SmallN
-    kep = Kepler(None, redirection = "none")
-    kep.initialize_code()
-    util.init_smalln()
-
 # Initializing MULTIPLES
-    if read_from_file:
-        time, multiples_code = read.recover_crash(crash_file, gravity, kep, util.new_smalln)
-    else:
-        multiples_code = multiples.Multiples(gravity, util.new_smalln, kep)
-        multiples_code.neighbor_distance_factor = 1.0
-        multiples_code.neighbor_veto = True
+    multiples_code = multiples.Multiples(gravity, util.new_smalln, kep)
+    multiples_code.neighbor_distance_factor = 1.0
+    multiples_code.neighbor_veto = True
 
 # Alerts the Terminal User that the Run has Started!
     print '\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
@@ -175,18 +174,21 @@ if __name__=="__main__":
         os.makedirs(log_dir)
     f = file(log_dir+"/%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
     sys.stdout = f
-    
+    res_dir = os.getcwd()+"/Restart"
+    if not os.path.exists(res_dir):
+        os.makedirs(res_dir)    
     step_index = 0
     # Dummy Variable so it doesn't restart at step 0
     flag = 0
-
+    
 # Begin Evolving the Cluster
     while time < end_time:
         sys.stdout.flush()
         time += delta_t
         multiples_code.evolve_model(time)
         gravity.synchronize_model()
-
+        step = str(time.number)
+        write_file = write_file_base+"_t"+step
     # Copy values from the module to the set in memory.
         grav_channel.copy()
     
@@ -195,7 +197,7 @@ if __name__=="__main__":
     # codes may have different indices for the same particle and
     # we don't want to overwrite silently.
         grav_channel.copy_attribute("index_in_code", "id")
-
+        
     # Write Out the Data Every 5 Time Steps
         if step_index%5 == 0:
             #CoMSet = datamodel.Particles()
@@ -203,16 +205,17 @@ if __name__=="__main__":
             #    multi_systems = tree.get_tree_subset().copy_to_new_particles()
             #    CoMSet.add_particle(multi_systems)
             write.write_time_step(MasterSet, converter, time, cluster_name)
+            
+        if step_index%50 == 0:
+            write.write_crash_save(time, MasterSet, gravity, multiples_code, crash_file)
  	
     # Write out the restart file and restart from it every 10 time steps
         if step_index%10 == 0 and flag == 1:
-            step = str(time.number)
-            write_file=write_file_base+step
             write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
+            restart_file = write_file
             gravity.stop()
             kep.stop()
             util.stop_smalln()
-            restart_file=write_file
 
         # Setting PH4 as the Top-Level Gravity Code
             if use_gpu == 1:
@@ -239,8 +242,6 @@ if __name__=="__main__":
 
             MasterSet = []
             MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln)
-            write_file = ""
-            restart_file = ""
 
 # Setting Up the Stopping Conditions in PH4
             stopping_condition = gravity.stopping_conditions.collision_detection

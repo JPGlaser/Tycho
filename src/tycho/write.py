@@ -88,6 +88,9 @@ def write_time_step(master_set, converter, current_time, file_prefix):
 # ------------------------------------ #
 
 def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_file, cp_hist=False, backup = 0 ):
+    res_dir = os.getcwd()+"/Restart"
+    if not os.path.exists(res_dir):
+        os.makedirs(res_dir)
     print "Writing state to write file: ", write_file,"\n\n"
     if write_file is not None:
         particles = gravity_code.particles.copy()
@@ -162,6 +165,94 @@ def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_f
 
 
     
+    
+
+
+
+# ----------------------------------------- #
+#        WRITING CRASH RESTART FILE         #
+# ----------------------------------------- #
+
+def write_crash_save(time, stars_python,gravity_code, multiples_code, write_file, cp_hist=False, backup = 0 ):
+    crash_dir = os.getcwd()+"/CrashSave"
+    if not os.path.exists(crash_dir):
+        os.makedirs(crash_dir)
+
+    print "Writing state to write file: ", write_file,"\n\n"
+    if write_file is not None:
+        particles = gravity_code.particles.copy()
+        write_channel = gravity_code.particles.new_channel_to(particles)
+        write_channel.copy_attribute("index_in_code", "id")
+        bookkeeping = {'neighbor_veto': multiples_code.neighbor_veto,
+            'neighbor_distance_factor': multiples_code.neighbor_distance_factor,
+                'multiples_external_tidal_correction': multiples_code.multiples_external_tidal_correction,
+                    'multiples_integration_energy_error': multiples_code.multiples_integration_energy_error,
+                        'multiples_internal_tidal_correction': multiples_code.multiples_internal_tidal_correction,
+                        'model_time': multiples_code.model_time,
+                        'root_index': multiples.root_index
+        }
+       
+        '''
+            bookkeeping.neighbor_veto =
+            bookkeeping.multiples_external_tidal_correction = multiples_code.multiples_external_tidal_correction
+            bookkeeping.multiples_integration_energy_error = multiples_code.multiples_integration_energy_error
+            bookkeeping.multiples_internal_tidal_correction = multiples_code.multiples_internal_tidal_correction
+            bookkeeping.model_time = multiples_code.model_time
+        '''
+        for root, tree in multiples_code.root_to_tree.iteritems():
+            #multiples.print_multiple_simple(tree,kep)
+            root_in_particles = root.as_particle_in_set(particles)
+            subset = tree.get_tree_subset().copy()
+            if root_in_particles is not None:
+                root_in_particles.components = subset
+        io.write_set_to_file(particles,write_file+".stars.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist)
+        io.write_set_to_file(stars_python,write_file+".stars_python.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist)
+        config = {'time' : time,
+            'py_seed': pickle.dumps(random.getstate()),
+                'numpy_seed': pickle.dumps(numpy.random.get_state()),
+#                    'options': pickle.dumps(options)
+        }
+
+        with open(write_file + ".conf", "wb") as f:
+            pickle.dump(config, f)
+        with open(write_file + ".bookkeeping", "wb") as f:
+            pickle.dump(bookkeeping, f)
+        print "\nState successfully written to:  ", write_file
+        print time
+
+        if backup > 0:
+            io.write_set_to_file(particles,write_file+".backup.stars.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist, close_file=True)
+            io.write_set_to_file(stars_python,write_file+".backup.stars_python.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist, close_file=True)
+            config2 = {'time' : time,
+                'py_seed': pickle.dumps(random.getstate()),
+                    'numpy_seed': pickle.dumps(numpy.random.get_state()),
+#                        'options': pickle.dumps(options)
+            }
+
+            with open(write_file + ".backup.conf", "wb") as f:
+                pickle.dump(config2, f)
+                f.close()
+            with open(write_file + ".backup.bookkeeping", "wb") as f:
+                pickle.dump(bookkeeping, f)
+                f.close()
+            print "\nBackup write completed.\n"
+        
+        if backup > 2:
+            io.write_set_to_file(particles,write_file+"."+str(int(time.number))+".stars.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist, close_file=True)
+            io.write_set_to_file(stars_python,write_file+"."+str(int(time.number))+".stars_python.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist, close_file=True)
+            config2 = {'time' : time,
+                'py_seed': pickle.dumps(random.getstate()),
+                    'numpy_seed': pickle.dumps(numpy.random.get_state()),
+#                        'options': pickle.dumps(options)
+            }
+
+            with open(write_file + "." +str(int(time.number))+".conf", "wb") as f:
+                pickle.dump(config2, f)
+                f.close()
+            with open(write_file + "."+str(int(time.number))+".bookkeeping", "wb") as f:
+                pickle.dump(bookkeeping, f)
+                f.close()
+            print "\nBackup write completed.\n"    
     
 
 

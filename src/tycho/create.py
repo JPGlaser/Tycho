@@ -41,7 +41,7 @@ def king_cluster(num_stars, filename_cluster, w0=2.5, IBF=0.5, rand_seed=0):
 # TODO: Have rand_seed actually do something ...
 
 # Creates a List of Masses (in SI Units) Drawn from the Kroupa IMF
-    masses_SI = new_kroupa_mass_distribution(num_stars)
+    masses_SI = new_kroupa_mass_distribution(num_stars, mass_max = 5 | units.MSun)
 # Creates the SI-NBody Converter
     converter = nbody_system.nbody_to_si(masses_SI.sum(), 1 | units.parsec)
 # Creates a AMUS Particle Set Consisting of Positions (King) and Masses (Kroupa)
