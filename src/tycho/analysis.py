@@ -174,7 +174,7 @@ def AngularMomentumGraph(Time, L, cluster_name, dpi = 150):
     for thing in L:
         normL.append(np.linalg.norm(thing))
     plt.grid()   
-    plt.tick_params(axis='both', which='major', labelsize=16)
+#    plt.tick_params(axis='both', which='major', labelsize=16)
     plt.title('Angular Momentum Over Time', fontsize=25)
     plt.xlabel('Time (Nbody Time)', fontsize=20)
     plt.ylabel('Angular Momentum (Nbody Units)', fontsize=20)     
@@ -195,7 +195,7 @@ def MomentumGraph(Time, P, cluster_name, dpi = 150):
     for thing in P:
         normP.append(np.linalg.norm(thing))
     plt.grid()   
-    plt.tick_params(axis='both', which='major', labelsize=16)
+#    plt.tick_params(axis='both', which='major', labelsize=16)
     plt.title('Momentum Over Time', fontsize=25)
     plt.xlabel('Time (Nbody Time)', fontsize=20)
     plt.ylabel('Momentum (Nbody Units)', fontsize=20)     
@@ -206,14 +206,15 @@ def MomentumGraph(Time, P, cluster_name, dpi = 150):
     plt.close('all')
 
 # Input the Time and the respective energies (Total then Kinetic then Potential) as arrays for this function followed by a string of the cluster name. You may change the dpi for resolution purposes.
-def EnergyGraphs(Time, Energy, T, U, cluster_name, dpi = 150):
-# This function makes a graph of the Potential, Kinetic, and Total and saves it in the Graphs folder
 
+def EnergyGraph(Time, Energy, T, U, cluster_name, dpi = 150):
+
+# This function makes a graph of the Potential, Kinetic, and Total and saves it in the Graphs folder
     res_dir = os.getcwd()+"/Graphs"
     if not os.path.exists(res_dir):
         os.makedirs(res_dir)
     plt.grid()   
-    plt.tick_params(axis='both', which='major', labelsize=16)
+#    plt.tick_params(axis='both', which='major', labelsize=16)
     plt.title('Energy Over Time', fontsize=25)
     plt.xlabel('Time (Nbody Time)', fontsize=20)
     plt.ylabel('Energy (Nbody Units)', fontsize=20)     
@@ -221,6 +222,6 @@ def EnergyGraphs(Time, Energy, T, U, cluster_name, dpi = 150):
     plt.plot(Time, T, color='green')
     plt.plot(Time, U, color='red')
     plt.ioff()
-    plt.savefig("Graphs/"+cluster_name+'EnergyGraph2.png', format="png", dpi=dpi)
+    plt.savefig("Graphs/"+cluster_name+'EnergyGraph.png', format="png", dpi=dpi)
     plt.clf()
     plt.close('all')
