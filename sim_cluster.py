@@ -66,16 +66,18 @@ if __name__=="__main__":
         	          help="Enter the total number of time-steps to take.")
     parser.add_option("-b", "--IBF", dest="IBF", default = 0.5, type ="float", \
         		      help = "Enter the initial binary fraction.")
-    parser.add_option("-S", "--seed", dest="seed", default = "tycho", type="str", \
+    parser.add_option("-S", "--seed", dest="seed", default = 1234, type="int", \
                       help = "Enter a random seed for the simulation")
+    parser.add_option("-R","--restart",dest="restart_file",default="_restart", type="str", \
+                      help = "Enter the name for the restart_file, (Defaults to _restart.hdf5")
     (options, args) = parser.parse_args()
 
 # Set Commonly Used Python Variables from Options
     num_stars = options.num_stars
     num_psys = options.num_psys
     cluster_name = options.cluster_name
-
-
+    restart_file = "Restart/"+cluster_name+options.restart_file
+    write_file_base = restart_file
 
 # Try to Import the Cluster from File or Create a New One
     try:
@@ -115,14 +117,14 @@ if __name__=="__main__":
     use_gpu = options.use_gpu
     gpu_ID = options.gpu_ID
 
-# Setting PH4 as the Top-Level Gravity Code
+        # Setting PH4 as the Top-Level Gravity Code
     if use_gpu == 1:
         gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
-        #try:
-		#    gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
-        #except Exception as ex:
-        #    gravity = ph4(number_of_workers = num_workers, redirection = "none")
-        #    print "*** GPU worker code not found. Reverting to non-GPU code. ***"
+    #try:
+        #gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gp$
+    #except Exception as ex:
+    #    gravity = ph4(number_of_workers = num_workers, redirection = "none")
+    #    print "*** GPU worker code not found. Reverting to non-GPU code. ***"
     else:
         gravity = grav(number_of_workers = num_workers, redirection = "none")
 
@@ -155,15 +157,17 @@ if __name__=="__main__":
     util.init_smalln()
 
 # Initializing MULTIPLES
-    multiples_code = multiples.Multiples(gravity, util.new_smalln, kep)
-    multiples_code.neighbor_distance_factor = 1.0
-    multiples_code.neighbor_veto = True
+    if read_from_file:
+        time, multiples_code = read.recover_crash(crash_file, gravity, kep, util.new_smalln)
+    else:
+        multiples_code = multiples.Multiples(gravity, util.new_smalln, kep)
+        multiples_code.neighbor_distance_factor = 1.0
+        multiples_code.neighbor_veto = True
 
 # Alerts the Terminal User that the Run has Started!
     print '\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     print '-------------'
     sys.stdout.flush()
-
 # Creates the Log File and Redirects all Print Statements
     orig_stdout = sys.stdout
     log_dir = os.getcwd()+"/Logs"
@@ -171,17 +175,18 @@ if __name__=="__main__":
         os.makedirs(log_dir)
     f = file(log_dir+"/%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
     sys.stdout = f
-    print '\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-    print '-------------'
-    sys.stdout.flush()
-
+    
     step_index = 0
+    # Dummy Variable so it doesn't restart at step 0
+    flag = 0
 
 # Begin Evolving the Cluster
     while time < end_time:
+        sys.stdout.flush()
         time += delta_t
         multiples_code.evolve_model(time)
         gravity.synchronize_model()
+
     # Copy values from the module to the set in memory.
         grav_channel.copy()
     
@@ -192,13 +197,68 @@ if __name__=="__main__":
         grav_channel.copy_attribute("index_in_code", "id")
 
     # Write Out the Data Every 5 Time Steps
-        if step_index%1 == 0:
+        if step_index%5 == 0:
             #CoMSet = datamodel.Particles()
             #for root, tree in multiples_code.root_to_tree.iteritems():
             #    multi_systems = tree.get_tree_subset().copy_to_new_particles()
             #    CoMSet.add_particle(multi_systems)
             write.write_time_step(MasterSet, converter, time, cluster_name)
+ 	
+    # Write out the restart file and restart from it every 10 time steps
+        if step_index%10 == 0 and flag == 1:
+            step = str(time.number)
+            write_file=write_file_base+step
+            write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
+            gravity.stop()
+            kep.stop()
+            util.stop_smalln()
+            restart_file=write_file
+
+        # Setting PH4 as the Top-Level Gravity Code
+            if use_gpu == 1:
+                gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
+            else:
+                gravity = grav(number_of_workers = num_workers, redirection = "none")
+
+
+# Initializing PH4 with Initial Conditions
+            gravity.initialize_code()
+            gravity.parameters.set_defaults()
+            gravity.parameters.begin_time = time
+            gravity.parameters.epsilon_squared = eps2
+            gravity.parameters.timestep_parameter = delta_t.number
+
+# Setting up the Code to Run with GPUs Provided by Command Line
+            gravity.parameters.use_gpu = use_gpu
+            gravity.parameters.gpu_id = gpu_ID
+
+# Initializing Kepler and SmallN
+            kep = Kepler(None, redirection = "none")
+            kep.initialize_code()
+            util.init_smalln()
+
+            MasterSet = []
+            MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln)
+            write_file = ""
+            restart_file = ""
+
+# Setting Up the Stopping Conditions in PH4
+            stopping_condition = gravity.stopping_conditions.collision_detection
+            stopping_condition.enable()
+            sys.stdout.flush()
+
+# Starting the AMUSE Channel for PH4
+            grav_channel = gravity.particles.new_channel_to(MasterSet)
+
+
+            print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+            print '-------------'
+            sys.stdout.flush()
+            flag = 0
+
         step_index += 1
+        if step_index%10 == 0:
+            flag = 1
 
     # Log that a Step was Taken
         print '-------------'
@@ -209,7 +269,7 @@ if __name__=="__main__":
 # Log that the simulation Ended & Switch to Terminal Output
     print '[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     sys.stdout = orig_stdout
-    f.close()
+#    f.close()
 
 # Alerts the Terminal User that the Run has Ended!
     print '[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
@@ -218,7 +278,7 @@ if __name__=="__main__":
 # Closes PH4, Kepler & SmallN Instances
     gravity.stop()
     kep.stop()
-    SMALLN.stop()    
+    util.stop_smalln()    
 
 
 

@@ -37,14 +37,14 @@ def store_ic(converter, options):
         options: Commandline Options Set by User.
     '''
     ic_dtype = np.dtype({'names': ['cluster_name','seed','num_stars','num_planets','total_smass','viral_radius','w0','IBF'], \
-					     'formats': ['S8', 'i8', 'i8', 'i8','S8','S8','f8','f4']})
+					     'formats': ['S8', 'i8', 'i8', 'i8','f8','f8','f8','f4']})
     ic_array = np.recarray(1, dtype=ic_dtype)
     ic_array[0].cluster_name = options.cluster_name
     ic_array[0].seed = options.seed
     ic_array[0].num_stars = options.num_stars
     ic_array[0].num_planets = options.num_psys
-    tsm = str(converter.to_si(converter.values[1]))
-    vr = str(converter.to_si(converter.values[2]))
+    tsm = converter.to_si(converter.values[1]).number
+    vr = converter.to_si(converter.values[2]).number
     ic_array[0].total_smass = tsm
     ic_array[0].viral_radius = vr
     ic_array[0].w0 = options.w0
@@ -75,13 +75,13 @@ def preform_EulerRotation(particle_set):
          [s2*r3],
          [np.sqrt(1-n_3)]]
 # Third: Create the Rotation Matrix
-    rotate = (np.outer(V, V) - np.eye(3)).dot(R)	
+    rotate = (np.outer(V, V) - np.dot(np.eye(3),(R)))	
 # Forth: Preform the Rotation & Update the Particle
     for particle in particle_set:
         pos = np.matrix(([[particle.x.number], [particle.y.number], [particle.z.number]]))
         vel = np.matrix(([[particle.vx.number], [particle.vy.number], [particle.vz.number]]))
-        particle.position = rotate.dot(pos) | particle.position.unit  # nbody_system.length
-        particle.velocity = rotate.dot(vel)  | particle.velocity.unit
+        particle.position = np.dot(rotate,pos) | particle.position.unit  # nbody_system.length
+        particle.velocity = np.dot(rotate,vel)  | particle.velocity.unit
 
 
 def calc_HillRadius(a, e, m_planet, m_star):
@@ -116,3 +116,6 @@ def init_smalln():
     global SMALLN
     SMALLN = SmallN(redirection="none")
     SMALLN.parameters.timestep_parameter = 0.05
+
+def stop_smalln():
+    SMALLN.stop()
