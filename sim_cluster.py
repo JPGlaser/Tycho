@@ -255,36 +255,36 @@ if __name__=="__main__":
             star1_params = encounter_db.EncounterBody.from_particle(star1, conv)
             star2_params = encounter_db.EncounterBody.from_particle(star2, conv)
 
+            '''
+            Encounter returns: 
+            
+            [<Encounter None @ t=1.25509037737 
+            peri=1.60014590665e+15 AU, r_init=3.44462289279e+15 m, ecc=3.32880142942
+	    Body 82: <Body 82: mass=1.57566086421e+30 kg>
+            Body 1: <Body 1: mass=1.50990530471e+29 kg>
+            '''
 
-
-            # Here I need to add all of this information into the lists
+            encounter = encounter_db.Encounter([star1_params, star2_params], orbit, conv.to_si(time))
+        
+            # Here I need to add all of this information into the structured arrays
 
             # -------- #
             #   FLAG   #
             # -------- #
 
-            # Appending to the dictionary has to be broken into these three steps
-            # because append returns a None so I cannot nest appends. 
-            # e.g. encounterInformation[name1].append(encounters1.append(particles1))
-            # will put a none into the dictionary instead of the encounters1 list
-            # This does seem to have a bit of overhead
-
             # First I put everything into the two particles list. 
-        
+            
+            particles1.append(encounter)
             particles1.append(star1_params)
             particles1.append(star2_params)
-            particles1.append(orbit)
 
+            particles2.append(encounter)
             particles2.append(star2_params)
             particles2.append(star1_params)
-            particles2.append(orbit)
 
-
-            # Then I append the information to the two seperate encounters lists
             encounters1.append(particles1)
             encounters2.append(particles2)
 
-            # Finally I append all information about the encounter to the dictionary
             encounterInformation[name1].append(encounters1)
             encounterInformation[name2].append(encounters2)
 
