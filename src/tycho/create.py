@@ -30,16 +30,20 @@ from tycho import util
 # ------------------------------------- #
 
 
-def king_cluster(num_stars, filename_cluster, w0=2.5, IBF=0.5, rand_seed=0):
+def king_cluster(num_stars, **kwargs):
     ''' Creates an open cluster according to the King Model & Kroupa IMF
         num_stars: The total number of stellar systems.
-        seed: The random seed used for cluster generation.
-        filename_cluster: The filename used when saving the cluster.
         w0: The King density parameter.	
-        IBF: The Initial Binary Fraction.
+        seed: The random seed used for cluster generation.
+        num_binaries: The number of binary systems desired.
     '''
-# TODO: Have rand_seed actually do something ...
+# Check Keyword Arguments
+    w0 = kwargs.get("w0", 2.5)
+    rand_seed = int(str(kwargs.get("seed", 7)).encode('hex'), 32)
+    num_binaries = kwargs.get("num_binaries", int(num_stars*0.25))
 
+# Apply the Seed for the Cluster
+    np.random.seed(rand_seed)
 # Creates a List of Masses (in SI Units) Drawn from the Kroupa IMF
     masses_SI = new_kroupa_mass_distribution(num_stars, mass_max = 5 | units.MSun)
 # Creates the SI-NBody Converter
@@ -47,7 +51,7 @@ def king_cluster(num_stars, filename_cluster, w0=2.5, IBF=0.5, rand_seed=0):
 # Creates a AMUS Particle Set Consisting of Positions (King) and Masses (Kroupa)
     stars_SI = new_king_model(num_stars, w0, convert_nbody=converter)
     stars_SI.mass = masses_SI
-    print stars_SI.mass.as_quantity_in(units.MSun)
+    #print stars_SI.mass.as_quantity_in(units.MSun)
 # Assigning IDs to the Stars
     stars_SI.id = np.arange(num_stars) + 1
     stars_SI.type = "star"
@@ -57,75 +61,121 @@ def king_cluster(num_stars, filename_cluster, w0=2.5, IBF=0.5, rand_seed=0):
         pass
     else:
         stars_SI.scale_to_standard(convert_nbody=converter)
-    if int(IBF) != 0:
-# Creating a Temporary Particle Set to Store Binaries
+        
+# Create Binary Systems if Requested
+    if int(num_binaries) != 0:
+    # Search for all Stars Able to Become Binary Systems
+        stars_to_become_binaries = find_possible_binaries(stars_SI, num_binaries)
+    # Update the Number of Binaries (Safety Check)
+        num_binaries = len(stars_to_become_binaries)
+    # Loop the Creation of Binary Systems
         binaries=Particles()
-# Selects the Indices of Stars that will be converted to Binaries
-        num_binaries = int(IBF*num_stars)
-        select_stars_indices_for_binaries = rp.sample(xrange(0, num_stars), num_binaries)
-        select_stars_indices_for_binaries.sort()
-        delete_star_indices = []
-# Creates a decending list of Star Indicies to make deletion easier.
-        for y in xrange(0, num_binaries):
-            delete_star_indices.append(select_stars_indices_for_binaries[(num_binaries-1)-y])
-# Creates the Binaries and assigns IDs
         for j in xrange(0, num_binaries):
-            q = select_stars_indices_for_binaries[j]
-            binaries.add_particles(binary_system(stars_SI[q], converter))
+            binaries.add_particles(binary_system(stars_to_become_binaries[j], converter))
+    # Adjust the ID for each Binary Component Particle
         binaries.id = np.arange(num_binaries*2) + 2000000
-# Deletes the Stars that were converted to Binaries
-        for k in xrange(0, num_binaries):
-            b = delete_star_indices[k]
-            stars_SI.remove_particle(stars_SI[b])
-# Merges the Binaries into to the Master Particle set
-        stars_SI.add_particle(binaries)
+    # Remove Old Place-Holder Particles
+        stars_SI.remove_particles(stars_to_become_binaries)
+    # Merge the Two Sets
+        stars_SI.add_particles(binaries)
+
 # Assigning SOI Estimate for Interaction Radius
     if num_stars == 1:
         stars_SI.radius = 1000 | units.AU
     else:
         stars_SI.radius = util.calc_SOI(stars_SI.mass, np.var(stars_SI.velocity), G=units.constants.G)
+        
 # Returns the Cluster & Converter
     return stars_SI, converter
 
 
-def binary_system(old_star, converter):
-    ''' Creates a Binary System from an Original Star, given an NBody-to-SI converter.
-        old_star: The original star that is being replaced.
-        converter: The AMUSE unit converter to keep scaling correct.
-    '''
+def find_possible_binaries(stars_SI, num_binaries):
+    stars_to_become_binaries = Particles()
+    while len(stars_to_become_binaries) < num_binaries:
+        for star in stars_SI:
+        # Place-Holder Selection Criteria
+            assigned_p = rp.uniform(0,1)
+            print assigned_p
+            if not star in stars_to_become_binaries:
+                if star.mass <= 50 | units.MSun and assigned_p<=0.25:
+                    stars_to_become_binaries.add_particle(star)# Only adds the Star if it has NOT been selected before.
+                    stars_to_become_binaries[-1].mass = 2*star.mass # Rough Correction
+        # Check to Break the While Loop if the Number of Binaries is Reached
+            if len(stars_to_become_binaries) >= num_binaries:
+                break
+    return stars_to_become_binaries
+
+
+def binary_system(star_to_become_binary, converter, **kwargs):
+# Check Keyword Arguments
+    doFlatEcc = kwargs.get("FlatEcc",True) # Apply Uniform Eccentricity Distribution
+    doBasic = kwargs.get("Basic", False) # Apply a Basic Binary Distribution
+    doFlatQ = kwargs.get("FlatQ",True) # Apply a Uniform Mass-Ratio Distribution
+    doRag_P = kwargs.get("RagP",True) # Apply Raghavan et al. (2010) Period Distribution
+    doSana_P = kwargs.get("SanaP", True) # Apply Sana et al. (2012) Period Distribution
+    Pcirc = kwargs.get("Pcirc", 6 | units.day ) # Circularization Period 
+    Pmin = kwargs.get("Pmin", 3. | units.day ) # Min Orbital Period Allowed
+    Pmax = kwargs.get("Pmax", 10.**5. | units.day ) # Max Orbital Period Allowed
+    
 # Define Original Star's Information
-    rcm = old_star.position
-# Define Binary System Elements
-# TO DO: Make this fit observations!
-    r = 500 | units.AU
-    r1 = 0.5*r
-    r2 = -0.5*r
-# Create a Temporary 
+    rCM = star_to_become_binary.position
+    print rCM
+    vCM = star_to_become_binary.velocity
+# Define Initial Binary Particle Set
     binary = Particles(2)
     star1 = binary[0]
     star2 = binary[1]
     star1.type = 'star'
     star2.type = 'star'
-    star1.mass = 0.5*old_star.mass
-    star2.mass = 0.5*old_star.mass
-    star1.radius = old_star.radius/2.0
-    star2.radius = old_star.radius/2.0
-    star1.position = [r1.number,0.0,0.0] | units.AU #nbody_system.length
-    star2.position = [r2.number,0.0,0.0] | units.AU
-# Calculate the Orbit Velocities for the Pair
-    vel1 = np.sqrt(units.constants.G*star2.mass*r1/r**2)
-    vel2 =-1*np.sqrt(units.constants.G*star1.mass*(np.absolute(r2))/r**2)
-# Define New Velocities
-    star1.vx = old_star.vx
-    star1.vy = vel1 + old_star.vy
-    star1.vz = old_star.vz
-    star2.vx = old_star.vx
-    star2.vy = vel2 + old_star.vy
-    star2.vz = old_star.vz
-# Preform the Euler Rotation and Replace the Binary
-    util.preform_EulerRotation(binary)
-    star1.position = star1.position+rcm
-    star2.position = star2.position+rcm
+
+# If Desired, Apply a Basic Binary Distribution
+    if (not doBasic):
+        semi_major_axis = 500. | units.AU
+        eccentricity = 0.
+        star1.mass = 0.5*star_to_become_binary.mass
+        star2.mass = 0.5*star_to_become_binary.mass
+
+# If Desired, Apply the Uniform Mass-Ratio Distribution (Goodwin, 2012)
+    if (doFlatQ):
+            q = np.random.random()
+            star1.mass = star_to_become_binary.mass / (1. + q)
+            star2.mass =  q * star1.mass
+        
+# If Desired, Apply Raghavan et al. (2010) Period Distribution
+    if (doRag_P):
+        sigma = 2.28
+        mu = 5.03
+        period = 2.*Pmax
+        while (period > Pmax or period < Pmin):
+            logP = sigma * np.random.randn() + mu
+            period = 10.**logP | units.day
+            semi_major_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
+        
+
+# If Desired & Applicable, Apply Sana et al. (2012) Period Distribution
+    if (doSana_P and star1.mass > 15 | units.MSun):
+            maxLogP = np.log10(Pmax.value_in(units.day))
+            minLogP = np.log10(Pmin.value_in(units.day))
+            pMod = -0.55 + 1.
+            x1 = np.random.random()
+            logP = ((maxLogP**pMod-minLogP**pMod)*x1 + minLogP**pMod)**(1./pMod)
+            period = 10.**logP | units.day
+            semi_major_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
+        
+# If Desired, Apply Uniform Eccentricity Distribution
+    if (doFlatEcc):
+        e = rp.uniform(0.0,1.0)
+    if (period < Pcirc):
+        e = 0.0
+        
+# Create the New Binary
+    newBinary = new_binary_from_orbital_elements(star1.mass, star2.mass, semi_major_axis, eccentricity = e, G = constants.G)
+# Rotate the System
+    util.preform_EulerRotation(newBinary)
+    star1.position = rCM + newBinary[0].position
+    star1.velocity = vCM + newBinary[0].velocity
+    star2.position = rCM + newBinary[1].position
+    star2.velocity = vCM + newBinary[1].velocity
     return binary
 
 
