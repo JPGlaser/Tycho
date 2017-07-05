@@ -4,6 +4,8 @@
 #        Python Package Importing       #
 # ------------------------------------- #
 
+# TO-DO: Add time back to the read state function for Tyler's code
+
 # Importing Necessary System Packages
 import math
 import io
@@ -119,9 +121,9 @@ def recover_crash(restart_file, gravity_code, kep, SMALLN):
     for root in stars:
         if hasattr(root, 'components') and not root.components is None:
             root_to_tree[root] = datamodel.trees.BinaryTreeOnParticle(root.components[0])
-    gravity_code.particles.add_particles(stars)
+    #gravity_code.particles.add_particles(stars)
     #print bookkeeping['model_time']
-    #gravity_code.set_begin_time = bookkeeping['model_time']
+    gravity_code.set_begin_time = bookkeeping['model_time']
 
 
     multiples_code = multiples.Multiples(gravity_code, SMALLN, kep)
