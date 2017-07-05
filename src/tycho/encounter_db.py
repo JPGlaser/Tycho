@@ -83,10 +83,10 @@ class OrbitParams(object):
 # calulate peri and apo
     @property
     def peri(self):
-        return abs(self.a.number* (1.0 - self.e)) | units.AU
+        return abs(self.a* (1.0 - self.e)).as_quantity_in(units.AU)
     @property
     def apo(self):
-        return abs(self.a.number * (1.0 + self.e)) | units.AU
+        return abs(self.a * (1.0 + self.e)).as_quantity_in(units.AU)
 
 # convert parameters to si
     @staticmethod
@@ -113,15 +113,15 @@ class Encounter(object):
 # Return time, ids, object (star planet), and orbital params
     def __repr__(self):
         return \
-'''<Encounter {8} @ t={0} 
-\tperi={5}, r_init={6}, ecc={7}
+'''<Encounter @ t={0} 
+\tperi={5}, tapo={6}, r_init={7}, ecc={8}
 \tBody {1}: {3}
 \tBody {2}: {4}
 >''' \
             .format(self.time.value_in(units.Myr), self.bodies[0].id,
                     self.bodies[1].id, self.bodies[0], self.bodies[1],
-                    self.orbit_params.peri, self.orbit_params.r, self.orbit_params.e,
-                    self.id)
+                    self.orbit_params.peri, self.orbit_params.apo, self.orbit_params.r, 
+                    self.orbit_params.e)
 
 # This class establishes how many n_bodies were in a cluster and what time the cluster ended
 class ClusterParameters(object):
