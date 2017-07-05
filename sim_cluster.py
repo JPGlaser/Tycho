@@ -115,7 +115,7 @@ if __name__=="__main__":
     # Initilize the Master Particle Set
         MasterSet = datamodel.Particles()
     # Create the Stellar Cluster, Shift from SI to NBody, Add the Particles to MS, & Open a Channel to the MS
-        stars_SI, converter = create.king_cluster(num_stars, 'test_stars', rand_seed=options.seed, IBF=options.IBF)
+        stars_SI, converter = create.king_cluster(num_stars, num_binaries=int(num_stars*options.IBF), seed=options.seed)
         stars_NB = datamodel.ParticlesWithUnitsConverted(stars_SI, converter.as_converter_from_nbody_to_si())
         MasterSet.add_particles(stars_NB)
         #channel_stars_master = stars_NB.new_channel_to(MasterSet)
