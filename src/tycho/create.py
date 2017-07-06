@@ -9,6 +9,7 @@ import math
 import numpy as np
 import matplotlib as plt
 import random as rp
+import os, sys
 
 # Import the Amuse Base Packages
 from amuse import datamodel
@@ -22,6 +23,7 @@ from amuse.lab import *
 # Import the Amuse Stellar Packages
 from amuse.ic.kingmodel import new_king_model
 from amuse.ic.kroupa import new_kroupa_mass_distribution
+from amuse.ext.orbital_elements import new_binary_from_orbital_elements
 
 from tycho import util
 
