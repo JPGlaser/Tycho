@@ -1,0 +1,794 @@
+Evolve model to 0.05 time  starting at 0.0 time
+
+calling evolve_model from 0.0 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 4.54747350886e-12 time
+initial top-level: 2000039 (0.000296218447969 length) 2000038 (0.00124757613531 length)
+                   r = 2.02503496144e-07
+                   v = 225.503802656
+                   v.r = -4.74596420284e-08
+initial_scale = 4.05006992288e-07 length
+M = 0.0103127911466 mass  E/mu = -25500.5019393 length / time * length / time
+a = 2.02207610875e-07 length  e = 0.00179479820443  P = 5.62584812733e-09 time
+end_time = 5.1846436206e-07 time
+delta_t = 5.1846436206e-09 time
+final_scatter_scale = 3.26017829313e-06 length
+min_scatter_scale = 4.05006992288e-07 length
+encounter: evolving to time 5.1846436206e-07 time
+encounter: initial step = 5.1846436206e-09 time
+encounter: number_of_stars = 2   [2000039 2000038]
+encounter: initial energy = -40.7779216124 mass * length**2 * time**-2
+encounter: over = 1 at time 5.1846436206e-09 time
+encounter: fractional energy error = 8.71234613811e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -40.7779216124 length**2 * time**-2 * mass
+*** warning: dE_int mismatch ***
+scatter_energy_error = -3.5527136788e-14 mass * length**2 * time**-2
+dE_int = -1.64544786685e-08 length**2 * time**-2 * mass
+E1 = -40.7775479092 length**2 * time**-2 * mass E2 = -40.7775479257 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 4.09057062211e-07 length
+scale_top_level_list: scale: 4.09057062211e-07 length
+accepting lightly perturbed or repeat binary (2000039,2000038)
+    semi = 2.02207610794e-07 E/mu = -25500.5019496
+    apo = 2.02570532684e-07 peri = 2.01844688904e-07
+    strongest perturber is 64 with apo perturbation 3.34962351568e-20
+    nearest neighbor is 64 at distance 1.34801759675
+    repeat_count = 0
+final top-level: 0 (0.00154379458328 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000001]
+Multiple 10360010346944562238 id = 1000001 mass = 0.0103127911466 radius = 0.00154379458328 semi = 2.02207610794e-07 energy = -40.7779216288
+    4220408817097315739 id = 2000039 mass = 0.00197878592187 radius = 0.000296218447969
+    1655973850585101710 id = 2000038 mass = 0.00833400522468 radius = 0.00124757613531
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 4.54747350886e-12 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 6.8212102633e-12 time
+initial top-level: 2000023 (7.50318694984e-05 length) 2000022 (0.000222661360534 length)
+                   r = 1.17057522513e-07
+                   v = 147.445589491
+                   v.r = -5.85727497879e-07
+initial_scale = 2.34115045026e-07 length
+M = 0.0019886376985 mass  E/mu = -6118.45013267 length / time * length / time
+a = 1.62511555654e-07 length  e = 0.281588567013  P = 9.23056757019e-09 time
+end_time = 6.3467647905e-07 time
+delta_t = 6.3467647905e-09 time
+final_scatter_scale = 2.15537825068e-06 length
+min_scatter_scale = 2.34115045026e-07 length
+encounter: evolving to time 6.3467647905e-07 time
+encounter: initial step = 6.3467647905e-09 time
+encounter: number_of_stars = 2   [2000023 2000022]
+encounter: initial energy = -2.29376965107 mass * length**2 * time**-2
+encounter: over = 1 at time 6.3467647905e-09 time
+encounter: fractional energy error = -3.87213432389e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -2.29376965107 length**2 * time**-2 * mass
+*** warning: dE_int mismatch ***
+scatter_energy_error = 8.881784197e-16 mass * length**2 * time**-2
+dE_int = -6.5059069243e-12 length**2 * time**-2 * mass
+E1 = -2.29349529175 length**2 * time**-2 * mass E2 = -2.29349529176 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 2.36456195477e-07 length
+scale_top_level_list: scale: 2.36456195477e-07 length
+accepting lightly perturbed or repeat binary (2000023,2000022)
+    semi = 1.62511555605e-07 E/mu = -6118.45013452
+    apo = 2.08272951653e-07 peri = 1.16750159557e-07
+    strongest perturber is 2000040 with apo perturbation 3.71968544258e-19
+    nearest neighbor is 2000040 at distance 1.14937363534
+    repeat_count = 0
+final top-level: 0 (0.000297693230032 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000002]
+Multiple 9704019846182337170 id = 1000002 mass = 0.0019886376985 radius = 0.000297693230032 semi = 1.62511555605e-07 energy = -2.29376965107
+    11857802387498808462 id = 2000023 mass = 0.000501224714642 radius = 7.50318694984e-05
+    10543945570840184364 id = 2000022 mass = 0.00148741298386 radius = 0.000222661360534
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 6.8212102633e-12 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 9.77888703346e-09 time
+initial top-level: 2000019 (0.00117842515135 length) 2000018 (0.00220597466054 length)
+                   r = 2.42784742137e-06
+                   v = 90.4651625199
+                   v.r = -0.000130950944693
+initial_scale = 4.85569484273e-06 length
+M = 0.0226083241866 mass  E/mu = -5220.11326914 length / time * length / time
+a = 2.16550130438e-06 length  e = 0.604099957521  P = 1.33162934421e-07 time
+end_time = 6.93568037185e-06 time
+delta_t = 6.93568037185e-08 time
+final_scatter_scale = 2.38663227152e-05 length
+min_scatter_scale = 4.85569484273e-06 length
+encounter: evolving to time 6.93568037185e-06 time
+encounter: initial step = 6.93568037185e-08 time
+encounter: number_of_stars = 2   [2000019 2000018]
+encounter: initial energy = -26.784743815 mass * length**2 * time**-2
+encounter: over = 1 at time 6.93568037185e-08 time
+encounter: fractional energy error = -3.97918348968e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -26.784743815 length**2 * time**-2 * mass
+*** warning: dE_int mismatch ***
+scatter_energy_error = 1.06581410364e-14 mass * length**2 * time**-2
+dE_int = 6.91713353262e-12 length**2 * time**-2 * mass
+E1 = -26.7707937575 length**2 * time**-2 * mass E2 = -26.7707937575 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 4.90425179116e-06 length
+scale_top_level_list: scale: 4.90425179116e-06 length
+accepting lightly perturbed or repeat binary (2000019,2000018)
+    semi = 2.16550130439e-06 E/mu = -5220.11326911
+    apo = 3.47368055037e-06 peri = 8.57322058399e-07
+    strongest perturber is 98 with apo perturbation 1.25759054844e-14
+    nearest neighbor is 98 at distance 0.343311117018
+    repeat_count = 0
+final top-level: 0 (0.00338439981189 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000003]
+Multiple 13405141558823312857 id = 1000003 mass = 0.0226083241866 radius = 0.00338439981189 semi = 2.16550130439e-06 energy = -26.784743815
+    14630680340828230319 id = 2000019 mass = 0.00787206575233 radius = 0.00117842515135
+    13834278423548024671 id = 2000018 mass = 0.0147362584343 radius = 0.00220597466054
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 9.77888703346e-09 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 2.11875885725e-08 time
+initial top-level: 2000003 (3.06235259717e-05 length) 2000002 (0.000305277035681 length)
+                   r = 5.17595183977e-07
+                   v = 53.5315941611
+                   v.r = -9.72817818268e-06
+initial_scale = 1.03519036795e-06 length
+M = 0.0022438686959 mass  E/mu = -2902.36499813 length / time * length / time
+a = 3.86558668078e-07 length  e = 0.473302581756  P = 3.18789693943e-08 time
+end_time = 7.52213076412e-06 time
+delta_t = 7.52213076412e-08 time
+final_scatter_scale = 1.16644178869e-05 length
+min_scatter_scale = 1.03519036795e-06 length
+encounter: evolving to time 7.52213076412e-06 time
+encounter: initial step = 7.52213076412e-08 time
+encounter: number_of_stars = 2   [2000003 2000002]
+encounter: initial energy = -0.539606704701 mass * length**2 * time**-2
+encounter: over = 1 at time 7.52213076412e-08 time
+encounter: fractional energy error = -8.22986827223e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -0.539606704701 length**2 * time**-2 * mass
+*** warning: dE_int mismatch ***
+scatter_energy_error = 4.4408920985e-16 mass * length**2 * time**-2
+dE_int = -4.68376670781e-10 length**2 * time**-2 * mass
+E1 = -0.539562579682 length**2 * time**-2 * mass E2 = -0.53956258015 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 1.04554227163e-06 length
+scale_top_level_list: scale: 1.04554227163e-06 length
+accepting lightly perturbed or repeat binary (2000003,2000002)
+    semi = 3.86558667742e-07 E/mu = -2902.36500065
+    apo = 5.69517882981e-07 peri = 2.03599452503e-07
+    strongest perturber is 59 with apo perturbation 5.16179156864e-18
+    nearest neighbor is 59 at distance 1.13091726023
+    repeat_count = 0
+final top-level: 0 (0.000335900561653 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000004]
+Multiple 12439247338438334588 id = 1000004 mass = 0.0022438686959 radius = 0.000335900561653 semi = 3.86558667742e-07 energy = -0.539606705169
+    2650935144438503823 id = 2000003 mass = 0.000204569980318 radius = 3.06235259717e-05
+    1673480398269805813 id = 2000002 mass = 0.00203929871558 radius = 0.000305277035681
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 2.11875885725e-08 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 2.74740159512e-08 time
+initial top-level: 2000013 (0.000197373879446 length) 2000012 (0.000207447687433 length)
+                   r = 6.1533368072e-07
+                   v = 60.2013591445
+                   v.r = -4.28446518904e-06
+initial_scale = 1.23066736144e-06 length
+M = 0.00270427187403 mass  E/mu = -2582.70372678 length / time * length / time
+a = 5.23535054753e-07 length  e = 0.209072194654  P = 4.57692021972e-08 time
+end_time = 2.0623460512e-06 time
+delta_t = 2.67895620474e-08 time
+final_scatter_scale = 5.23875169559e-06 length
+min_scatter_scale = 1.23066736144e-06 length
+encounter: evolving to time 2.0623460512e-06 time
+encounter: initial step = 2.67895620474e-08 time
+encounter: number_of_stars = 2   [2000013 2000012]
+encounter: initial energy = -1.7450020146 mass * length**2 * time**-2
+encounter: over = 1 at time 2.67895620474e-08 time
+encounter: fractional energy error = -2.54492090057e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -1.7450020146 length**2 * time**-2 * mass
+*** warning: dE_int mismatch ***
+scatter_energy_error = 4.4408920985e-16 mass * length**2 * time**-2
+dE_int = -8.80017614335e-10 length**2 * time**-2 * mass
+E1 = -1.74494965442 length**2 * time**-2 * mass E2 = -1.7449496553 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 1.24297403505e-06 length
+scale_top_level_list: scale: 1.24297403505e-06 length
+accepting lightly perturbed or repeat binary (2000013,2000012)
+    semi = 5.23535054489e-07 E/mu = -2582.70372809
+    apo = 6.32991677407e-07 peri = 4.14078431571e-07
+    strongest perturber is 2000024 with apo perturbation 8.45568993537e-18
+    nearest neighbor is 2000024 at distance 0.495168966486
+    repeat_count = 0
+final top-level: 0 (0.00040482156688 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000005]
+Multiple 16650290509017494842 id = 1000005 mass = 0.00270427187403 radius = 0.00040482156688 semi = 5.23535054489e-07 energy = -1.74500201548
+    9256211951667879163 id = 2000013 mass = 0.00131848862443 radius = 0.000197373879446
+    14888523703560990671 id = 2000012 mass = 0.0013857832496 radius = 0.000207447687433
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 2.74740159512e-08 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 1.84401869774e-07 time
+initial top-level: 2000025 (0.000456616882969 length) 2000024 (0.000819311311561 length)
+                   r = 4.14458133801e-06
+                   v = 33.051196387
+                   v.r = -2.23633380036e-05
+initial_scale = 8.28916267602e-06 length
+M = 0.00852340144904 mass  E/mu = -1510.32608071 length / time * length / time
+a = 2.82170901964e-06 length  e = 0.490495912324  P = 3.22583192702e-07 time
+end_time = 1.6479964782e-05 time
+delta_t = 2.07851844527e-07 time
+final_scatter_scale = 3.07004804356e-05 length
+min_scatter_scale = 8.28916267602e-06 length
+encounter: evolving to time 1.6479964782e-05 time
+encounter: initial step = 2.07851844527e-07 time
+encounter: number_of_stars = 2   [2000025 2000024]
+encounter: initial energy = -2.95823120142 mass * length**2 * time**-2
+encounter: over = 1 at time 2.07851844527e-07 time
+encounter: fractional energy error = -6.00479380565e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -2.95823120142 length**2 * time**-2 * mass
+*** warning: dE_int mismatch ***
+scatter_energy_error = 1.7763568394e-15 mass * length**2 * time**-2
+dE_int = 1.87260873474e-10 length**2 * time**-2 * mass
+E1 = -2.95794932322 length**2 * time**-2 * mass E2 = -2.95794932303 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 8.37205430278e-06 length
+scale_top_level_list: scale: 8.37205430278e-06 length
+accepting lightly perturbed or repeat binary (2000025,2000024)
+    semi = 2.82170901982e-06 E/mu = -1510.32608061
+    apo = 4.2057457597e-06 peri = 1.43767227994e-06
+    strongest perturber is 36 with apo perturbation 1.11267838725e-15
+    nearest neighbor is 36 at distance 0.549678609978
+    repeat_count = 0
+final top-level: 0 (0.00127592819453 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000006]
+Multiple 15446637817506087302 id = 1000006 mass = 0.00852340144904 radius = 0.00127592819453 semi = 2.82170901982e-06 energy = -2.95823120124
+    12140452284674130874 id = 2000025 mass = 0.00305027274939 radius = 0.000456616882969
+    13768617901789958605 id = 2000024 mass = 0.00547312869965 radius = 0.000819311311561
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 1.84401869774e-07 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 3.68803739548e-07 time
+initial top-level: 2000021 (0.000231712542643 length) 2000020 (0.000615448226996 length)
+                   r = 4.37791346572e-06
+                   v = 31.0198414651
+                   v.r = -4.74437059295e-05
+initial_scale = 8.75582693145e-06 length
+M = 0.00565916746919 mass  E/mu = -811.547881025 length / time * length / time
+a = 3.48665038842e-06 length  e = 0.423578695338  P = 5.43771195674e-07 time
+end_time = 3.46778682401e-05 time
+delta_t = 3.46778682401e-07 time
+final_scatter_scale = 4.39800563129e-05 length
+min_scatter_scale = 8.75582693145e-06 length
+encounter: evolving to time 3.46778682401e-05 time
+encounter: initial step = 3.46778682401e-07 time
+encounter: number_of_stars = 2   [2000021 2000020]
+encounter: initial energy = -0.912590806671 mass * length**2 * time**-2
+encounter: over = 1 at time 3.46778682401e-07 time
+encounter: fractional energy error = -9.73249361278e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -0.912590806671 length**2 * time**-2 * mass
+*** warning: dE_int mismatch ***
+scatter_energy_error = 8.881784197e-16 mass * length**2 * time**-2
+dE_int = -6.4425131896e-12 length**2 * time**-2 * mass
+E1 = -0.910247141811 length**2 * time**-2 * mass E2 = -0.910247141817 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 8.84338520076e-06 length
+scale_top_level_list: scale: 8.84338520076e-06 length
+accepting lightly perturbed or repeat binary (2000021,2000020)
+    semi = 3.48665038839e-06 E/mu = -811.547881032
+    apo = 4.96352121101e-06 peri = 2.00977956577e-06
+    strongest perturber is 20 with apo perturbation 2.56857909172e-13
+    nearest neighbor is 20 at distance 0.193861324826
+    repeat_count = 0
+final top-level: 0 (0.000847160769639 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000007]
+Multiple 1828200535010101186 id = 1000007 mass = 0.00565916746919 radius = 0.000847160769639 semi = 3.48665038839e-06 energy = -0.912590806677
+    9761988493894953546 id = 2000021 mass = 0.00154787630698 radius = 0.000231712542643
+    17354558938249839074 id = 2000020 mass = 0.00411129116221 radius = 0.000615448226996
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 3.68803739548e-07 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 3.69036570191e-07 time
+initial top-level: 2000005 (0.000108675615872 length) 2000004 (0.000219803289529 length)
+                   r = 2.8122877309e-06
+                   v = 25.7473963498
+                   v.r = -8.21596669923e-06
+initial_scale = 5.6245754618e-06 length
+M = 0.00219429086235 mass  E/mu = -448.786985473 length / time * length / time
+a = 2.44469083706e-06 length  e = 0.187598469042  P = 5.12706340394e-07 time
+end_time = 2.77550799553e-05 time
+delta_t = 2.92347378033e-07 time
+final_scatter_scale = 2.76458358086e-05 length
+min_scatter_scale = 5.6245754618e-06 length
+encounter: evolving to time 2.77550799553e-05 time
+encounter: initial step = 2.92347378033e-07 time
+encounter: number_of_stars = 2   [2000005 2000004]
+encounter: initial energy = -0.218014699627 mass * length**2 * time**-2
+encounter: over = 1 at time 2.92347378033e-07 time
+encounter: fractional energy error = 2.54621139429e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -0.218014699627 length**2 * time**-2 * mass
+*** warning: dE_int mismatch ***
+scatter_energy_error = -5.55111512313e-17 mass * length**2 * time**-2
+dE_int = 2.16715534407e-12 length**2 * time**-2 * mass
+E1 = -0.217705137491 length**2 * time**-2 * mass E2 = -0.217705137488 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 5.68082121641e-06 length
+scale_top_level_list: scale: 5.68082121641e-06 length
+accepting lightly perturbed or repeat binary (2000005,2000004)
+    semi = 2.44469083708e-06 E/mu = -448.786985469
+    apo = 2.9033110954e-06 peri = 1.98607057876e-06
+    strongest perturber is 11 with apo perturbation 2.41277295504e-13
+    nearest neighbor is 11 at distance 0.109556685199
+    repeat_count = 0
+final top-level: 0 (0.000328478905401 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000008]
+Multiple 813006133980186982 id = 1000008 mass = 0.00219429086235 radius = 0.000328478905401 semi = 2.44469083708e-06 energy = -0.218014699625
+    4238170370841238874 id = 2000005 mass = 0.000725970243284 radius = 0.000108675615872
+    16144593405341182817 id = 2000004 mass = 0.00146832061907 radius = 0.000219803289529
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 3.69036570191e-07 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 1.33365392685e-06 time
+initial top-level: 2000031 (0.000124888692335 length) 2000030 (0.000178022177863 length)
+                   r = 6.86458767549e-06
+                   v = 14.5458789399
+                   v.r = -2.28455961926e-05
+initial_scale = 1.3729175351e-05 length
+M = 0.0020234923572 mass  E/mu = -188.981302958 length / time * length / time
+a = 5.35368400346e-06 length  e = 0.35752617839  P = 1.73024731827e-06 time
+end_time = 8.27240393356e-05 time
+delta_t = 9.33971412901e-07 time
+final_scatter_scale = 5.57303386511e-05 length
+min_scatter_scale = 1.3729175351e-05 length
+encounter: evolving to time 8.27240393356e-05 time
+encounter: initial step = 9.33971412901e-07 time
+encounter: number_of_stars = 2   [2000031 2000030]
+encounter: initial energy = -0.0926590659868 mass * length**2 * time**-2
+encounter: over = 1 at time 9.33971412901e-07 time
+encounter: fractional energy error = -2.9954516938e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -0.0926590659868 length**2 * time**-2 * mass
+*** warning: dE_int mismatch ***
+scatter_energy_error = 2.77555756156e-17 mass * length**2 * time**-2
+dE_int = 1.44734224605e-12 length**2 * time**-2 * mass
+E1 = -0.0918377991855 length**2 * time**-2 * mass E2 = -0.0918377991841 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 1.38664671045e-05 length
+scale_top_level_list: scale: 1.38664671045e-05 length
+accepting lightly perturbed or repeat binary (2000031,2000030)
+    semi = 5.35368400354e-06 E/mu = -188.981302956
+    apo = 7.26776618563e-06 peri = 3.43960182146e-06
+    strongest perturber is 98 with apo perturbation 1.05773539732e-11
+    nearest neighbor is 98 at distance 0.170114740451
+    repeat_count = 0
+final top-level: 0 (0.000302910870198 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000009]
+Multiple 1200181456442450051 id = 1000009 mass = 0.0020234923572 radius = 0.000302910870198 semi = 5.35368400354e-06 energy = -0.0926590659854
+    12034482578715551634 id = 2000031 mass = 0.000834276149535 radius = 0.000124888692335
+    4637328009091611310 id = 2000030 mass = 0.00118921620767 radius = 0.000178022177863
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 1.33365392685e-06 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 3.09944152832e-06 time
+initial top-level: 2000007 (0.000676713896361 length) 2000006 (0.00309033861491 length)
+                   r = 4.68860120679e-05
+                   v = 17.6663007217
+                   v.r = -0.000315658765459
+initial_scale = 9.37720241358e-05 length
+M = 0.0251645045316 mass  E/mu = -380.667585055 length / time * length / time
+a = 3.30531223561e-05 length  e = 0.543083958999  P = 7.52669665717e-06 time
+end_time = 0.000749931341843 time
+delta_t = 7.49931341843e-06 time
+final_scatter_scale = 0.000561367331219 length
+min_scatter_scale = 9.37720241358e-05 length
+encounter: evolving to time 0.000749931341843 time
+encounter: initial step = 7.49931341843e-06 time
+encounter: number_of_stars = 2   [2000007 2000006]
+encounter: initial energy = -1.41169896406 mass * length**2 * time**-2
+encounter: over = 1 at time 7.49931341843e-06 time
+encounter: fractional energy error = 3.14577839297e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -1.41169896406 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 9.47097443772e-05 length
+scale_top_level_list: scale: 9.47097443772e-05 length
+accepting lightly perturbed or repeat binary (2000007,2000006)
+    semi = 3.30531223561e-05 E/mu = -380.667585054
+    apo = 5.10037429025e-05 peri = 1.51025018097e-05
+    strongest perturber is 2000040 with apo perturbation 7.53645399601e-13
+    nearest neighbor is 2000040 at distance 0.954551188064
+    repeat_count = 0
+final top-level: 0 (0.00376705251128 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000010]
+Multiple 15308028089452827951 id = 1000010 mass = 0.0251645045316 radius = 0.00376705251128 semi = 3.30531223561e-05 energy = -1.41169896406
+    16864251728814731155 id = 2000007 mass = 0.00452055549016 radius = 0.000676713896361
+    5257244155197274821 id = 2000006 mass = 0.0206439490414 radius = 0.00309033861491
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 3.09944152832e-06 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 1.060962677e-05 time
+initial top-level: 2000028 (0.000211660966093 length) 2000029 (0.000207164919417 length)
+                   r = 4.18561846914e-05
+                   v = 5.94840757831
+                   v.r = -4.95520621799e-05
+initial_scale = 8.37123693828e-05 length
+M = 0.00279782292981 mass  E/mu = -49.1519398192 length / time * length / time
+a = 2.84609614605e-05 length  e = 0.502343990411  P = 1.80361611336e-05 time
+end_time = 0.000813132515987 time
+delta_t = 1.12333878706e-05 time
+final_scatter_scale = 0.000284894652914 length
+min_scatter_scale = 8.37123693828e-05 length
+encounter: evolving to time 0.000813132515987 time
+encounter: initial step = 1.12333878706e-05 time
+encounter: number_of_stars = 2   [2000028 2000029]
+encounter: initial energy = -0.0343756442409 mass * length**2 * time**-2
+encounter: over = 1 at time 1.12333878706e-05 time
+encounter: fractional energy error = 6.05564846024e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -0.0343756442409 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 8.45494930767e-05 length
+scale_top_level_list: scale: 8.45494930767e-05 length
+accepting lightly perturbed or repeat binary (2000028,2000029)
+    semi = 2.84609614603e-05 E/mu = -49.1519398196
+    apo = 4.27581544112e-05 peri = 1.41637685094e-05
+    strongest perturber is 98 with apo perturbation 4.92583479034e-12
+    nearest neighbor is 98 at distance 1.1590071926
+    repeat_count = 0
+final top-level: 0 (0.000418825885509 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000011]
+Multiple 14826479322899350314 id = 1000011 mass = 0.00279782292981 radius = 0.000418825885509 semi = 2.84609614603e-05 energy = -0.0343756442411
+    13739926301448467374 id = 2000028 mass = 0.00141392861513 radius = 0.000211660966093
+    4858052386586061872 id = 2000029 mass = 0.00138389431468 radius = 0.000207164919417
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 1.060962677e-05 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 1.9907951355e-05 time
+initial top-level: 2000043 (0.000201943915558 length) 2000042 (0.000471112388621 length)
+                   r = 7.43732319573e-05
+                   v = 4.70586269659
+                   v.r = -0.000238507770453
+initial_scale = 0.000148746463915 length
+M = 0.00449612219788 mass  E/mu = -49.380928406 length / time * length / time
+a = 4.55248852443e-05 length  e = 0.824301570657  P = 2.87828705759e-05 time
+end_time = 0.00173935634397 time
+delta_t = 1.73935634397e-05 time
+final_scatter_scale = 0.00055399828049 length
+min_scatter_scale = 0.000148746463915 length
+encounter: evolving to time 0.00173935634397 time
+encounter: initial step = 1.73935634397e-05 time
+encounter: number_of_stars = 2   [2000043 2000042]
+encounter: initial energy = -0.046628330026 mass * length**2 * time**-2
+encounter: over = 1 at time 1.73935634397e-05 time
+encounter: fractional energy error = 4.46438499944e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -0.046628330026 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 0.000150233928554 length
+scale_top_level_list: scale: 0.000150233928554 length
+accepting lightly perturbed or repeat binary (2000043,2000042)
+    semi = 4.55248852444e-05 E/mu = -49.3809284059
+    apo = 8.30511196553e-05 peri = 7.99865083348e-06
+    strongest perturber is 59 with apo perturbation 2.98171714902e-11
+    nearest neighbor is 59 at distance 0.729065828776
+    repeat_count = 0
+final top-level: 0 (0.00067305630418 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000012]
+Multiple 1993110878400390783 id = 1000012 mass = 0.00449612219788 radius = 0.00067305630418 semi = 4.55248852444e-05 energy = -0.0466283300259
+    14971228821704656691 id = 2000043 mass = 0.00134901718598 radius = 0.000201943915558
+    17381484640466477043 id = 2000042 mass = 0.00314710501191 radius = 0.000471112388621
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 1.9907951355e-05 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 2.45571136475e-05 time
+initial top-level: 2000037 (4.0385305479e-05 length) 2000036 (0.000229039295568 length)
+                   r = 7.38868599341e-05
+                   v = 2.1014690233
+                   v.r = -0.000112337881968
+initial_scale = 0.000147773719868 length
+M = 0.00179979880123 mass  E/mu = -22.1507621196 length / time * length / time
+a = 4.06261146121e-05 length  e = 0.91807873336  P = 3.83509232354e-05 time
+end_time = 0.00519307571823 time
+delta_t = 5.19307571823e-05 time
+final_scatter_scale = 0.000846566529127 length
+min_scatter_scale = 0.000147773719868 length
+encounter: evolving to time 0.00519307571823 time
+encounter: initial step = 5.19307571823e-05 time
+encounter: number_of_stars = 2   [2000037 2000036]
+encounter: initial energy = -0.00508009116579 mass * length**2 * time**-2
+encounter: over = 1 at time 5.19307571823e-05 time
+encounter: fractional energy error = -5.29286050194e-15
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -0.00508009116579 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 0.000149251457067 length
+scale_top_level_list: scale: 0.000149251457067 length
+accepting lightly perturbed or repeat binary (2000037,2000036)
+    semi = 4.06261146132e-05 E/mu = -22.150762119
+    apo = 7.79240864586e-05 peri = 3.32814276769e-06
+    strongest perturber is 47 with apo perturbation 7.62332555242e-10
+    nearest neighbor is 47 at distance 0.332557865938
+    repeat_count = 0
+final top-level: 0 (0.000269424601047 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000013]
+Multiple 13718771079643362677 id = 1000013 mass = 0.00179979880123 radius = 0.000269424601047 semi = 4.06261146132e-05 energy = -0.00508009116565
+    6026392409088314927 id = 2000037 mass = 0.000269780206061 radius = 4.0385305479e-05
+    2759768745799304742 id = 2000036 mass = 0.00153001859517 radius = 0.000229039295568
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 2.45571136475e-05 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 0.000180244445801 time
+initial top-level: 2000001 (5.67209649549e-05 length) 2000000 (0.000116190254963 length)
+                   r = 0.000172631901857
+                   v = 1.84090712606
+                   v.r = -0.000286000305581
+initial_scale = 0.000345263803714 length
+M = 0.00115507420302 mass  E/mu = -4.99649657611 length / time * length / time
+a = 0.000115588411342 length  e = 0.925306621556  P = 0.000229745158568 time
+end_time = 0.0168574909808 time
+delta_t = 0.000168574909808 time
+final_scatter_scale = 0.00160091616499 length
+min_scatter_scale = 0.000345263803714 length
+encounter: evolving to time 0.0168574909808 time
+encounter: initial step = 0.000168574909808 time
+encounter: number_of_stars = 2   [2000001 2000000]
+encounter: initial energy = -0.00127216207471 mass * length**2 * time**-2
+encounter: over = 1 at time 0.000168574909808 time
+encounter: fractional energy error = -3.40900642785e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -0.00127216207471 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 0.000348716441751 length
+scale_top_level_list: scale: 0.000348716441751 length
+accepting lightly perturbed or repeat binary (2000001,2000000)
+    semi = 0.000115588411342 E/mu = -4.99649657611
+    apo = 0.000222543133732 peri = 8.63368895213e-06
+    strongest perturber is 89 with apo perturbation 1.96853187925e-08
+    nearest neighbor is 89 at distance 0.192555944489
+    repeat_count = 0
+increasing radius for 0 from 0.000172911219918 length to 0.000231176822684 length
+final top-level: 0 (0.000231176822684 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000014]
+Multiple 127619122883633234 id = 1000014 mass = 0.00115507420302 radius = 0.000231176822684 semi = 0.000115588411342 energy = -0.00127216207471
+    15647600768502915555 id = 2000001 mass = 0.000378904986158 radius = 5.67209649549e-05
+    1814010806455088232 id = 2000000 mass = 0.000776169216858 radius = 0.000116190254963
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 0.000180244445801 time to 0.05 time
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 0.000213623046875 time
+initial top-level: 2000041 (0.00165665859792 length) 2000040 (0.00930529733369 length)
+                   r = 0.00138085525516
+                   v = 0.635304489752
+                   v.r = -9.45898988852e-05
+initial_scale = 0.00276171051031 length
+M = 0.0732275934276 mass  E/mu = -52.8288018758 length / time * length / time
+a = 0.000693065059471 length  e = 0.992477898175  P = 0.000423646374906 time
+end_time = 0.0527420504862 time
+delta_t = 0.000527420504862 time
+final_scatter_scale = 0.0136552481979 length
+min_scatter_scale = 0.00276171051031 length
+encounter: evolving to time 0.0527420504862 time
+encounter: initial step = 0.000527420504862 time
+encounter: number_of_stars = 2   [2000041 2000040]
+encounter: initial energy = -0.496286764103 mass * length**2 * time**-2
+encounter: over = 1 at time 0.000527420504862 time
+encounter: fractional energy error = 1.1185297543e-16
+encounter: 0 single(s), 1 multiple(s)
+E2 (CM) = -0.496286764103 length**2 * time**-2 * mass
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: bound binary node 0.00278932761542 length
+scale_top_level_list: scale: 0.00278932761542 length
+accepting lightly perturbed or repeat binary (2000041,2000040)
+    semi = 0.000693065059471 E/mu = -52.8288018758
+    apo = 0.00138091681299 peri = 5.21330594861e-06
+    strongest perturber is 98 with apo perturbation 1.33585334694e-08
+    nearest neighbor is 98 at distance 0.904045324752
+    repeat_count = 0
+final top-level: 0 (0.0109619559316 length) 
+                 r = 0.0
+                 v = 0.0
+                 v.r = 0.0
+multiples: interaction products: singles: [] multiples:  [1000015]
+Multiple 5431054465750512953 id = 1000015 mass = 0.0732275934276 radius = 0.0109619559316 semi = 0.000693065059471 energy = -0.496286764103
+    3696459272176707642 id = 2000041 mass = 0.0110667405538 radius = 0.00165665859792
+    7556725486400689963 id = 2000040 mass = 0.0621608528739 radius = 0.00930529733369
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+calling evolve_model from 0.000213623046875 time to 0.05 time
+
+Resolved 15 encounters
+Ignored 0 encounters
+Writing state to write file:  CrashSave/Test02_t0.05 
+
+
+
+State successfully written to:   CrashSave/Test02_t0.05
+0.05 time
+Writing state to write file:  Restart/Test02_restart0.05 
+
+
+
+State successfully written to:   Restart/Test02_restart0.05
+0.05 time
+{'neighbor_distance_factor': 1.0, 'multiples_external_tidal_correction': quantity<-3.06546168419e-09 length**2 * time**-2 * mass>, 'neighbor_veto': True, 'multiples_integration_energy_error': quantity<-1.76178838122e-08 length**2 * time**-2 * mass>, 'root_index': 1000015, 'multiples_internal_tidal_correction': quantity<-5.63782066679e-10 length**2 * time**-2 * mass>, 'model_time': quantity<0.050048828125 time>}
+
+ [UPDATE] Reset at 2017/07/07-23:49:36!
+-------------
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:36!
+-------------
+Evolve model to 0.1 time  starting at 0.05 time
+
+calling evolve_model from 0.05 time to 0.1 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:36!
+-------------
+Evolve model to 0.15 time  starting at 0.100048828125 time
+
+calling evolve_model from 0.100048828125 time to 0.15 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:36!
+-------------
+Evolve model to 0.2 time  starting at 0.15009765625 time
+
+calling evolve_model from 0.15009765625 time to 0.2 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:36!
+-------------
+Evolve model to 0.25 time  starting at 0.200146484375 time
+
+calling evolve_model from 0.200146484375 time to 0.25 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:36!
+-------------
+Evolve model to 0.3 time  starting at 0.2501953125 time
+
+calling evolve_model from 0.2501953125 time to 0.3 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:36!
+-------------
+Evolve model to 0.35 time  starting at 0.3 time
+
+calling evolve_model from 0.3 time to 0.35 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:36!
+-------------
+Evolve model to 0.4 time  starting at 0.35029296875 time
+
+calling evolve_model from 0.35029296875 time to 0.4 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:36!
+-------------
+Evolve model to 0.45 time  starting at 0.40009765625 time
+
+calling evolve_model from 0.40009765625 time to 0.45 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:36!
+-------------
+Evolve model to 0.5 time  starting at 0.450390625 time
+
+calling evolve_model from 0.450390625 time to 0.5 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:36!
+-------------
+Evolve model to 0.55 time  starting at 0.5001953125 time
+
+calling evolve_model from 0.5001953125 time to 0.55 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+Writing state to write file:  Restart/Test02_restart0.55 
+
+
+
+State successfully written to:   Restart/Test02_restart0.55
+0.55 time
+{'neighbor_distance_factor': 1.0, 'multiples_external_tidal_correction': quantity<-3.06546168419e-09 length**2 * time**-2 * mass>, 'neighbor_veto': True, 'multiples_integration_energy_error': quantity<-1.76178838122e-08 length**2 * time**-2 * mass>, 'root_index': 1000015, 'multiples_internal_tidal_correction': quantity<-5.63782066679e-10 length**2 * time**-2 * mass>, 'model_time': quantity<0.55 time>}
+
+ [UPDATE] Reset at 2017/07/07-23:49:38!
+-------------
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:49:38!
+-------------
+[UPDATE] Run Finished at 2017/07/07-23:49:38! 
+

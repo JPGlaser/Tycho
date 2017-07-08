@@ -136,6 +136,8 @@ if __name__=="__main__":
     except:
         crash = False
 
+
+
 # Write the Initial State 
     if not read_from_file:
         write.write_initial_state(MasterSet, initial_conditions, cluster_name)
@@ -401,6 +403,9 @@ if __name__=="__main__":
 #    finish(time.number, end_time.number)
 
 # Pickle the encounter information dictionary
+    enc_dir = os.getcwd()+"/Encounters"
+    if not os.path.exists(enc_dir):
+        os.makedirs(enc_dir)
     encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
     pickle.dump(encounterInformation, encounter_file)
     encounter_file.close()

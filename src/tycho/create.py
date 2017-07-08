@@ -82,9 +82,11 @@ def king_cluster(num_stars, **kwargs):
 
 # Assigning SOI Estimate for Interaction Radius
     if num_stars == 1:
-        stars_SI.radius = 1000 | units.AU
+        stars_SI.radius = 1000*stars_SI.mass/(1.0 | units.MSun) | units.AU
     else:
-        stars_SI.radius = util.calc_SOI(stars_SI.mass, np.var(stars_SI.velocity), G=units.constants.G)
+	stars_SI.radius = 1000*stars_SI.mass/(1.0 | units.MSun) | units.AU # Temporary Solution
+	# Need to think of a better way to calculate the SOI
+        # stars_SI.radius = 100*util.calc_SOI(stars_SI.mass, np.var(stars_SI.velocity), G=units.constants.G)
         
 # Returns the Cluster & Converter
     return stars_SI, converter
@@ -96,9 +98,8 @@ def find_possible_binaries(stars_SI, num_binaries):
         for star in stars_SI:
         # Place-Holder Selection Criteria
             assigned_p = rp.uniform(0,1)
-            print assigned_p
             if not star in stars_to_become_binaries:
-                if star.mass <= 50 | units.MSun and assigned_p<=0.25:
+                if star.mass <= 1.5 | units.MSun and assigned_p<=0.25:
                     stars_to_become_binaries.add_particle(star)# Only adds the Star if it has NOT been selected before.
                     stars_to_become_binaries[-1].mass = 2*star.mass # Rough Correction
         # Check to Break the While Loop if the Number of Binaries is Reached
@@ -120,7 +121,6 @@ def binary_system(star_to_become_binary, converter, **kwargs):
     
 # Define Original Star's Information
     rCM = star_to_become_binary.position
-    print rCM
     vCM = star_to_become_binary.velocity
 # Define Initial Binary Particle Set
     binary = Particles(2)

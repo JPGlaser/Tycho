@@ -1,0 +1,127 @@
+Evolve model to 0.05 time  starting at 0.0 time
+
+calling evolve_model from 0.0 time to 0.05 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+Writing state to write file:  CrashSave/Test01_t0.05 
+
+
+
+State successfully written to:   CrashSave/Test01_t0.05
+0.05 time
+Writing state to write file:  Restart/Test01_restart0.05 
+
+
+
+State successfully written to:   Restart/Test01_restart0.05
+0.05 time
+{'neighbor_distance_factor': 1.0, 'multiples_external_tidal_correction': quantity<zero>, 'neighbor_veto': True, 'multiples_integration_energy_error': quantity<zero>, 'root_index': 1000000, 'multiples_internal_tidal_correction': quantity<zero>, 'model_time': quantity<0.05078125 time>}
+
+ [UPDATE] Reset at 2017/07/07-23:48:42!
+-------------
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:42!
+-------------
+Evolve model to 0.1 time  starting at 0.05 time
+
+calling evolve_model from 0.05 time to 0.1 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:42!
+-------------
+Evolve model to 0.15 time  starting at 0.10078125 time
+
+calling evolve_model from 0.10078125 time to 0.15 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:42!
+-------------
+Evolve model to 0.2 time  starting at 0.15009765625 time
+
+calling evolve_model from 0.15009765625 time to 0.2 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:42!
+-------------
+Evolve model to 0.25 time  starting at 0.200390625 time
+
+calling evolve_model from 0.200390625 time to 0.25 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:42!
+-------------
+Evolve model to 0.3 time  starting at 0.2501953125 time
+
+calling evolve_model from 0.2501953125 time to 0.3 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:43!
+-------------
+Evolve model to 0.35 time  starting at 0.3 time
+
+calling evolve_model from 0.3 time to 0.35 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:43!
+-------------
+Evolve model to 0.4 time  starting at 0.35029296875 time
+
+calling evolve_model from 0.35029296875 time to 0.4 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:43!
+-------------
+Evolve model to 0.45 time  starting at 0.4005859375 time
+
+calling evolve_model from 0.4005859375 time to 0.45 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:43!
+-------------
+Evolve model to 0.5 time  starting at 0.450390625 time
+
+calling evolve_model from 0.450390625 time to 0.5 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:43!
+-------------
+Evolve model to 0.55 time  starting at 0.5001953125 time
+
+calling evolve_model from 0.5001953125 time to 0.55 time
+
+Resolved 0 encounters
+Ignored 0 encounters
+Writing state to write file:  Restart/Test01_restart0.55 
+
+
+
+State successfully written to:   Restart/Test01_restart0.55
+0.55 time
+{'neighbor_distance_factor': 1.0, 'multiples_external_tidal_correction': quantity<zero>, 'neighbor_veto': True, 'multiples_integration_energy_error': quantity<zero>, 'root_index': 1000000, 'multiples_internal_tidal_correction': quantity<zero>, 'model_time': quantity<0.55 time>}
+
+ [UPDATE] Reset at 2017/07/07-23:48:44!
+-------------
+-------------
+[UPDATE] Step Taken at 2017/07/07-23:48:44!
+-------------
+[UPDATE] Run Finished at 2017/07/07-23:48:44! 
+
