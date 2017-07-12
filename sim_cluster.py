@@ -213,6 +213,11 @@ if __name__=="__main__":
     
     step_index = 0
 
+    # Make the Encounters directory to store encounter information in
+    enc_dir = "Encounters"
+    if not os.path.exists(enc_dir):
+        os.makedirs(enc_dir)
+
 # This is where I added Tyler's stuff
 
 # So far this puts one empty list, encounters, into the dictionary
