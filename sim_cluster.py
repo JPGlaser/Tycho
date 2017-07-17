@@ -212,12 +212,10 @@ if __name__=="__main__":
     sys.stdout = f
     
     step_index = 0
-
-    # Make the Encounters directory to store encounter information in
+# Make the Encounters directory to store encounter information in
     enc_dir = "Encounters"
     if not os.path.exists(enc_dir):
         os.makedirs(enc_dir)
-
 # This is where I added Tyler's stuff
 
 # So far this puts one empty list, encounters, into the dictionary
@@ -234,20 +232,89 @@ if __name__=="__main__":
 
 
     class EncounterHandler(object):
+        # I think we can delete the run_id. Relic from Tyler's database code.
         def __init__(self):
             self.run_id = hashlib.sha256(str(Starting)).hexdigest()
 
-        # I need to change this from writing into Tyler's database files to writing the infomation into structured arrays
+        def handle_encounter_v3(self, kepler, conv, time, star1, star2, converter):
 
-        def handle_encounter_v2(self, kepler, conv, time, star1, star2):
+            # Need to add time as an attribute to the stars here
+            # The converter is brought in to convert to SI
 
-            encounters1 = []
-            encounters2 = []
-            particles1 = []
-            particles2 = []
+            # Retrieve star IDs to use as dictionary keys
             name1 = str(star1.id)
             name2 = str(star2.id)
 
+            # Initialize the Particle Sets
+            expand_list=datamodel.Particles()
+            particles = datamodel.Particles()
+
+            # Prep a Particle set to feed into expand_encounter
+            expand_list.add_particle(star1)
+            expand_list.add_particle(star2)
+
+            # Expand enconter returns a particle set with all of the children when given a particle set of two objects involved in an encounter
+            particles = multiples_code.expand_encounter(expand_list)
+
+            # Add the particle set for the encoutner to the respective stars' dictionary key
+            encounterInformation[name1].append(particles)
+            encounterInformation[name2].append(particles)
+
+            # return true is necessary for the multiples code
+            return True
+
+
+        def handle_encounter_v2(self, kepler, conv, time, star1, star2, converter):
+
+            name1 = str(star1.id)
+            name2 = str(star2.id)
+
+            # I need to make particles1 and particles2 particle sets that contain only the children. Use an if check to make sure star.type = "star or "planet" 
+            # if False, get the children and check again. 
+            # Maybe a for loop with a try?
+
+            # while star1.type!="star" or star1.type!=planet
+                 # star1=star1.children
+            # 
+            #expand_list =datamodel.Particles()
+            particles1 = datamodel.Particles()
+            particles2 = datamodel.Particles()
+            
+            # Add stars to a particle set. 2 Sets so its easier to loop through in a dictionary. Always the id star first
+            particles1.add_particle(converter.to_si(star1))
+            particles1.add_particle(converter.to_si(star2))
+            
+            particles2.add_particle(converter.to_si(star2))
+            particles2.add_particle(converter.to_si(star1))
+
+            #multiples_code.expand_encounter(particles)
+
+            '''
+            try:
+                particles1.add_particles(star1.children)
+            except:
+                particles1.add_particle(star1)
+            try:
+                particles1.add_particles(star2.children)
+            except:
+                particles1.add_particle(star2)
+
+            try:
+                particles2.add_particles(star2.children)
+            except:
+                particles2.add_particle(star2)
+            try:
+                particles2.add_particles(star1.children)
+            except:
+                particles2.add_particle(star1)
+            '''
+            # Place Holder until we add the loop to check for children.
+            '''
+            particles1 = [star1, star2]
+            particles2 = [star2, star1]
+            encounters1 = [particles1]
+            encounters2 = [particles2]
+            
             M,a,e,r,E,t = multiples.get_component_binary_elements(star1, star2, kepler)
             peri = abs(conv.to_si(a * (1.0 - e)).value_in(units.AU))
             apo = abs(conv.to_si(a * (1.0 + e)).value_in(units.AU))
@@ -261,8 +328,7 @@ if __name__=="__main__":
             # from_particle returns the id, mass, radius, position, and velocity in SI
             star1_params = encounter_db.EncounterBody.from_particle(star1, conv)
             star2_params = encounter_db.EncounterBody.from_particle(star2, conv)
-
-            '''
+                        
             Encounter returns: 
             
             [<Encounter None @ t=1.25509037737 
@@ -271,7 +337,7 @@ if __name__=="__main__":
             Body 1: <Body 1: mass=1.50990530471e+29 kg>
             '''
 
-            encounter = encounter_db.Encounter([star1_params, star2_params], orbit, conv.to_si(time))
+            #encounter = encounter_db.Encounter([star1_params, star2_params], orbit, conv.to_si(time))
         
             # Here I need to add all of this information into the structured arrays
 
@@ -279,21 +345,13 @@ if __name__=="__main__":
             #   FLAG   #
             # -------- #
 
-            # First I put everything into the two particles list. 
             
-            particles1.append(encounter)
-            particles1.append(star1_params)
-            particles1.append(star2_params)
+            #encounterInformation[name1].append(encounters1)
+            #encounterInformation[name2].append(encounters2)
 
-            particles2.append(encounter)
-            particles2.append(star2_params)
-            particles2.append(star1_params)
-
-            encounters1.append(particles1)
-            encounters2.append(particles2)
-
-            encounterInformation[name1].append(encounters1)
-            encounterInformation[name2].append(encounters2)
+            # Put the particle sets into the dictionary
+            encounterInformation[name1].append(particles1)
+            encounterInformation[name2].append(particles2)
 
             return True
 
@@ -307,7 +365,7 @@ if __name__=="__main__":
         time += delta_t
         
         def encounter_callback(time, s1, s2):
-            return encounters.handle_encounter_v2(kep, converter, time, s1, s2)
+            return encounters.handle_encounter_v2(kep, converter, time, s1, s2, converter)
         
 
         multiples_code.evolve_model(time, callback=encounter_callback)
@@ -383,6 +441,11 @@ if __name__=="__main__":
 # Starting the AMUSE Channel for PH4
             grav_channel = gravity.particles.new_channel_to(MasterSet)
 
+# Save the encounters dictionary thus far
+            #if step_index != 0:
+                #encounter_file = open("Encounters/"+cluster_name+"_"+step+"_encounters.pkl", "wb")
+                #pickle.dump(encounterInformation, encounter_file)
+                #encounter_file.close()
 
             print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
             print '-------------'
