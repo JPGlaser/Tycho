@@ -223,7 +223,7 @@ if __name__=="__main__":
 # The particle list will contain all the information about the particles involved in an encounter
 
     encounterInformation = defaultdict(list)
-
+    # Sdd the star IDs as keys to the dictionary
     for star in MasterSet:
         if star.type == "star":
             name = str(star.id)
@@ -236,7 +236,7 @@ if __name__=="__main__":
         def __init__(self):
             self.run_id = hashlib.sha256(str(Starting)).hexdigest()
 
-        def handle_encounter_v3(self, kepler, conv, time, star1, star2, converter):
+        def handle_encounter_v3(self, kepler, conv, time, star1, star2):
 
             # Need to add time as an attribute to the stars here
             # The converter is brought in to convert to SI
@@ -264,7 +264,7 @@ if __name__=="__main__":
             return True
 
 
-        def handle_encounter_v2(self, kepler, conv, time, star1, star2, converter):
+        def handle_encounter_v2(self, kepler, conv, time, star1, star2):
 
             name1 = str(star1.id)
             name2 = str(star2.id)
@@ -281,11 +281,11 @@ if __name__=="__main__":
             particles2 = datamodel.Particles()
             
             # Add stars to a particle set. 2 Sets so its easier to loop through in a dictionary. Always the id star first
-            particles1.add_particle(converter.to_si(star1))
-            particles1.add_particle(converter.to_si(star2))
+            particles1.add_particle(conv.to_si(star1))
+            particles1.add_particle(conv.to_si(star2))
             
-            particles2.add_particle(converter.to_si(star2))
-            particles2.add_particle(converter.to_si(star1))
+            particles2.add_particle(conv.to_si(star2))
+            particles2.add_particle(conv.to_si(star1))
 
             #multiples_code.expand_encounter(particles)
 
@@ -365,7 +365,7 @@ if __name__=="__main__":
         time += delta_t
         
         def encounter_callback(time, s1, s2):
-            return encounters.handle_encounter_v2(kep, converter, time, s1, s2, converter)
+            return encounters.handle_encounter_v3(kep, converter, time, s1, s2)
         
 
         multiples_code.evolve_model(time, callback=encounter_callback)
@@ -441,12 +441,26 @@ if __name__=="__main__":
 # Starting the AMUSE Channel for PH4
             grav_channel = gravity.particles.new_channel_to(MasterSet)
 
-# Save the encounters dictionary thus far
-            #if step_index != 0:
-                #encounter_file = open("Encounters/"+cluster_name+"_"+step+"_encounters.pkl", "wb")
-                #pickle.dump(encounterInformation, encounter_file)
-                #encounter_file.close()
-
+# Save the encounters dictionary thus far, will not run on the first step (can be changed if desired).
+            if step_index != 0:
+		if encounter_file != None:
+			# Get previous Encounter Dictionary
+			encounter_file.open("Encounters/"+cluster_name+"_encounters.pkl", "rb")
+			backup = pickle.load(encounter_file)
+			encounter_file.close()
+			
+			# Save into the backup file
+			backup_file = open("Encounters/"+cluster_name+"_backup_encounters.pkl", "wb")
+			pickle.dump(backup, backup_file)
+			backup_file.close()
+			
+		encounter_file = None
+                encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
+                pickle.dump(encounterInformation, encounter_file)
+                encounter_file.close()
+		
+            # Log that a Reset happened
+	    print '-------------'
             print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
             print '-------------'
             sys.stdout.flush()
@@ -470,7 +484,7 @@ if __name__=="__main__":
 
 #    finish(time.number, end_time.number)
 
-# Pickle the encounter information dictionary
+# Pickle the encounter information dictionary one final time
     enc_dir = os.getcwd()+"/Encounters"
     if not os.path.exists(enc_dir):
         os.makedirs(enc_dir)
