@@ -155,11 +155,6 @@ if __name__=="__main__":
     # Setting PH4 as the Top-Level Gravity Code
     if use_gpu == 1:
         gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
-    #try:
-        #gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gp$
-    #except Exception as ex:
-    #    gravity = ph4(number_of_workers = num_workers, redirection = "none")
-    #    print "*** GPU worker code not found. Reverting to non-GPU code. ***"
     else:
         gravity = grav(number_of_workers = num_workers, redirection = "none")
 
@@ -203,6 +198,7 @@ if __name__=="__main__":
     print '\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     print '-------------'
     sys.stdout.flush()
+
 # Creates the Log File and Redirects all Print Statements
     orig_stdout = sys.stdout
     log_dir = os.getcwd()+"/Logs"
@@ -212,24 +208,20 @@ if __name__=="__main__":
     sys.stdout = f
     
     step_index = 0
+
 # Make the Encounters directory to store encounter information in
     enc_dir = "Encounters"
     if not os.path.exists(enc_dir):
         os.makedirs(enc_dir)
-# This is where I added Tyler's stuff
 
 # So far this puts one empty list, encounters, into the dictionary
 # The particle list is made in the EncounterHandler class
 # The particle list will contain all the information about the particles involved in an encounter
-
     encounterInformation = defaultdict(list)
-
     for star in MasterSet:
         if star.type == "star":
             name = str(star.id)
             encounterInformation[name] = []
-
-
 
     class EncounterHandler(object):
         # I think we can delete the run_id. Relic from Tyler's database code.
@@ -247,119 +239,28 @@ if __name__=="__main__":
 
             # Initialize the Particle Sets
             expand_list=datamodel.Particles()
-            particles = datamodel.Particles()
 
             # Prep a Particle set to feed into expand_encounter
             expand_list.add_particle(star1)
             expand_list.add_particle(star2)
 
-            # Expand enconter returns a particle set with all of the children when given a particle set of two objects involved in an encounter
-            particles = multiples_code.expand_encounter(expand_list)
+            # Expand enconter returns a particle set with all of the children 
+            # when given a particle set of two objects involved in an encounter
+            enc_particles = multiples_code.expand_encounter(expand_list)
 
             # Add the particle set for the encoutner to the respective stars' dictionary key
-            encounterInformation[name1].append(particles)
-            encounterInformation[name2].append(particles)
+            encounterInformation[name1].append(enc_particles)
+            encounterInformation[name2].append(enc_particles)
 
             # return true is necessary for the multiples code
             return True
 
-
-        def handle_encounter_v2(self, kepler, conv, time, star1, star2):
-
-            name1 = str(star1.id)
-            name2 = str(star2.id)
-
-            # I need to make particles1 and particles2 particle sets that contain only the children. Use an if check to make sure star.type = "star or "planet" 
-            # if False, get the children and check again. 
-            # Maybe a for loop with a try?
-
-            # while star1.type!="star" or star1.type!=planet
-                 # star1=star1.children
-            # 
-            #expand_list =datamodel.Particles()
-            particles1 = datamodel.Particles()
-            particles2 = datamodel.Particles()
-            
-            # Add stars to a particle set. 2 Sets so its easier to loop through in a dictionary. Always the id star first
-            particles1.add_particle(conv.to_si(star1))
-            particles1.add_particle(conv.to_si(star2))
-            
-            particles2.add_particle(conv.to_si(star2))
-            particles2.add_particle(conv.to_si(star1))
-
-            #multiples_code.expand_encounter(particles)
-
-            '''
-            try:
-                particles1.add_particles(star1.children)
-            except:
-                particles1.add_particle(star1)
-            try:
-                particles1.add_particles(star2.children)
-            except:
-                particles1.add_particle(star2)
-
-            try:
-                particles2.add_particles(star2.children)
-            except:
-                particles2.add_particle(star2)
-            try:
-                particles2.add_particles(star1.children)
-            except:
-                particles2.add_particle(star1)
-            '''
-            # Place Holder until we add the loop to check for children.
-            '''
-            particles1 = [star1, star2]
-            particles2 = [star2, star1]
-            encounters1 = [particles1]
-            encounters2 = [particles2]
-            
-            M,a,e,r,E,t = multiples.get_component_binary_elements(star1, star2, kepler)
-            peri = abs(conv.to_si(a * (1.0 - e)).value_in(units.AU))
-            apo = abs(conv.to_si(a * (1.0 + e)).value_in(units.AU))
-
-            r_au = conv.to_si(r).value_in(units.AU)
-            real_time = conv.to_si(time).value_in(units.Myr)
-
-            # OrbitParams returns the peri and apo and convets all of the parameters to SI
-            orbit = encounter_db.OrbitParams.from_nbody_params(M, a, e, r, E, time, conv)
-
-            # from_particle returns the id, mass, radius, position, and velocity in SI
-            star1_params = encounter_db.EncounterBody.from_particle(star1, conv)
-            star2_params = encounter_db.EncounterBody.from_particle(star2, conv)
-                        
-            Encounter returns: 
-            
-            [<Encounter None @ t=1.25509037737 
-            peri=1.60014590665e+15 AU, r_init=3.44462289279e+15 m, ecc=3.32880142942
-	    Body 82: <Body 82: mass=1.57566086421e+30 kg>
-            Body 1: <Body 1: mass=1.50990530471e+29 kg>
-            '''
-
-            #encounter = encounter_db.Encounter([star1_params, star2_params], orbit, conv.to_si(time))
-        
-            # Here I need to add all of this information into the structured arrays
-
-            # -------- #
-            #   FLAG   #
-            # -------- #
-
-            
-            #encounterInformation[name1].append(encounters1)
-            #encounterInformation[name2].append(encounters2)
-
-            # Put the particle sets into the dictionary
-            encounterInformation[name1].append(particles1)
-            encounterInformation[name2].append(particles2)
-
-            return True
-
-#    cluster_params = encounter_db.ClusterParameters(num_stars, end_time)
-#    db_writer = encounter_db.EncounterDbWriter(database, cluster_params)
+# Setting Up the Encounter Handler
     encounters = EncounterHandler()
-    # Variable used for saving the dictionary at resets
+
+# Variable used for saving the dictionary at resets
     reset_flag = 0
+
 # Begin Evolving the Cluster
     while time < end_time:
         sys.stdout.flush()
@@ -367,10 +268,8 @@ if __name__=="__main__":
         
         def encounter_callback(time, s1, s2):
             return encounters.handle_encounter_v3(kep, converter, time, s1, s2)
-        
 
         multiples_code.evolve_model(time, callback=encounter_callback)
-        #multiples_code.evolve_model(time)
         gravity.synchronize_model()
 
     # Copy values from the module to the set in memory.
@@ -384,10 +283,6 @@ if __name__=="__main__":
 
     # Write Out the Data Every 5 Time Steps
         if step_index%5 == 0:
-            #CoMSet = datamodel.Particles()
-            #for root, tree in multiples_code.root_to_tree.iteritems():
-            #    multi_systems = tree.get_tree_subset().copy_to_new_particles()
-            #    CoMSet.add_particle(multi_systems)
             write.write_time_step(MasterSet, converter, time, cluster_name)
 
     # Write out a crash file every 50 steps
@@ -411,7 +306,6 @@ if __name__=="__main__":
                 gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
             else:
                 gravity = grav(number_of_workers = num_workers, redirection = "none")
-
 
 # Initializing PH4 with Initial Conditions
             gravity.initialize_code()
@@ -479,12 +373,6 @@ if __name__=="__main__":
     print '[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     sys.stdout = orig_stdout
     f.close()
-
-# Tyler's finalize code should produce the json files and cluster file we need added here
-#    def finish(time, end_time, ex=None):
-#        db_writer.finalize(time, end_time, wall_time=time.time()-start_time, ex=ex)
-
-#    finish(time.number, end_time.number)
 
 # Pickle the encounter information dictionary
     enc_dir = os.getcwd()+"/Encounters"
