@@ -258,8 +258,12 @@ if __name__=="__main__":
 # Setting Up the Encounter Handler
     encounters = EncounterHandler()
 
-# Variable used for saving the dictionary at resets
+# Variable used for saving the dictionary at resets 
+# and check to make sure the encounters folder exsists
     reset_flag = 0
+    enc_dir = os.getcwd()+"/Encounters"
+    if not os.path.exists(enc_dir):
+        os.makedirs(enc_dir)
 
 # Begin Evolving the Cluster
     while time < end_time:
@@ -340,7 +344,7 @@ if __name__=="__main__":
             if step_index != 0:
                 if reset_flag == 1:
                     # Get previous Encounter Dictionary
-                    encounter_file.open("Encounters/"+cluster_name+"_encounters.pkl", "rb")
+                    encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "rb")
                     backup = pickle.load(encounter_file)
                     encounter_file.close()
 
@@ -374,10 +378,7 @@ if __name__=="__main__":
     sys.stdout = orig_stdout
     f.close()
 
-# Pickle the encounter information dictionary
-    enc_dir = os.getcwd()+"/Encounters"
-    if not os.path.exists(enc_dir):
-        os.makedirs(enc_dir)
+# Pickle the encounter information dictionary one final time
     encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
     pickle.dump(encounterInformation, encounter_file)
     encounter_file.close()
