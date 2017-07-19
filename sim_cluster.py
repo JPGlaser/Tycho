@@ -223,7 +223,7 @@ if __name__=="__main__":
 # The particle list will contain all the information about the particles involved in an encounter
 
     encounterInformation = defaultdict(list)
-    # Sdd the star IDs as keys to the dictionary
+
     for star in MasterSet:
         if star.type == "star":
             name = str(star.id)
@@ -358,7 +358,8 @@ if __name__=="__main__":
 #    cluster_params = encounter_db.ClusterParameters(num_stars, end_time)
 #    db_writer = encounter_db.EncounterDbWriter(database, cluster_params)
     encounters = EncounterHandler()
-
+    # Variable used for saving the dictionary at resets
+    reset_flag = 0
 # Begin Evolving the Cluster
     while time < end_time:
         sys.stdout.flush()
@@ -441,26 +442,27 @@ if __name__=="__main__":
 # Starting the AMUSE Channel for PH4
             grav_channel = gravity.particles.new_channel_to(MasterSet)
 
-# Save the encounters dictionary thus far, will not run on the first step (can be changed if desired).
+# Save the encounters dictionary thus far as long as it is not the first reset
             if step_index != 0:
-		if encounter_file != None:
-			# Get previous Encounter Dictionary
-			encounter_file.open("Encounters/"+cluster_name+"_encounters.pkl", "rb")
-			backup = pickle.load(encounter_file)
-			encounter_file.close()
-			
-			# Save into the backup file
-			backup_file = open("Encounters/"+cluster_name+"_backup_encounters.pkl", "wb")
-			pickle.dump(backup, backup_file)
-			backup_file.close()
-			
-		encounter_file = None
+                if reset_flag == 1:
+                    # Get previous Encounter Dictionary
+                    encounter_file.open("Encounters/"+cluster_name+"_encounters.pkl", "rb")
+                    backup = pickle.load(encounter_file)
+                    encounter_file.close()
+
+                    # Save into the backup file		
+                    backup_file = open("Encounters/"+cluster_name+"_backup_encounters.pkl", "wb")		
+                    pickle.dump(backup, backup_file)		
+                    backup_file.close()		
+						
+                encounter_file = None		
                 encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
-                pickle.dump(encounterInformation, encounter_file)
-                encounter_file.close()
+                pickle.dump(encounterInformation, encounter_file)		
+                encounter_file.close()		
+                reset_flag=1
 		
-            # Log that a Reset happened
-	    print '-------------'
+            # Log that a Reset happened		
+            print '-------------'
             print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
             print '-------------'
             sys.stdout.flush()
@@ -484,7 +486,7 @@ if __name__=="__main__":
 
 #    finish(time.number, end_time.number)
 
-# Pickle the encounter information dictionary one final time
+# Pickle the encounter information dictionary
     enc_dir = os.getcwd()+"/Encounters"
     if not os.path.exists(enc_dir):
         os.makedirs(enc_dir)
