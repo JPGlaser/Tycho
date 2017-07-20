@@ -382,9 +382,6 @@ if __name__=="__main__":
     f.close()
 
 # Pickle the encounter information dictionary
-    enc_dir = os.getcwd()+"/Encounters"
-    if not os.path.exists(enc_dir):
-        os.makedirs(enc_dir)
     encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
     pickle.dump(encounterInformation, encounter_file)
     encounter_file.close()
