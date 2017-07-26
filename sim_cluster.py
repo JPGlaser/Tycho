@@ -247,10 +247,14 @@ if __name__=="__main__":
             # Expand enconter returns a particle set with all of the children 
             # when given a particle set of two objects involved in an encounter
             enc_particles = multiples_code.expand_encounter(expand_list)
+            enc_particles[0].time = time
+
+            # Convert to SI and give the new particle set the time attribute
+            enc_particles_SI = datamodel.ParticlesWithUnitsConverted(enc_particles[0], conv.as_converter_from_nbody_to_si())
 
             # Add the particle set for the encoutner to the respective stars' dictionary key
-            encounterInformation[name1].append(enc_particles)
-            encounterInformation[name2].append(enc_particles)
+            encounterInformation[name1].append(enc_particles_SI)
+            encounterInformation[name2].append(enc_particles_SI)
 
             # return true is necessary for the multiples code
             return True
@@ -258,12 +262,8 @@ if __name__=="__main__":
 # Setting Up the Encounter Handler
     encounters = EncounterHandler()
 
-# Variable used for saving the dictionary at resets 
-# and check to make sure the encounters folder exsists
-    reset_flag = 0
-    enc_dir = os.getcwd()+"/Encounters"
-    if not os.path.exists(enc_dir):
-        os.makedirs(enc_dir)
+# Variable used for saving the dictionary at resets
+    encounter_file = None
 
 # Begin Evolving the Cluster
     while time < end_time:
@@ -341,24 +341,27 @@ if __name__=="__main__":
             grav_channel = gravity.particles.new_channel_to(MasterSet)
 
 # Save the encounters dictionary thus far as long as it is not the first reset
+            
             if step_index != 0:
-                if reset_flag == 1:
-                    # Get previous Encounter Dictionary
-                    encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "rb")
-                    backup = pickle.load(encounter_file)
-                    encounter_file.close()
+                if encounter_file != None:
+                    # First Try to Delete the Previous Backup File
+                    # Its in a try because there will not be a backup the first time this runs
+                    # Could replace try loop with a counter if desired
+                    try:
+                        os.remove("Encounters/"+cluster_name+"_encounters_backup.pkl")
+                    except:
+                        pass
+                    # Then Rename the Previous Encounter Dictionary
+                    os.rename("Encounters/"+cluster_name+"_encounters.pkl", "Encounters/"+cluster_name+"_encounters_backup.pkl")		
 
-                    # Save into the backup file		
-                    backup_file = open("Encounters/"+cluster_name+"_backup_encounters.pkl", "wb")		
-                    pickle.dump(backup, backup_file)		
-                    backup_file.close()		
-						
+		# Save the encounter Dictionary
                 encounter_file = None		
                 encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
                 pickle.dump(encounterInformation, encounter_file)		
-                encounter_file.close()		
+                encounter_file.close()
                 reset_flag=1
-		
+	     
+	
             # Log that a Reset happened		
             print '-------------'
             print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
@@ -378,7 +381,7 @@ if __name__=="__main__":
     sys.stdout = orig_stdout
     f.close()
 
-# Pickle the encounter information dictionary one final time
+# Pickle the encounter information dictionary
     encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
     pickle.dump(encounterInformation, encounter_file)
     encounter_file.close()
