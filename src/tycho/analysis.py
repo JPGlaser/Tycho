@@ -70,7 +70,7 @@ except:
 # used in the cluster simulation. delta_t is the dt from the cluster simulation. restart_base should be 
 # the restart files name minus the number. e.g. $PATH/EnergyTest_restart
 
-def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, dt = 0.50 | nbody_system.time, time = 0.55 | nbody_system.time, eps2 = 0.0 | nbody_system.length**2, delta_t = 0.05 | nbody_system.time):
+def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, eps2 = 0.0 | nbody_system.length**2, delta_t = 0.05 | nbody_system.time):
 
 # This function uses calls upon the restart fuction to reload the multiples from the simulation to use 
 # the multiples function to get the Energy and it correction, num_files can probably be replaced if we 
@@ -78,11 +78,13 @@ def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, dt = 0.50 
 
 # This function returns the arrays below:
     Energy = []
+    UncorrectedEnergy = []
     Time = []
     Kinetic = []
     Potential = []
     L = []
     P = []
+
     i = 0
 
 # You will need to change the File Path varibale to run this on anyone else's account
@@ -96,7 +98,10 @@ def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, dt = 0.50 
 # First get the restart naming correct
 
             restart_file = key[:-11]
-       
+# Second retrieve the timestep from the file and convert it to a float
+            time_grab = []
+            time_grab = key.split("_")
+            time = float(time_grab[2]) | nbody_system.time
             if use_gpu == 1:
                 gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
             else:
@@ -166,7 +171,8 @@ def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, dt = 0.50 
             util.stop_smalln()
 
             Energy.append(Ecor.number)
-            Time.append(step)
+            UncorrectedEnergy.append(Etop.number)
+            Time.append(time.number)
             Kinetic.append(T.number)
             Potential.append(U.number)
             L.append(angular_momentum.number)
@@ -174,7 +180,7 @@ def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, dt = 0.50 
 
         i+=1
 
-    return Energy, Time, Kinetic, Potential, L, P
+    return Energy, UncorrectedEnergy, Time, Kinetic, Potential, L, P
 
 
 # THE GRAPHS WILL BE IN WHATEVER UNIT YOU SAVE IN. IF YOU CHANGE ANYTHING THEY WILL NOT BE NBODY UNITS
@@ -235,10 +241,32 @@ def EnergyGraph(Time, Energy, T, U, cluster_name, dpi = 150):
     plt.title('Energy Over Time', fontsize=25)
     plt.xlabel('Time (Nbody Time)', fontsize=20)
     plt.ylabel('Energy (Nbody Units)', fontsize=20)     
-    plt.plot(Time, Energy, color='blue')
-    plt.plot(Time, T, color='green')
-    plt.plot(Time, U, color='red')
+    plt.plot(Time, Energy, color='blue', label = "Energy")
+    plt.plot(Time, T, color='green', label = "Kinetic Energy")
+    plt.plot(Time, U, color='red', label = "Potential Energy")
     plt.ioff()
     plt.savefig("Graphs/"+cluster_name+'EnergyGraph.png', format="png", dpi=dpi)
     plt.clf()
     plt.close('all')
+
+def EnergyGraph2(Time, UncorrectedEnergy, Energy, T, U, cluster_name, dpi = 150):
+
+# This function makes a graph of the Potential, Kinetic, and Total Without Multiples Correction and saves it in the Graphs folder
+    res_dir = os.getcwd()+"/Graphs"
+    if not os.path.exists(res_dir):
+        os.makedirs(res_dir)
+    plt.grid()
+#    plt.tick_params(axis='both', which='major', labelsize=16)
+    plt.title('Energy Over Time', fontsize=25)
+    plt.xlabel('Time (Nbody Time)', fontsize=20)
+    plt.ylabel('Energy (Nbody Units)', fontsize=20)
+    plt.plot(Time, Energy, color='blue', label = "Corrected Energy")
+    plt.plot(Time, T, color='green', label = "Kinetic Energy")
+    plt.plot(Time, U, color='red', label = "Potential Energy")
+    plt.plot(Time, UncorrectedEnergy, color = 'orange', label = "Uncorrected Energy")
+    plt.legend()
+    plt.ioff()
+    plt.savefig("Graphs/"+cluster_name+'EnergyGraphNoCorrection.png', format="png", dpi=dpi)
+    plt.clf()
+    plt.close('all')
+
