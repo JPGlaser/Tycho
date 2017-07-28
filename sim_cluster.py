@@ -91,7 +91,7 @@ if __name__=="__main__":
     parser.add_option("-S", "--seed", dest="seed", default = 1234, type="int", \
                       help = "Enter a random seed for the simulation")
     parser.add_option("-R","--restart",dest="restart_file",default="_restart", type="str", \
-                      help = "Enter the name for the restart_file, (Defaults to _restart.hdf5")
+                      help = "Enter the name for the restart_file, (Defaults to _restart_")
     parser.add_option("-D", "--database", dest="database", default="cluster_db", type="str")
 
     (options, args) = parser.parse_args()
@@ -100,7 +100,8 @@ if __name__=="__main__":
     num_stars = options.num_stars
     num_psys = options.num_psys
     cluster_name = options.cluster_name
-    restart_file = "Restart/"+cluster_name+options.restart_file
+    restart_end = options.restart_file
+    restart_file = "Restart/"+cluster_name+"_time_"
     write_file_base = restart_file
     database = options.database
     crash_base = "CrashSave/"+cluster_name
@@ -237,8 +238,9 @@ if __name__=="__main__":
             name1 = str(star1.id)
             name2 = str(star2.id)
 
-            # Initialize the Particle Sets
+            # Initialize the Particle Set and Synchronize Gravity
             expand_list=datamodel.Particles()
+            gravity.synchronize_model()
 
             # Prep a Particle set to feed into expand_encounter
             expand_list.add_particle(star1)
@@ -247,10 +249,14 @@ if __name__=="__main__":
             # Expand enconter returns a particle set with all of the children 
             # when given a particle set of two objects involved in an encounter
             enc_particles = multiples_code.expand_encounter(expand_list)
+            enc_particles[0].time = time
+
+            # Convert to SI and give the new particle set the time attribute
+            enc_particles_SI = datamodel.ParticlesWithUnitsConverted(enc_particles[0], conv.as_converter_from_nbody_to_si())
 
             # Add the particle set for the encoutner to the respective stars' dictionary key
-            encounterInformation[name1].append(enc_particles)
-            encounterInformation[name2].append(enc_particles)
+            encounterInformation[name1].append(enc_particles_SI)
+            encounterInformation[name2].append(enc_particles_SI)
 
             # return true is necessary for the multiples code
             return True
@@ -259,7 +265,7 @@ if __name__=="__main__":
     encounters = EncounterHandler()
 
 # Variable used for saving the dictionary at resets
-    reset_flag = 0
+    encounter_file = None
 
 # Begin Evolving the Cluster
     while time < end_time:
@@ -294,7 +300,7 @@ if __name__=="__main__":
     # Write out the restart file and restart from it every 10 time steps
         if step_index%10 == 0:
             step = str(time.number)
-            write_file=write_file_base+step
+            write_file=write_file_base+step+restart_end
             write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
             gravity.stop()
             kep.stop()
@@ -337,24 +343,27 @@ if __name__=="__main__":
             grav_channel = gravity.particles.new_channel_to(MasterSet)
 
 # Save the encounters dictionary thus far as long as it is not the first reset
+            
             if step_index != 0:
-                if reset_flag == 1:
-                    # Get previous Encounter Dictionary
-                    encounter_file.open("Encounters/"+cluster_name+"_encounters.pkl", "rb")
-                    backup = pickle.load(encounter_file)
-                    encounter_file.close()
+                if encounter_file != None:
+                    # First Try to Delete the Previous Backup File
+                    # Its in a try because there will not be a backup the first time this runs
+                    # Could replace try loop with a counter if desired
+                    try:
+                        os.remove("Encounters/"+cluster_name+"_encounters_backup.pkl")
+                    except:
+                        pass
+                    # Then Rename the Previous Encounter Dictionary
+                    os.rename("Encounters/"+cluster_name+"_encounters.pkl", "Encounters/"+cluster_name+"_encounters_backup.pkl")		
 
-                    # Save into the backup file		
-                    backup_file = open("Encounters/"+cluster_name+"_backup_encounters.pkl", "wb")		
-                    pickle.dump(backup, backup_file)		
-                    backup_file.close()		
-						
+		# Save the encounter Dictionary
                 encounter_file = None		
                 encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
                 pickle.dump(encounterInformation, encounter_file)		
-                encounter_file.close()		
+                encounter_file.close()
                 reset_flag=1
-		
+	     
+	
             # Log that a Reset happened		
             print '-------------'
             print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
@@ -375,9 +384,6 @@ if __name__=="__main__":
     f.close()
 
 # Pickle the encounter information dictionary
-    enc_dir = os.getcwd()+"/Encounters"
-    if not os.path.exists(enc_dir):
-        os.makedirs(enc_dir)
     encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
     pickle.dump(encounterInformation, encounter_file)
     encounter_file.close()
