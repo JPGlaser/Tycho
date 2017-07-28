@@ -40,6 +40,6 @@ from amuse.couple import multiples
 # Import the Tycho Packages
 from tycho import analysis, create, util, read, write
 
-Energy, Time, T, U, L, P = analysis.GetValues("/home/draco/jthornton/Tycho/Restart/SanityTest_restart", 10)
+Energy, Time, T, U, L, P = analysis.GetValues("BinaryStabilityTest4", time = 0.025 | nbody_system.time, dt = 0.25 | nbody_system.time)
 
-analysis.EnergyGraph(Time, Energy, T, U, "SanityTest")
+analysis.EnergyGraph(Time, Energy, T, U, "BinaryStabilityTest4")
