@@ -14,6 +14,7 @@ import sys
 import os
 import io
 import unittest
+import glob
 
 # Import the Amuse Base Packages
 from amuse import datamodel
@@ -69,13 +70,15 @@ except:
 # used in the cluster simulation. delta_t is the dt from the cluster simulation. restart_base should be 
 # the restart files name minus the number. e.g. $PATH/EnergyTest_restart
 
-def GetValues(restart_base, num_files, num_workers = 1, use_gpu = 1, gpu_ID = 0, dt = 0.50 | nbody_system.time, time = 0.55 | nbody_system.time, eps2 = 0.0 | nbody_system.length**2, delta_t = 0.05 | nbody_system.time):
+def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, eps2 = 0.0 | nbody_system.length**2, delta_t = 0.05 | nbody_system.time):
+
 # This function uses calls upon the restart fuction to reload the multiples from the simulation to use 
 # the multiples function to get the Energy and it correction, num_files can probably be replaced if we 
 # can measure how many files are in a cluster, maybe glob.glob can do that.
 
 # This function returns the arrays below:
     Energy = []
+    UncorrectedEnergy = []
     Time = []
     Kinetic = []
     Potential = []
@@ -83,81 +86,101 @@ def GetValues(restart_base, num_files, num_workers = 1, use_gpu = 1, gpu_ID = 0,
     P = []
 
     i = 0
-    while i < num_files:
-# This loop will go through the restart files of teh cluster and append energy and momentum values to the corresponding arrays
+
+# You will need to change the File Path varibale to run this on anyone else's account
+    file_path = "/home/draco/jthornton/Tycho/Restart/"
+    file_loc = file_path+cluster_name
+    search = glob.glob(file_loc+"*.hdf5")
+
+    for key in search:
+        if i%2==0:
+# This loop will go through the restart files of the cluster and append energy and momentum values to the corresponding arrays
 # First get the restart naming correct
-        step = time.number
-        restart_file = restart_base + str(step)
-        print restart_file
-        
-        if use_gpu == 1:
-            gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
-        else:
-            gravity = grav(number_of_workers = num_workers, redirection = "none")
+
+            restart_file = key[:-11]
+# Second retrieve the timestep from the file and convert it to a float
+            time_grab = []
+            time_grab = key.split("_")
+            time = float(time_grab[2]) | nbody_system.time
+            if use_gpu == 1:
+                gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
+            else:
+                gravity = grav(number_of_workers = num_workers, redirection = "none")
 
 
 # Initializing PH4 with Initial Conditions
-        gravity.initialize_code()
-        gravity.parameters.set_defaults()
-        gravity.parameters.begin_time = time
-        gravity.parameters.epsilon_squared = eps2
-        gravity.parameters.timestep_parameter = delta_t.number
+            print "Initializing gravity"
+            gravity.initialize_code()
+            gravity.parameters.set_defaults()
+            gravity.parameters.begin_time = time
+            gravity.parameters.epsilon_squared = eps2
+            gravity.parameters.timestep_parameter = delta_t.number
 
 # Setting up the Code to Run with GPUs Provided by Command Line
-        gravity.parameters.use_gpu = use_gpu
-        gravity.parameters.gpu_id = gpu_ID
+            gravity.parameters.use_gpu = use_gpu
+            gravity.parameters.gpu_id = gpu_ID
 
 # Initializing Kepler and SmallN
-        kep = Kepler(None, redirection = "none")
-        kep.initialize_code()
-        util.init_smalln()
-        MasterSet = []
-        MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln())
+            print "Initializing Kepler"
+            kep = Kepler(None, redirection = "none")
+            kep.initialize_code()
+            print "Initializing SmallN"
+            util.init_smalln()
+            MasterSet = []
+            print "Retrieving data"
+
+            MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln())
 
 # Setting Up the Stopping Conditions in PH4
-        stopping_condition = gravity.stopping_conditions.collision_detection
-        stopping_condition.enable()
-        sys.stdout.flush()
+            stopping_condition = gravity.stopping_conditions.collision_detection
+            stopping_condition.enable()
+            sys.stdout.flush()
 
 # Starting the AMUSE Channel for PH4
-        grav_channel = gravity.particles.new_channel_to(MasterSet)
+            grav_channel = gravity.particles.new_channel_to(MasterSet)
         
-        print "Reload Successful"
+            print "Reload Successful"
         
-        U = multiples_code.potential_energy
-        T = multiples_code.kinetic_energy
-        Etop = T + U
+            U = multiples_code.potential_energy
+            T = multiples_code.kinetic_energy
+            Etop = T + U
 
-        angular_momentum = MasterSet.total_angular_momentum()
-        momentum = MasterSet.total_momentum()
+            print "T: "
+            print T
+            print "U: "
+            print U
 
-        Nmul, Nbin, Emul = multiples_code.get_total_multiple_energy()
-        tmp1,tmp2,Emul2 = multiples_code.get_total_multiple_energy2()
-        Etot = Etop + Emul
-        Eext = multiples_code.multiples_external_tidal_correction
-        Eint = multiples_code.multiples_internal_tidal_correction
-        Eerr = multiples_code.multiples_integration_energy_error
-        Edel = multiples_code.multiples_external_tidal_correction \
-            + multiples_code.multiples_internal_tidal_correction \
-                + multiples_code.multiples_integration_energy_error
-        Ecor = Etot - Edel
-        T = multiples_code.kinetic_energy        
-        U = multiples_code.potential_energy
+            angular_momentum = MasterSet.total_angular_momentum()
+            momentum = MasterSet.total_momentum()
 
-        gravity.stop()
-        kep.stop()
-        util.stop_smalln()
+            Nmul, Nbin, Emul = multiples_code.get_total_multiple_energy()
+            tmp1,tmp2,Emul2 = multiples_code.get_total_multiple_energy2()
+            Etot = Etop + Emul
+            Eext = multiples_code.multiples_external_tidal_correction
+            Eint = multiples_code.multiples_internal_tidal_correction
+            Eerr = multiples_code.multiples_integration_energy_error
+            Edel = multiples_code.multiples_external_tidal_correction \
+                + multiples_code.multiples_internal_tidal_correction \
+                    + multiples_code.multiples_integration_energy_error
+            Ecor = Etot - Edel
+            print "Ecor: "
+            print Ecor
 
-        Energy.append(Ecor.number)
-        Time.append(step)
-        Kinetic.append(T.number)
-        Potential.append(U.number)
-        L.append(angular_momentum.number)
-        P.append(momentum.number)
+            gravity.stop()
+            kep.stop()
+            util.stop_smalln()
 
-        time += dt
+            Energy.append(Ecor.number)
+            UncorrectedEnergy.append(Etop.number)
+            Time.append(time.number)
+            Kinetic.append(T.number)
+            Potential.append(U.number)
+            L.append(angular_momentum.number)
+            P.append(momentum.number)
+
         i+=1
-    return Energy, Time, Kinetic, Potential, L, P
+
+    return Energy, UncorrectedEnergy, Time, Kinetic, Potential, L, P
 
 
 # THE GRAPHS WILL BE IN WHATEVER UNIT YOU SAVE IN. IF YOU CHANGE ANYTHING THEY WILL NOT BE NBODY UNITS
@@ -218,10 +241,32 @@ def EnergyGraph(Time, Energy, T, U, cluster_name, dpi = 150):
     plt.title('Energy Over Time', fontsize=25)
     plt.xlabel('Time (Nbody Time)', fontsize=20)
     plt.ylabel('Energy (Nbody Units)', fontsize=20)     
-    plt.plot(Time, Energy, color='blue')
-    plt.plot(Time, T, color='green')
-    plt.plot(Time, U, color='red')
+    plt.plot(Time, Energy, color='blue', label = "Energy")
+    plt.plot(Time, T, color='green', label = "Kinetic Energy")
+    plt.plot(Time, U, color='red', label = "Potential Energy")
     plt.ioff()
     plt.savefig("Graphs/"+cluster_name+'EnergyGraph.png', format="png", dpi=dpi)
     plt.clf()
     plt.close('all')
+
+def EnergyGraph2(Time, UncorrectedEnergy, Energy, T, U, cluster_name, dpi = 150):
+
+# This function makes a graph of the Potential, Kinetic, and Total Without Multiples Correction and saves it in the Graphs folder
+    res_dir = os.getcwd()+"/Graphs"
+    if not os.path.exists(res_dir):
+        os.makedirs(res_dir)
+    plt.grid()
+#    plt.tick_params(axis='both', which='major', labelsize=16)
+    plt.title('Energy Over Time', fontsize=25)
+    plt.xlabel('Time (Nbody Time)', fontsize=20)
+    plt.ylabel('Energy (Nbody Units)', fontsize=20)
+    plt.plot(Time, Energy, color='blue', label = "Corrected Energy")
+    plt.plot(Time, T, color='green', label = "Kinetic Energy")
+    plt.plot(Time, U, color='red', label = "Potential Energy")
+    plt.plot(Time, UncorrectedEnergy, color = 'orange', label = "Uncorrected Energy")
+    plt.legend()
+    plt.ioff()
+    plt.savefig("Graphs/"+cluster_name+'EnergyGraphNoCorrection.png', format="png", dpi=dpi)
+    plt.clf()
+    plt.close('all')
+

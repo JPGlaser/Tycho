@@ -91,7 +91,7 @@ if __name__=="__main__":
     parser.add_option("-S", "--seed", dest="seed", default = 1234, type="int", \
                       help = "Enter a random seed for the simulation")
     parser.add_option("-R","--restart",dest="restart_file",default="_restart", type="str", \
-                      help = "Enter the name for the restart_file, (Defaults to _restart.hdf5")
+                      help = "Enter the name for the restart_file, (Defaults to _restart_")
     parser.add_option("-D", "--database", dest="database", default="cluster_db", type="str")
 
     (options, args) = parser.parse_args()
@@ -100,7 +100,8 @@ if __name__=="__main__":
     num_stars = options.num_stars
     num_psys = options.num_psys
     cluster_name = options.cluster_name
-    restart_file = "Restart/"+cluster_name+options.restart_file
+    restart_end = options.restart_file
+    restart_file = "Restart/"+cluster_name+"_time_"
     write_file_base = restart_file
     database = options.database
     crash_base = "CrashSave/"+cluster_name
@@ -237,8 +238,9 @@ if __name__=="__main__":
             name1 = str(star1.id)
             name2 = str(star2.id)
 
-            # Initialize the Particle Sets
+            # Initialize the Particle Set and Synchronize Gravity
             expand_list=datamodel.Particles()
+            gravity.synchronize_model()
 
             # Prep a Particle set to feed into expand_encounter
             expand_list.add_particle(star1)
@@ -298,7 +300,7 @@ if __name__=="__main__":
     # Write out the restart file and restart from it every 10 time steps
         if step_index%10 == 0:
             step = str(time.number)
-            write_file=write_file_base+step
+            write_file=write_file_base+step+restart_end
             write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
             gravity.stop()
             kep.stop()
