@@ -25,10 +25,6 @@ from amuse.datamodel import particle_attributes
 from amuse.io import *
 from amuse.lab import *
 
-# Import the Amuse Stellar Packages
-from amuse.ic.kingmodel import new_king_model
-from amuse.ic.kroupa import new_kroupa_mass_distribution
-
 # Import the Amuse Gravity & Close-Encounter Packages
 from amuse.community.ph4.interface import ph4 as grav
 from amuse.community.smalln.interface import SmallN
@@ -70,13 +66,19 @@ except:
 # used in the cluster simulation. delta_t is the dt from the cluster simulation. restart_base should be 
 # the restart files name minus the number. e.g. $PATH/EnergyTest_restart
 
-def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, eps2 = 0.0 | nbody_system.length**2, delta_t = 0.05 | nbody_system.time):
-
-# This function uses calls upon the restart fuction to reload the multiples from the simulation to use 
-# the multiples function to get the Energy and it correction, num_files can probably be replaced if we 
-# can measure how many files are in a cluster, maybe glob.glob can do that.
-
-# This function returns the arrays below:
+def GetValues(restart_dir, cluster_name, **kwargs):
+    ''' Gets Corrected/Uncorrected Total, Kinetic, & Potential Energy as well as Angular & Linear Momentum
+        num_workers: Number of PH4 Workers
+        use_gpu: Set to 1 (Default) to Utalize GPUs
+        gpu_ID: Select the GPU to Use
+        eps2: The Smoothing Parameter (Deault is 0)
+    '''
+# Read & Set Keyword Arguments
+    num_workers = kwargs.get("num_workers", 1)
+    use_gpu = kwargs.get("use_gpu", 1)
+    gpu_ID = kwargs.get("gpu_ID", 0)
+    eps2 = kwargs.get("eps2", 0.0 | nbody_system.length**2)
+# Initialize the Require Value Arrays
     Energy = []
     UncorrectedEnergy = []
     Time = []
@@ -84,92 +86,75 @@ def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, eps2 = 0.0
     Potential = []
     L = []
     P = []
-
     i = 0
-
-# You will need to change the File Path varibale to run this on anyone else's account
-    file_path = "/home/draco/jthornton/Tycho/Restart/"
-    file_loc = file_path+cluster_name
+# Locates all Restart HDF5 Files for a Run
+    file_loc = restart_dir+cluster_name
     search = glob.glob(file_loc+"*.hdf5")
-
+# Automatically Set the Timestep Parameter
+    time_grab = ((search[0])[:-11]).split("_")
+    timestep = float(time_grab[-2]) | nbody_system.time
+# Loops through all Restart Files & Append Energy and Momentum to Corresponding Arrays
     for key in search:
+    # Only select the '*restart.stars.hdf5' Files
         if i%2==0:
-# This loop will go through the restart files of the cluster and append energy and momentum values to the corresponding arrays
-# First get the restart naming correct
-
+        # Set the Restart File Name
             restart_file = key[:-11]
-# Second retrieve the timestep from the file and convert it to a float
-            time_grab = []
+        # Retrieve the Current Time from the File Name
             time_grab = key.split("_")
-            time = float(time_grab[2]) | nbody_system.time
+            time = float(time_grab[-2]) | nbody_system.time
+        # Sets the GPU Useage
             if use_gpu == 1:
                 gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
             else:
-                gravity = grav(number_of_workers = num_workers, redirection = "none")
-
-
-# Initializing PH4 with Initial Conditions
+                gravity = ph4(number_of_workers = num_workers, redirection = "none")
+        # Initializing PH4 with Initial Conditions
             print "Initializing gravity"
             gravity.initialize_code()
             gravity.parameters.set_defaults()
             gravity.parameters.begin_time = time
             gravity.parameters.epsilon_squared = eps2
-            gravity.parameters.timestep_parameter = delta_t.number
-
-# Setting up the Code to Run with GPUs Provided by Command Line
+            gravity.parameters.timestep_parameter = timestep.number
+        # Setting up the Code to Run with GPUs
             gravity.parameters.use_gpu = use_gpu
             gravity.parameters.gpu_id = gpu_ID
-
-# Initializing Kepler and SmallN
+        # Initializing Kepler and SmallN
             print "Initializing Kepler"
             kep = Kepler(None, redirection = "none")
             kep.initialize_code()
             print "Initializing SmallN"
             util.init_smalln()
+        # Retrieving the Master Set & Multiples Instance
             MasterSet = []
             print "Retrieving data"
-
             MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln())
-
-# Setting Up the Stopping Conditions in PH4
+        # Setting Up the Stopping Conditions in PH4
             stopping_condition = gravity.stopping_conditions.collision_detection
             stopping_condition.enable()
             sys.stdout.flush()
-
-# Starting the AMUSE Channel for PH4
+        # Starting the AMUSE Channel for PH4
             grav_channel = gravity.particles.new_channel_to(MasterSet)
-        
-            print "Reload Successful"
-        
+            print "Reload Successful! Getting Values!"
+        # Calculate the Top-Level Energy
             U = multiples_code.potential_energy
             T = multiples_code.kinetic_energy
             Etop = T + U
-
-            print "T: "
-            print T
-            print "U: "
-            print U
-
+        # Calculate the Angular & Linear Momentum (Needs Corrections)
             angular_momentum = MasterSet.total_angular_momentum()
             momentum = MasterSet.total_momentum()
-
+        # Calculate the True Total Energy via Corrections
             Nmul, Nbin, Emul = multiples_code.get_total_multiple_energy()
-            tmp1,tmp2,Emul2 = multiples_code.get_total_multiple_energy2()
             Etot = Etop + Emul
             Eext = multiples_code.multiples_external_tidal_correction
             Eint = multiples_code.multiples_internal_tidal_correction
             Eerr = multiples_code.multiples_integration_energy_error
-            Edel = multiples_code.multiples_external_tidal_correction \
-                + multiples_code.multiples_internal_tidal_correction \
-                    + multiples_code.multiples_integration_energy_error
+            Edel = Eext + Eint + Eerr
             Ecor = Etot - Edel
-            print "Ecor: "
-            print Ecor
-
+        # Stop the Gravity Codes
             gravity.stop()
             kep.stop()
             util.stop_smalln()
-
+        # Append the Values to Their Arrays
+        # Note: These do not carry AMUSE units!
             Energy.append(Ecor.number)
             UncorrectedEnergy.append(Etop.number)
             Time.append(time.number)
@@ -177,19 +162,13 @@ def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, eps2 = 0.0
             Potential.append(U.number)
             L.append(angular_momentum.number)
             P.append(momentum.number)
-
         i+=1
-
     return Energy, UncorrectedEnergy, Time, Kinetic, Potential, L, P
 
+# THE BELOW GRAPHS WILL BE IN WHATEVER UNIT YOU SAVE IN. IF YOU CHANGE ANYTHING THEY WILL NOT BE NBODY UNITS
 
-# THE GRAPHS WILL BE IN WHATEVER UNIT YOU SAVE IN. IF YOU CHANGE ANYTHING THEY WILL NOT BE NBODY UNITS
-
-
-# Input the Time and Angular momentum as arrays for this function followed by a string of the cluster name. You may change the dpi for resolution purposes.
 def AngularMomentumGraph(Time, L, cluster_name, dpi = 150):
 # This function makes a graph of the angular momentum and saves it in the Graphs folder
-
     res_dir = os.getcwd()+"/Graphs"
     if not os.path.exists(res_dir):
         os.makedirs(res_dir)

@@ -119,14 +119,20 @@ if __name__=="__main__":
         stars_SI, converter = create.king_cluster(num_stars, num_binaries=int(num_stars*options.IBF), seed=options.seed)
         stars_NB = datamodel.ParticlesWithUnitsConverted(stars_SI, converter.as_converter_from_nbody_to_si())
         MasterSet.add_particles(stars_NB)
-        #channel_stars_master = stars_NB.new_channel_to(MasterSet)
+        channel_stars_master = stars_NB.new_channel_to(MasterSet)
     # Create Planetary Systems, Shift from SI to NBody, Add the Particles to MS, & Open a Channel to the MS
         systems_SI = create.planetary_systems(stars_SI, converter, num_psys, 'test_planets', Jupiter=True)
         systems_NB = datamodel.ParticlesWithUnitsConverted(systems_SI, converter.as_converter_from_nbody_to_si())
         MasterSet.add_particles(systems_NB)
-        #channel_planets_master = systems_NB.new_channel_to(MasterSet)
+        channel_planets_master = systems_NB.new_channel_to(MasterSet)
+    # Rescale the Master Set to Take Planets into Account        
+        MasterSet.move_to_center()
+        if len(MasterSet) == 1:
+            pass
+        else:
+            MasterSet.scale_to_standard()
+    # Set the Variable to Remember it Hasn't 
         read_from_file = False
-
     # Create Initial Conditions Array
         initial_conditions = util.store_ic(converter, options)
 
@@ -240,7 +246,7 @@ if __name__=="__main__":
 
             # Initialize the Particle Set and Synchronize Gravity
             expand_list=datamodel.Particles()
-            gravity.synchronize_model()
+            #gravity.synchronize_model()
 
             # Prep a Particle set to feed into expand_encounter
             expand_list.add_particle(star1)

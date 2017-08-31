@@ -50,7 +50,7 @@ def king_cluster(num_stars, **kwargs):
 # Creates a List of Binary Companion Masses (in SI_Units) Drawn from the Kroupa IMF
     BMasses_SI = new_kroupa_mass_distribution(num_binaries, mass_max = 5 | units.MSun)
 # Creates the SI-NBody Converter
-    converter = nbody_system.nbody_to_si(SMasses_SI.sum()+BMasses_SI.sum(), 2 | units.parsec)
+    converter = nbody_system.nbody_to_si(SMasses_SI.sum()+BMasses_SI.sum(), 1 | units.parsec)
 # Creates a AMUS Particle Set Consisting of Positions (King) and Masses (Kroupa)
     stars_SI = new_king_model(num_stars, w0, convert_nbody=converter)
     stars_SI.mass = SMasses_SI
@@ -58,6 +58,14 @@ def king_cluster(num_stars, **kwargs):
 # Assigning IDs to the Stars
     stars_SI.id = np.arange(num_stars) + 1
     stars_SI.type = "star"
+# Assigning SOI Estimate for Interaction Radius
+    if num_stars <= 4:
+	stars_SI.radius = 50 | units.AU # For Debugging Binaries
+    else:
+        stars_SI.radius = 1000*stars_SI.mass/(1.0 | units.MSun) | units.AU # Temporary Solution
+        # Need to think of a better way to calculate the SOI
+        # stars_SI.radius = 100*util.calc_SOI(stars_SI.mass, np.var(stars_SI.velocity), G=units.constants.G)
+
 
 # If Requested, Search for Possible Binary Systems
     if int(num_binaries) != 0:
@@ -65,13 +73,6 @@ def king_cluster(num_stars, **kwargs):
         stars_SI, stars_to_become_binaries = find_possible_binaries(stars_SI, num_binaries, BMasses_SI)
     # Update the Number of Binaries (Safety Check)
         num_binaries = len(stars_to_become_binaries)
-
-# Moving Stars to Virial Equilibrium
-    stars_SI.move_to_center()
-    if num_stars == 1:
-        pass
-    else:
-        stars_SI.scale_to_standard(convert_nbody=converter)
         
 # If Requested, Creates Binary Systems
     if int(num_binaries) != 0:
@@ -86,13 +87,12 @@ def king_cluster(num_stars, **kwargs):
     # Merge the Two Sets
         stars_SI.add_particles(binaries)
 
-# Assigning SOI Estimate for Interaction Radius
-    if num_stars == 1:
-        stars_SI.radius = 1000*stars_SI.mass/(1.0 | units.MSun) | units.AU
+# Moving Stars to Virial Equilibrium
+    stars_SI.move_to_center()
+    if len(stars_SI) == 1:
+        pass
     else:
-        stars_SI.radius = 1000*stars_SI.mass/(1.0 | units.MSun) | units.AU # Temporary Solution
-        # Need to think of a better way to calculate the SOI
-        # stars_SI.radius = 100*util.calc_SOI(stars_SI.mass, np.var(stars_SI.velocity), G=units.constants.G)
+        stars_SI.scale_to_standard(convert_nbody=converter)
         
 # Returns the Cluster & Converter
     return stars_SI, converter
@@ -125,7 +125,7 @@ def find_possible_binaries(stars_SI, num_binaries, BMasses_SI):
 
 def binary_system(star_to_become_binary, converter, **kwargs):
 # Check Keyword Arguments
-    doFlatEcc = kwargs.get("FlatEcc",True) # Apply Uniform Eccentricity Distribution
+    doFlatEcc = kwargs.get("FlatEcc",False) # Apply Uniform Eccentricity Distribution
     doBasic = kwargs.get("Basic", True) # Apply a Basic Binary Distribution
     doFlatQ = kwargs.get("FlatQ",True) # Apply a Uniform Mass-Ratio Distribution
     doRag_P = kwargs.get("RagP",False) # Apply Raghavan et al. (2010) Period Distribution
@@ -146,7 +146,7 @@ def binary_system(star_to_become_binary, converter, **kwargs):
 
 # If Desired, Apply a Basic Binary Distribution
     if (doBasic):
-        semi_major_axis = 500. | units.AU
+        semi_major_axis = 10. | units.AU
         e = 0.
         star1.mass = 0.5*star_to_become_binary.mass
         star2.mass = 0.5*star_to_become_binary.mass
@@ -165,7 +165,7 @@ def binary_system(star_to_become_binary, converter, **kwargs):
         while (period > Pmax or period < Pmin):
             logP = sigma * np.random.randn() + mu
             period = 10.**logP | units.day
-            semi_major_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
+            semi_major_axis = orbital_period_to_semimajor_axis(period, star1.mass, star2.mass, G=constants.G)
         
 
 # If Desired & Applicable, Apply Sana et al. (2012) Period Distribution
@@ -176,7 +176,7 @@ def binary_system(star_to_become_binary, converter, **kwargs):
         x1 = np.random.random()
         logP = ((maxLogP**pMod-minLogP**pMod)*x1 + minLogP**pMod)**(1./pMod)
         period = 10.**logP | units.day
-        semi_major_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
+        semi_major_axis = orbital_period_to_semimajor_axis(period, star1.mass, star2.mass, G=constants.G)
         
 # If Desired, Apply Uniform Eccentricity Distribution
     if (doFlatEcc):
@@ -187,11 +187,13 @@ def binary_system(star_to_become_binary, converter, **kwargs):
 # Create the New Binary
     newBinary = new_binary_from_orbital_elements(star1.mass, star2.mass, semi_major_axis, eccentricity = e, G = constants.G)
 # Rotate the System
-    util.preform_EulerRotation(newBinary)
-    star1.position = rCM + newBinary[0].position
-    star1.velocity = vCM + newBinary[0].velocity
-    star2.position = rCM + newBinary[1].position
-    star2.velocity = vCM + newBinary[1].velocity
+    #util.preform_EulerRotation(newBinary)
+    star1.position = newBinary[0].position
+    star1.velocity = newBinary[0].velocity
+    star1.radius = semi_major_axis
+    star2.position = newBinary[1].position
+    star2.velocity = newBinary[1].velocity
+    star2.radius = semi_major_axis
     return binary
 
 

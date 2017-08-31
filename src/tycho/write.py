@@ -76,7 +76,7 @@ def write_time_step(master_set, converter, current_time, file_prefix):
     file_base_CoM = file_dir_CoM+"/"+file_prefix
 # Second, Create the CoM Tree Particle Set from Multiples
 # Third, Convert from NBody to SI Before Writing
-    MS_SI = datamodel.ParticlesWithUnitsConverted(master_set, converter.as_converter_from_nbody_to_si())
+    MS_SI = datamodel.ParticlesWithUnitsConverted(master_set, converter.as_converter_from_si_to_nbody())
 #    CoM_SI = datamodel.ParticlesWithUnitsConverted(CoM_Set, converter.as_converter_from_nbody_to_si())
 # Fourth, Write the Master AMUSE Particle Set to a HDF5 File
     file_format = "hdf5"
