@@ -87,7 +87,7 @@ def read_state_from_file(restart_file, gravity_code, kep, SMALLN):
 #    gravity_code.set_begin_time = bookkeeping['model_time']
 
 
-    multiples_code = multiples.Multiples(gravity_code, SMALLN, kep)
+    multiples_code = multiples.Multiples(gravity_code, SMALLN, kep, gravity_constant=units.constants.G)
 #    multiples_code.neighbor_distance_factor = 1.0
 #    multiples_code.neighbor_veto = False
 #    multiples_code.neighbor_distance_factor = 2.0
@@ -126,7 +126,7 @@ def recover_crash(restart_file, gravity_code, kep, SMALLN):
     gravity_code.set_begin_time = bookkeeping['model_time']
 
 
-    multiples_code = multiples.Multiples(gravity_code, SMALLN, kep)
+    multiples_code = multiples.Multiples(gravity_code, SMALLN, kep, gravity_constant=units.constants.G)
     #multiples_code.neighbor_distance_factor = 1.0
     #multiples_code.neighbor_veto = False
     #multiples_code.neighbor_distance_factor = 2.0

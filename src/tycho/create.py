@@ -80,7 +80,7 @@ def king_cluster(num_stars, **kwargs):
         for j in xrange(0, num_binaries):
             binaries.add_particles(binary_system(stars_to_become_binaries[j], converter))
     # Adjust the ID for each Binary Component Particle
-        binaries.id = np.arange(num_binaries*2) + 2000000
+        binaries.id = np.arange(num_binaries*2) + num_stars + 1
     # Remove Old Place-Holder Particles
         stars_SI.remove_particles(stars_to_become_binaries)
     # Merge the Two Sets

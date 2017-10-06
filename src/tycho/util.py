@@ -88,9 +88,9 @@ def preform_EulerRotation(particle_set):
 def calc_HillRadius(a, e, m_planet, m_star):
     ''' Calculates the Hill Radius for a planet given a, e, and the two masses.
         a: The semi-major axis of the planet's orbit.
-	    e: The eccentricity of the planet's orbit.
-	    m_planet: The mass of the planet.
-	    m_star: The mass of the star.
+        e: The eccentricity of the planet's orbit.
+        m_planet: The mass of the planet.
+        m_star: The mass of the star.
     '''
     return a*(1.0-e)*(m_planet/(3*m_star))**(1.5)
 
@@ -113,9 +113,12 @@ def new_smalln():
 
 
 # Initalizes a SmallN Instance
-def init_smalln():
+def init_smalln(unit_converter = None):
     global SMALLN
-    SMALLN = SmallN(redirection="none")
+    if unit_converter is None:
+        SMALLN = SmallN(redirection="none")
+    else:
+        SMALLN = SmallN(redirection="none", convert_nbody=unit_converter)
     SMALLN.parameters.timestep_parameter = 0.05
 
 def stop_smalln():

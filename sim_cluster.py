@@ -58,6 +58,35 @@ from tycho import create, util, read, write, encounter_db
 #         Main Production Script        #
 # ------------------------------------- #
 
+def print_diagnostics(grav, E0=None):
+
+    # Simple diagnostics.
+
+    ke = grav.kinetic_energy
+    pe = grav.potential_energy
+    Nmul, Nbin, Emul = grav.get_total_multiple_energy()
+    print ''
+    print 'Time =', grav.get_time().in_(units.Myr)
+    print '    top-level kinetic energy =', ke
+    print '    top-level potential energy =', pe
+    print '    total top-level energy =', ke + pe
+    print '   ', Nmul, 'multiples,', 'total energy =', Emul
+    E = ke + pe + Emul
+    print '    uncorrected total energy =', E
+    
+    # Apply known corrections.
+    
+    Etid = grav.multiples_external_tidal_correction \
+            + grav.multiples_internal_tidal_correction  # tidal error
+    Eerr = grav.multiples_integration_energy_error	# integration error
+
+    E -= Etid + Eerr
+    print '    corrected total energy =', E
+
+    if E0 is not None: print '    relative energy error=', (E-E0)/E0
+    
+    return E
+
 # Tyler uses a start time variable for his naming
 
 global Starting
@@ -117,14 +146,12 @@ if __name__=="__main__":
         MasterSet = datamodel.Particles()
     # Create the Stellar Cluster, Shift from SI to NBody, Add the Particles to MS, & Open a Channel to the MS
         stars_SI, converter = create.king_cluster(num_stars, num_binaries=int(num_stars*options.IBF), seed=options.seed)
-        stars_NB = datamodel.ParticlesWithUnitsConverted(stars_SI, converter.as_converter_from_nbody_to_si())
-        MasterSet.add_particles(stars_NB)
-        #channel_stars_master = stars_NB.new_channel_to(MasterSet)
+        MasterSet.add_particles(stars_SI)
+        channel_stars_master = stars_SI.new_channel_to(MasterSet)
     # Create Planetary Systems, Shift from SI to NBody, Add the Particles to MS, & Open a Channel to the MS
         systems_SI = create.planetary_systems(stars_SI, converter, num_psys, 'test_planets', Jupiter=True)
-        systems_NB = datamodel.ParticlesWithUnitsConverted(systems_SI, converter.as_converter_from_nbody_to_si())
-        MasterSet.add_particles(systems_NB)
-        #channel_planets_master = systems_NB.new_channel_to(MasterSet)
+        MasterSet.add_particles(systems_SI)
+        channel_planets_master = systems_SI.new_channel_to(MasterSet)
         read_from_file = False
 
     # Create Initial Conditions Array
@@ -137,34 +164,32 @@ if __name__=="__main__":
     except:
         crash = False
 
-
-
 # Write the Initial State 
     if not read_from_file:
         write.write_initial_state(MasterSet, initial_conditions, cluster_name)
 
 # Define PH4-Related Initial Conditions
-    time = 0.0 | nbody_system.time
-    delta_t = options.dt | nbody_system.time
+    time = 0.0 | units.Myr
+    delta_t = converter.to_si(options.dt | nbody_system.time)
     number_of_steps = options.num_steps
     end_time = number_of_steps*delta_t
     num_workers = 1
-    eps2 = 0.0 | nbody_system.length**2
+    eps2 = eps2 = 1 | units.AU**2
     use_gpu = options.use_gpu
     gpu_ID = options.gpu_ID
 
     # Setting PH4 as the Top-Level Gravity Code
     if use_gpu == 1:
-        gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
+        gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu", convert_nbody=converter)
     else:
-        gravity = grav(number_of_workers = num_workers, redirection = "none")
+        gravity = ph4(number_of_workers = num_workers, redirection = "none", convert_nbody=converter)
 
 # Initializing PH4 with Initial Conditions
     gravity.initialize_code()
     gravity.parameters.set_defaults()
     gravity.parameters.begin_time = time
     gravity.parameters.epsilon_squared = eps2
-    gravity.parameters.timestep_parameter = delta_t.number
+    gravity.parameters.timestep_parameter = options.dt
 
 # Setting up the Code to Run with GPUs Provided by Command Line
     gravity.parameters.use_gpu = use_gpu
@@ -178,20 +203,22 @@ if __name__=="__main__":
 # Adding and Committing Particles to PH4
     gravity.particles.add_particles(MasterSet)
     gravity.commit_particles()
+    print gravity.particles[-5:]
 
 # Starting the AMUSE Channel for PH4
     grav_channel = gravity.particles.new_channel_to(MasterSet)
 
 # Initializing Kepler and SmallN
-    kep = Kepler(None, redirection = "none")
+    kep = Kepler(unit_converter=converter, redirection = "none")
     kep.initialize_code()
-    util.init_smalln()
+    util.init_smalln(unit_converter=converter)
 
 # Initializing MULTIPLES
     if read_from_file and crash:
         time, multiples_code = read.recover_crash(crash_file, gravity, kep, util.new_smalln)
     else:
-        multiples_code = multiples.Multiples(gravity, util.new_smalln, kep)
+        multiples_code = multiples.Multiples(gravity, util.new_smalln, kep, gravity_constant=units.constants.G)
+        multiples_code.neighbor_perturbation_limit = 0.05
         multiples_code.neighbor_distance_factor = 1.0
         multiples_code.neighbor_veto = True
 
@@ -199,6 +226,7 @@ if __name__=="__main__":
     print '\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     print '-------------'
     sys.stdout.flush()
+    E0 = print_diagnostics(multiples_code)
 
 # Creates the Log File and Redirects all Print Statements
     orig_stdout = sys.stdout
@@ -230,7 +258,7 @@ if __name__=="__main__":
             self.run_id = hashlib.sha256(str(Starting)).hexdigest()
 
         def handle_encounter_v3(self, kepler, conv, time, star1, star2):
-
+            print star1.position
             # Need to add time as an attribute to the stars here
             # The converter is brought in to convert to SI
 
@@ -274,7 +302,7 @@ if __name__=="__main__":
         
         def encounter_callback(time, s1, s2):
             return encounters.handle_encounter_v3(kep, converter, time, s1, s2)
-
+        print MasterSet[-10:]
         multiples_code.evolve_model(time, callback=encounter_callback)
         gravity.synchronize_model()
 
@@ -287,6 +315,10 @@ if __name__=="__main__":
     # we don't want to overwrite silently.
         grav_channel.copy_attribute("index_in_code", "id")
 
+    # Copy values from MasterSet to Stars_SI & Systems_SI
+        #channel_stars_master.copy()
+        #channel_planets_master.copy()
+
     # Write Out the Data Every 5 Time Steps
         if step_index%5 == 0:
             write.write_time_step(MasterSet, converter, time, cluster_name)
@@ -295,7 +327,7 @@ if __name__=="__main__":
         if step_index%50 == 0:
             step = str(time.number)
             crash_file = crash_base+"_t"+step
- 	    write.write_crash_save(time, MasterSet, gravity, multiples_code, crash_file)
+            write.write_crash_save(time, MasterSet, gravity, multiples_code, crash_file)
             
     # Write out the restart file and restart from it every 10 time steps
         if step_index%10 == 0:
@@ -309,9 +341,9 @@ if __name__=="__main__":
 
         # Setting PH4 as the Top-Level Gravity Code
             if use_gpu == 1:
-                gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
+                gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu", convert_nbody=converter)
             else:
-                gravity = grav(number_of_workers = num_workers, redirection = "none")
+                gravity = grav(number_of_workers = num_workers, redirection = "none", convert_nbody=converter)
 
 # Initializing PH4 with Initial Conditions
             gravity.initialize_code()
@@ -325,9 +357,9 @@ if __name__=="__main__":
             gravity.parameters.gpu_id = gpu_ID
 
 # Initializing Kepler and SmallN
-            kep = Kepler(None, redirection = "none")
+            kep = Kepler(unit_converter=converter, redirection = "none")
             kep.initialize_code()
-            util.init_smalln()
+            util.init_smalln(unit_converter=converter)
 
             MasterSet = []
             MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln)
@@ -391,14 +423,9 @@ if __name__=="__main__":
 # Alerts the Terminal User that the Run has Ended!
     print '[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     sys.stdout.flush()
+    print_diagnostics(multiples_code, E0)
 
 # Closes PH4, Kepler & SmallN Instances
     gravity.stop()
     kep.stop()
-    util.stop_smalln()    
-
-
-
-
-
-
+    util.stop_smalln()
