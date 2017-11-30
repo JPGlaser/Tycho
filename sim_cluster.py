@@ -180,9 +180,11 @@ if __name__=="__main__":
         read_from_file = False
         num_stars = len(MasterSet)
         MStars = sum(MasterSet.mass.number) | units.MSun
+        MasterSet.radius = 500*MasterSet.mass/(1.0 | units.MSun) | units.AU
         virial_radius = MasterSet.virial_radius()
         converter = nbody_system.nbody_to_si(MStars, virial_radius)
         initial_conditions = util.store_ic(converter, options)
+        print MasterSet[0]
 
     try:
         search = glob.glob("CrashSave/"+cluster_name+"*.hdf5")[-1]
@@ -348,89 +350,89 @@ if __name__=="__main__":
 
     # Write Out the Data Every 5 Time Steps
         if step_index%5 == 0:
-            write.write_time_step(MasterSet, converter, time, cluster_name)
+            write.write_time_step(MasterSet, time, cluster_name)
 
     # Write out a crash file every 50 steps
-        if step_index%50 == 0:
-            step = str(time.number)
-            crash_file = crash_base+"_t"+step
-            write.write_crash_save(time, MasterSet, gravity, multiples_code, crash_file)
+#        if step_index%50 == 0:
+#            step = str(time.number)
+#            crash_file = crash_base+"_t"+step
+#            write.write_crash_save(time, MasterSet, gravity, multiples_code, crash_file)
             
     # Write out the restart file and restart from it every 10 time steps
-        if step_index%10 == 0:
-            step = str(time.number)
-            write_file=write_file_base+step+restart_end
-            write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
-            gravity.stop()
-            kep.stop()
-            util.stop_smalln()
-            restart_file=write_file
+#        if step_index%10 == 0:
+#            step = str(time.number)
+#            write_file=write_file_base+step+restart_end
+#            write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
+#            gravity.stop()
+#            kep.stop()
+#            util.stop_smalln()
+#            restart_file=write_file
 
         # Setting PH4 as the Top-Level Gravity Code
-            if use_gpu == 1:
-                gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu", convert_nbody=converter)
-            else:
-                gravity = grav(number_of_workers = num_workers, redirection = "none", convert_nbody=converter)
+#            if use_gpu == 1:
+#                gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu", convert_nbody=converter)
+#            else:
+        
+#        gravity = grav(number_of_workers = num_workers, redirection = "none", convert_nbody=converter)
 
 # Initializing PH4 with Initial Conditions
-            gravity.initialize_code()
-            gravity.parameters.set_defaults()
-            gravity.parameters.begin_time = time
-            gravity.parameters.epsilon_squared = eps2
-            gravity.parameters.timestep_parameter = delta_t.number
+#            gravity.initialize_code()
+#            gravity.parameters.set_defaults()
+#            gravity.parameters.begin_time = time
+#            gravity.parameters.epsilon_squared = eps2
+#            gravity.parameters.timestep_parameter = delta_t.number
 
 # Setting up the Code to Run with GPUs Provided by Command Line
-            gravity.parameters.use_gpu = use_gpu
-            gravity.parameters.gpu_id = gpu_ID
+#            gravity.parameters.use_gpu = use_gpu
+#            gravity.parameters.gpu_id = gpu_ID
 
 # Initializing Kepler and SmallN
-            kep = Kepler(unit_converter=converter, redirection = "none")
-            kep.initialize_code()
-            util.init_smalln(unit_converter=converter)
+#            kep = Kepler(unit_converter=converter, redirection = "none")
+#            kep.initialize_code()
+#            util.init_smalln(unit_converter=converter)
 
-            MasterSet = []
-            MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln)
-            write_file = ""
-            restart_file = ""
+#            MasterSet = []
+#            MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln)
+#            write_file = ""
+#            restart_file = ""
 
 # Setting Up the Stopping Conditions in PH4
-            stopping_condition = gravity.stopping_conditions.collision_detection
-            stopping_condition.enable()
-            sys.stdout.flush()
+#            stopping_condition = gravity.stopping_conditions.collision_detection
+#            stopping_condition.enable()
+#            sys.stdout.flush()
 
 # Starting the AMUSE Channel for PH4
-            grav_channel = gravity.particles.new_channel_to(MasterSet)
+#            grav_channel = gravity.particles.new_channel_to(MasterSet)
 
 # Save the encounters dictionary thus far as long as it is not the first reset
-            
-            if step_index != 0:
-                if encounter_file != None:
+#            if step_index != 0:
+#                if encounter_file != None:
                     # First Try to Delete the Previous Backup File
                     # Its in a try because there will not be a backup the first time this runs
                     # Could replace try loop with a counter if desired
-                    try:
-                        os.remove("Encounters/"+cluster_name+"_encounters_backup.pkl")
-                    except:
-                        pass
+#                    try:
+#                        os.remove("Encounters/"+cluster_name+"_encounters_backup.pkl")
+#                    except:
+#                        pass
                     # Then Rename the Previous Encounter Dictionary
-                    os.rename("Encounters/"+cluster_name+"_encounters.pkl", "Encounters/"+cluster_name+"_encounters_backup.pkl")		
+#                    os.rename("Encounters/"+cluster_name+"_encounters.pkl", "Encounters/"+cluster_name+"_encounters_backup.pkl")		
 
 		# Save the encounter Dictionary
-                encounter_file = None		
-                encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
-                pickle.dump(encounterInformation, encounter_file)		
-                encounter_file.close()
-                reset_flag=1
+#                encounter_file = None		
+#                encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
+#                pickle.dump(encounterInformation, encounter_file)		
+#                encounter_file.close()
+#                reset_flag=1
 	     
 	
             # Log that a Reset happened		
-            print '-------------'
-            print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-            print '-------------'
-            sys.stdout.flush()
+#            print '-------------'
+#            print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+#            print '-------------'
+#            sys.stdout.flush()
 
-        step_index += 1
-
+#        step_index += 1
+        
     # Log that a Step was Taken
         print '-------------'
         print '[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
