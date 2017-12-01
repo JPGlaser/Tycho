@@ -32,13 +32,27 @@ from amuse.lab import *
 #           Defining Functions          #
 # ------------------------------------- #
 
+def new_seed_from_string(string):
+    ''' Creates a seed for Numpy.RandomState() usin a string.
+        string: The provided string to use.
+    '''
+    hash_md5 = hashlib.md5(str(string)).hexdigest()
+    hash_int = ""
+    for c in hash_md5:
+        if c.isalpha():
+            hash_int += str(ord(c))
+        else:
+            hash_int += c
+    seed = int(hash_int) % (2**32 -1)
+    return seed
+
 def store_ic(converter, options):
     ''' Creates a Structured Numpy Array to Store Initial Conditions.
         converter: AMUSE NBody Converter Used in Tycho.
         options: Commandline Options Set by User.
     '''
     ic_dtype = np.dtype({'names': ['cluster_name','seed','num_stars','num_planets','total_smass','viral_radius','w0','IBF'], \
-					     'formats': ['S8', 'i8', 'i8', 'i8','f8','f8','f8','f4']})
+					     'formats': ['S8', 'S8', 'i8', 'i8','f8','f8','f8','f4']})
     ic_array = np.recarray(1, dtype=ic_dtype)
     ic_array[0].cluster_name = options.cluster_name
     ic_array[0].seed = options.seed
@@ -88,9 +102,9 @@ def preform_EulerRotation(particle_set):
 def calc_HillRadius(a, e, m_planet, m_star):
     ''' Calculates the Hill Radius for a planet given a, e, and the two masses.
         a: The semi-major axis of the planet's orbit.
-	    e: The eccentricity of the planet's orbit.
-	    m_planet: The mass of the planet.
-	    m_star: The mass of the star.
+        e: The eccentricity of the planet's orbit.
+        m_planet: The mass of the planet.
+        m_star: The mass of the star.
     '''
     return a*(1.0-e)*(m_planet/(3*m_star))**(1.5)
 
@@ -111,11 +125,13 @@ def new_smalln():
     SMALLN.reset()
     return SMALLN
 
-
 # Initalizes a SmallN Instance
-def init_smalln():
+def init_smalln(unit_converter = None):
     global SMALLN
-    SMALLN = SmallN(redirection="none")
+    if unit_converter is None:
+        SMALLN = SmallN(redirection="none")
+    else:
+        SMALLN = SmallN(redirection="none", convert_nbody=unit_converter)
     SMALLN.parameters.timestep_parameter = 0.05
 
 def stop_smalln():

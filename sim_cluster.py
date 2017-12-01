@@ -48,15 +48,46 @@ from amuse.ic.kroupa import new_kroupa_mass_distribution
 from amuse.community.ph4.interface import ph4
 from amuse.community.smalln.interface import SmallN
 from amuse.community.kepler.interface import Kepler
-from amuse.community.sse.interface import SSE
-from amuse.couple import multiples
+from amuse.community.seba.interface import SeBa
+from amuse.couple.bridge import Bridge
+#from amuse.couple import multiples
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
+from tycho import multiples2 as multiples
 
 # ------------------------------------- #
 #         Main Production Script        #
 # ------------------------------------- #
+
+def print_diagnostics(grav, E0=None):
+
+    # Simple diagnostics.
+
+    ke = grav.kinetic_energy
+    pe = grav.potential_energy
+    Nmul, Nbin, Emul = grav.get_total_multiple_energy()
+    print ''
+    print 'Time =', grav.get_time().in_(units.Myr)
+    print '    top-level kinetic energy =', ke
+    print '    top-level potential energy =', pe
+    print '    total top-level energy =', ke + pe
+    print '   ', Nmul, 'multiples,', 'total energy =', Emul
+    E = ke + pe + Emul
+    print '    uncorrected total energy =', E
+    
+    # Apply known corrections.
+    
+    Etid = grav.multiples_external_tidal_correction \
+            + grav.multiples_internal_tidal_correction  # tidal error
+    Eerr = grav.multiples_integration_energy_error	# integration error
+
+    E -= Etid + Eerr
+    print '    corrected total energy =', E
+
+    if E0 is not None: print '    relative energy error=', (E-E0)/E0
+    
+    return E
 
 # Tyler uses a start time variable for his naming
 
@@ -88,11 +119,12 @@ if __name__=="__main__":
                       help="Enter the total number of time-steps to take.")
     parser.add_option("-b", "--IBF", dest="IBF", default = 0.5, type ="float", \
        		      help = "Enter the initial binary fraction.")
-    parser.add_option("-S", "--seed", dest="seed", default = 1234, type="int", \
+    parser.add_option("-S", "--seed", dest="seed", default = "1234", type="str", \
                       help = "Enter a random seed for the simulation")
     parser.add_option("-R","--restart",dest="restart_file",default="_restart", type="str", \
                       help = "Enter the name for the restart_file, (Defaults to _restart_")
     parser.add_option("-D", "--database", dest="database", default="cluster_db", type="str")
+    parser.add_option("-r", "--doRestart", dest="doRestart", action="store_true")
 
     (options, args) = parser.parse_args()
 
@@ -111,25 +143,26 @@ if __name__=="__main__":
         MasterSet, ic_array, converter = read.read_initial_state(cluster_name)
     # TODO: Create the "stars" and "planets" sets and open up their channels to the master set.
     #       It should match the style designed below.
+    # Set the Boolean Check for Reading a File to True 
         read_from_file = True
     except:
     # Initilize the Master Particle Set
         MasterSet = datamodel.Particles()
-    # Create the Stellar Cluster, Shift from SI to NBody, Add the Particles to MS, & Open a Channel to the MS
-        stars_SI, converter = create.king_cluster(num_stars, num_binaries=int(num_stars*options.IBF), seed=options.seed)
-        stars_NB = datamodel.ParticlesWithUnitsConverted(stars_SI, converter.as_converter_from_nbody_to_si())
-        MasterSet.add_particles(stars_NB)
-        #channel_stars_master = stars_NB.new_channel_to(MasterSet)
-    # Create Planetary Systems, Shift from SI to NBody, Add the Particles to MS, & Open a Channel to the MS
-        systems_SI = create.planetary_systems(stars_SI, converter, num_psys, 'test_planets', Jupiter=True)
-        systems_NB = datamodel.ParticlesWithUnitsConverted(systems_SI, converter.as_converter_from_nbody_to_si())
-        MasterSet.add_particles(systems_NB)
-        #channel_planets_master = systems_NB.new_channel_to(MasterSet)
+    # Create the Stellar Cluster in SI Units & Create the Converter
+        stars_SI, converter = create.king_cluster(num_stars, num_binaries=int(num_stars*options.IBF),
+                                                  seed=options.seed)
+        MasterSet.add_particles(stars_SI)
+        channel_stars_master = stars_SI.new_channel_to(MasterSet)
+    # Create the Planetary Systems in SU Units
+        systems_SI = create.planetary_systems(stars_SI, num_psys, 'test_planets', Jupiter=True)
+        MasterSet.add_particles(systems_SI)
+        channel_planets_master = systems_SI.new_channel_to(MasterSet)
+    # Set the Boolean Check for Reading a File to False         
         read_from_file = False
-
     # Create Initial Conditions Array
         initial_conditions = util.store_ic(converter, options)
 
+# Attempt to Restart a Crash if it Exists in the CrashSave Directory
     try:
         search = glob.glob("CrashSave/"+cluster_name+"*.hdf5")[-1]
         crash_file = search[:-18]
@@ -137,34 +170,33 @@ if __name__=="__main__":
     except:
         crash = False
 
-
-
-# Write the Initial State 
+# Write the Initial State if Using New IC
     if not read_from_file:
         write.write_initial_state(MasterSet, initial_conditions, cluster_name)
 
 # Define PH4-Related Initial Conditions
-    time = 0.0 | nbody_system.time
-    delta_t = options.dt | nbody_system.time
+    time = 0.0 | units.Myr
+    delta_t = 0.05 | units.Myr
     number_of_steps = options.num_steps
     end_time = number_of_steps*delta_t
     num_workers = 1
-    eps2 = 0.0 | nbody_system.length**2
+    eps2 = eps2 = 1 | units.AU**2
     use_gpu = options.use_gpu
     gpu_ID = options.gpu_ID
 
     # Setting PH4 as the Top-Level Gravity Code
     if use_gpu == 1:
-        gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
+        gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu", 
+                      convert_nbody=converter)
     else:
-        gravity = grav(number_of_workers = num_workers, redirection = "none")
+        gravity = ph4(number_of_workers = num_workers, redirection = "none", convert_nbody=converter)
 
 # Initializing PH4 with Initial Conditions
     gravity.initialize_code()
     gravity.parameters.set_defaults()
     gravity.parameters.begin_time = time
     gravity.parameters.epsilon_squared = eps2
-    gravity.parameters.timestep_parameter = delta_t.number
+    #gravity.parameters.timestep_parameter = options.dt
 
 # Setting up the Code to Run with GPUs Provided by Command Line
     gravity.parameters.use_gpu = use_gpu
@@ -178,27 +210,56 @@ if __name__=="__main__":
 # Adding and Committing Particles to PH4
     gravity.particles.add_particles(MasterSet)
     gravity.commit_particles()
+    print gravity.particles[-5:]
 
 # Starting the AMUSE Channel for PH4
     grav_channel = gravity.particles.new_channel_to(MasterSet)
 
 # Initializing Kepler and SmallN
-    kep = Kepler(None, redirection = "none")
+    kep = Kepler(unit_converter=converter, redirection = "none")
     kep.initialize_code()
-    util.init_smalln()
+    util.init_smalln(unit_converter=converter)
 
-# Initializing MULTIPLES
+# Initializing MULTIPLES, Testing to See if a Crash Exists First
     if read_from_file and crash:
         time, multiples_code = read.recover_crash(crash_file, gravity, kep, util.new_smalln)
     else:
-        multiples_code = multiples.Multiples(gravity, util.new_smalln, kep)
-        multiples_code.neighbor_distance_factor = 1.0
+        multiples_code = multiples.Multiples(gravity, util.new_smalln, kep, 
+                                             gravity_constant=units.constants.G)
+        multiples_code.neighbor_perturbation_limit = 0.05
+        #multiples_code.neighbor_distance_factor = 1.0
         multiples_code.neighbor_veto = True
+
+# Initializing Stellar Evolution (SeBa)
+    sev_code = SeBa()
+    sev_code.particles.add_particles(MasterSet)
+
+# Starting the AMUSE Channel for Stellar Evolution
+    sev_channel = sev_code.particles.new_channel_to(MasterSet, attributes=["mass", "luminosity", 
+                                                    "stellar_type", "temperature", "age"])
+
+# Initializing Galactic Background
+    Rgal=1. | units.kpc
+    Mgal=1.6e10 | units.MSun
+    alpha=1.2
+    galactic_code = create.GalacticCenterGravityCode(Rgal, Mgal, alpha)
+
+# Initializing the Bridge
+    bridge_code = Bridge(verbose=False)
+    bridge_code.add_system(multiples_code, (galactic_code,))
+    #bridge_code.add_system(multiples_code, ())
+    bridge_code.add_system(sev_code, (multiples_code,))
+
+# Stating the AMUSE Channel for Bridge to Have SeBa and Multiples Interact
+    bridge_code.channels.add_channel(sev_code.particles.new_channel_to(multiples_code.particles, 
+                                     attributes=["mass"]))
+    bridge_code.timestep = delta_t
 
 # Alerts the Terminal User that the Run has Started!
     print '\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     print '-------------'
     sys.stdout.flush()
+    E0 = print_diagnostics(multiples_code)
 
 # Creates the Log File and Redirects all Print Statements
     orig_stdout = sys.stdout
@@ -225,44 +286,29 @@ if __name__=="__main__":
             encounterInformation[name] = []
 
     class EncounterHandler(object):
-        # I think we can delete the run_id. Relic from Tyler's database code.
-        def __init__(self):
-            self.run_id = hashlib.sha256(str(Starting)).hexdigest()
-
-        def handle_encounter_v3(self, kepler, conv, time, star1, star2):
-
-            # Need to add time as an attribute to the stars here
-            # The converter is brought in to convert to SI
-
+        def handle_encounter_v4(self, time, star1, star2):
             # Retrieve star IDs to use as dictionary keys
             name1 = str(star1.id)
             name2 = str(star2.id)
 
-            # Initialize the Particle Set and Synchronize Gravity
-            expand_list=datamodel.Particles()
+            # Synchronize Gravity for Safety
             gravity.synchronize_model()
-
-            # Prep a Particle set to feed into expand_encounter
-            expand_list.add_particle(star1)
-            expand_list.add_particle(star2)
 
             # Expand enconter returns a particle set with all of the children 
             # when given a particle set of two objects involved in an encounter
-            enc_particles = multiples_code.expand_encounter(expand_list)
-            enc_particles[0].time = time
-
-            # Convert to SI and give the new particle set the time attribute
-            enc_particles_SI = datamodel.ParticlesWithUnitsConverted(enc_particles[0], conv.as_converter_from_nbody_to_si())
+            enc_particles = multiples_code.expand_encounter([star1, star2], delete=False)[0]
+            enc_particles.time = time
 
             # Add the particle set for the encoutner to the respective stars' dictionary key
-            encounterInformation[name1].append(enc_particles_SI)
-            encounterInformation[name2].append(enc_particles_SI)
+            encounterInformation[name1].append(enc_particles)
+            encounterInformation[name2].append(enc_particles)
 
             # return true is necessary for the multiples code
             return True
 
 # Setting Up the Encounter Handler
     encounters = EncounterHandler()
+    multiples_code.callback = encounters.handle_encounter_v4
 
 # Variable used for saving the dictionary at resets
     encounter_file = None
@@ -271,15 +317,9 @@ if __name__=="__main__":
     while time < end_time:
         sys.stdout.flush()
         time += delta_t
-        
-        def encounter_callback(time, s1, s2):
-            return encounters.handle_encounter_v3(kep, converter, time, s1, s2)
-
-        multiples_code.evolve_model(time, callback=encounter_callback)
+        #print MasterSet[-10:]
+        bridge_code.evolve_model(time)
         gravity.synchronize_model()
-
-    # Copy values from the module to the set in memory.
-        grav_channel.copy()
     
     # Copy the index (ID) as used in the module to the id field in
     # memory.  The index is not copied by default, as different
@@ -287,63 +327,79 @@ if __name__=="__main__":
     # we don't want to overwrite silently.
         grav_channel.copy_attribute("index_in_code", "id")
 
+    # Copy values from the module to the set in memory.
+        grav_channel.copy()
+    # Copies over the SEV Desired Stellar Traits to the Master Set
+        sev_channel.copy()
+
     # Write Out the Data Every 5 Time Steps
         if step_index%5 == 0:
             write.write_time_step(MasterSet, converter, time, cluster_name)
 
     # Write out a crash file every 50 steps
-        if step_index%50 == 0:
-            step = str(time.number)
-            crash_file = crash_base+"_t"+step
- 	    write.write_crash_save(time, MasterSet, gravity, multiples_code, crash_file)
+        #if step_index%50 == 0:
+        #    step = str(time.number)
+        #    crash_file = crash_base+"_t"+step
+        #    write.write_crash_save(time, MasterSet, gravity, multiples_code, crash_file)
             
     # Write out the restart file and restart from it every 10 time steps
-        if step_index%10 == 0:
-            step = str(time.number)
-            write_file=write_file_base+step+restart_end
-            write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
-            gravity.stop()
-            kep.stop()
-            util.stop_smalln()
-            restart_file=write_file
+        doRestart = False
+        if step_index%10 == 0: #CHANGE LATER
+            if doRestart:
+                # TODO: Need to figure out how this works with the new Bridge.
+                step = str(time.number)
+                write_file=write_file_base+step+restart_end
+                write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
+                gravity.stop()
+                kep.stop()
+                util.stop_smalln()
+                restart_file=write_file
 
-        # Setting PH4 as the Top-Level Gravity Code
-            if use_gpu == 1:
-                gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu")
-            else:
-                gravity = grav(number_of_workers = num_workers, redirection = "none")
+            # Setting PH4 as the Top-Level Gravity Code
+                if use_gpu == 1:
+                    gravity = ph4(number_of_workers = num_workers, redirection = "none", 
+                                  mode = "gpu", convert_nbody=converter)
+                else:
+                    gravity = ph4(number_of_workers = num_workers, redirection = "none",
+                                   convert_nbody=converter)
 
-# Initializing PH4 with Initial Conditions
-            gravity.initialize_code()
-            gravity.parameters.set_defaults()
-            gravity.parameters.begin_time = time
-            gravity.parameters.epsilon_squared = eps2
-            gravity.parameters.timestep_parameter = delta_t.number
+            # Initializing PH4 with Initial Conditions
+                gravity.initialize_code()
+                gravity.parameters.set_defaults()
+                gravity.parameters.begin_time = time
+                gravity.parameters.epsilon_squared = eps2
+                gravity.parameters.timestep_parameter = delta_t.number
 
-# Setting up the Code to Run with GPUs Provided by Command Line
-            gravity.parameters.use_gpu = use_gpu
-            gravity.parameters.gpu_id = gpu_ID
+            # Setting up the Code to Run with GPUs Provided by Command Line
+                gravity.parameters.use_gpu = use_gpu
+                gravity.parameters.gpu_id = gpu_ID
 
-# Initializing Kepler and SmallN
-            kep = Kepler(None, redirection = "none")
-            kep.initialize_code()
-            util.init_smalln()
+            # Initializing Kepler and SmallN
+                kep = Kepler(unit_converter=converter, redirection = "none")
+                kep.initialize_code()
+                util.init_smalln(unit_converter=converter)
 
-            MasterSet = []
-            MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln)
-            write_file = ""
-            restart_file = ""
+                MasterSet = []
+                MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, 
+                                                                      kep, util.new_smalln)
+                write_file = ""
+                restart_file = ""
 
-# Setting Up the Stopping Conditions in PH4
-            stopping_condition = gravity.stopping_conditions.collision_detection
-            stopping_condition.enable()
+            # Setting Up the Stopping Conditions in PH4
+                stopping_condition = gravity.stopping_conditions.collision_detection
+                stopping_condition.enable()
+                sys.stdout.flush()
+
+            # Starting the AMUSE Channel for PH4
+                grav_channel = gravity.particles.new_channel_to(MasterSet)
+                reset_flag=1
+            # Log that a Reset happened		
+            print '\n-------------'
+            print '[UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+            print '-------------\n'
             sys.stdout.flush()
 
-# Starting the AMUSE Channel for PH4
-            grav_channel = gravity.particles.new_channel_to(MasterSet)
-
-# Save the encounters dictionary thus far as long as it is not the first reset
-            
+        # Save the Encounters Dictionary Thus Far (If Not the First Reset)
             if step_index != 0:
                 if encounter_file != None:
                     # First Try to Delete the Previous Backup File
@@ -354,32 +410,30 @@ if __name__=="__main__":
                     except:
                         pass
                     # Then Rename the Previous Encounter Dictionary
-                    os.rename("Encounters/"+cluster_name+"_encounters.pkl", "Encounters/"+cluster_name+"_encounters_backup.pkl")		
+                    os.rename("Encounters/"+cluster_name+"_encounters.pkl", 
+                              "Encounters/"+cluster_name+"_encounters_backup.pkl")		
 
 		# Save the encounter Dictionary
                 encounter_file = None		
                 encounter_file = open("Encounters/"+cluster_name+"_encounters.pkl", "wb")
                 pickle.dump(encounterInformation, encounter_file)		
                 encounter_file.close()
-                reset_flag=1
-	     
-	
             # Log that a Reset happened		
-            print '-------------'
-            print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-            print '-------------'
+            print '\n-------------'
+            print '[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+            print '-------------\n'
             sys.stdout.flush()
 
         step_index += 1
 
     # Log that a Step was Taken
-        print '-------------'
+        print '\n-------------'
         print '[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-        print '-------------'
+        print '-------------\n'
         sys.stdout.flush()
     
 # Log that the simulation Ended & Switch to Terminal Output
-    print '[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+    print '\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     sys.stdout = orig_stdout
     f.close()
 
@@ -389,16 +443,11 @@ if __name__=="__main__":
     encounter_file.close()
 
 # Alerts the Terminal User that the Run has Ended!
-    print '[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+    print '\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
     sys.stdout.flush()
+    print_diagnostics(multiples_code, E0)
 
 # Closes PH4, Kepler & SmallN Instances
     gravity.stop()
     kep.stop()
-    util.stop_smalln()    
-
-
-
-
-
-
+    util.stop_smalln()
