@@ -22,7 +22,7 @@ from amuse.units import constants
 from amuse.datamodel import particle_attributes
 from amuse.io import *
 from amuse.lab import *
-from amuse.couple import multiples
+#from amuse.couple import multiples
 
 # Import the Amuse Stellar Packages
 from amuse.ic.kingmodel import new_king_model
@@ -36,6 +36,8 @@ except:
 
 # Tycho util import
 from tycho import util
+from tycho import multiples2 as multiples
+
 # ------------------------------------- #
 #           Defining Functions          #
 # ------------------------------------- #
@@ -44,7 +46,7 @@ def read_initial_state(file_prefix):
     ''' Reads in an initial state for the Tycho Module.
         file_prefix: String Value for a Prefix to the Saved File
     ''' 
-# TODO: Convert the saved datasets from SI to NBody. Also everything else in this function.
+# TODO: Also everything else in this function.
 
 # First, Define the Directory where Initial State is Stored
     file_dir = os.getcwd()+"/InitialState"
@@ -71,8 +73,6 @@ def read_initial_state(file_prefix):
 def read_state_from_file(restart_file, gravity_code, kep, SMALLN):
 
     stars = read_set_from_file(restart_file+".stars.hdf5",'hdf5',version='2.0', close_file=True).copy()
-#    single_stars = read_set_from_file(restart_file+".singles.hdf5",'hdf5',version='2.0')
-#    multiple_stars = read_set_from_file(restart_file+".coms.hdf5",'hdf5',version='2.0')
     stars_python = read_set_from_file(restart_file+".stars_python.hdf5",'hdf5',version='2.0', close_file=True).copy()
     with open(restart_file + ".bookkeeping", "rb") as f:
         bookkeeping = pickle.load(f)
@@ -85,13 +85,7 @@ def read_state_from_file(restart_file, gravity_code, kep, SMALLN):
     gravity_code.particles.add_particles(stars)
 #    print bookkeeping['model_time']
 #    gravity_code.set_begin_time = bookkeeping['model_time']
-
-
     multiples_code = multiples.Multiples(gravity_code, SMALLN, kep, gravity_constant=units.constants.G)
-#    multiples_code.neighbor_distance_factor = 1.0
-#    multiples_code.neighbor_veto = False
-#    multiples_code.neighbor_distance_factor = 2.0
-#    multiples_code.neighbor_veto = True
     multiples_code.neighbor_distance_factor = bookkeeping['neighbor_distance_factor']
     multiples_code.neighbor_veto = bookkeeping['neighbor_veto']
     multiples_code.multiples_external_tidal_correction = bookkeeping['multiples_external_tidal_correction']
@@ -108,10 +102,8 @@ def read_state_from_file(restart_file, gravity_code, kep, SMALLN):
 # ------------------------------------------ #
 
 def recover_crash(restart_file, gravity_code, kep, SMALLN):
-
+# NEEDS SOME TENDER LOVE AND CARE
     stars = read_set_from_file(restart_file+".stars.hdf5",'hdf5',version='2.0', close_file=True).copy()
-    #single_stars = read_set_from_file(restart_file+".singles.hdf5",'hdf5',version='2.0')
-    #multiple_stars = read_set_from_file(restart_file+".coms.hdf5",'hdf5',version='2.0')
     stars_python = read_set_from_file(restart_file+".stars_python.hdf5",'hdf5',version='2.0', close_file=True).copy()
     with open(restart_file + ".bookkeeping", "rb") as f:
         bookkeeping = pickle.load(f)
@@ -124,13 +116,7 @@ def recover_crash(restart_file, gravity_code, kep, SMALLN):
     #gravity_code.particles.add_particles(stars)
     #print bookkeeping['model_time']
     gravity_code.set_begin_time = bookkeeping['model_time']
-
-
     multiples_code = multiples.Multiples(gravity_code, SMALLN, kep, gravity_constant=units.constants.G)
-    #multiples_code.neighbor_distance_factor = 1.0
-    #multiples_code.neighbor_veto = False
-    #multiples_code.neighbor_distance_factor = 2.0
-    #multiples_code.neighbor_veto = True
     multiples_code.neighbor_distance_factor = bookkeeping['neighbor_distance_factor']
     multiples_code.neighbor_veto = bookkeeping['neighbor_veto']
     multiples_code.multiples_external_tidal_correction = bookkeeping['multiples_external_tidal_correction']

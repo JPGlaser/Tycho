@@ -32,13 +32,27 @@ from amuse.lab import *
 #           Defining Functions          #
 # ------------------------------------- #
 
+def new_seed_from_string(string):
+    ''' Creates a seed for Numpy.RandomState() usin a string.
+        string: The provided string to use.
+    '''
+    hash_md5 = hashlib.md5(str(string)).hexdigest()
+    hash_int = ""
+    for c in hash_md5:
+        if c.isalpha():
+            hash_int += str(ord(c))
+        else:
+            hash_int += c
+    seed = int(hash_int) % (2**32 -1)
+    return seed
+
 def store_ic(converter, options):
     ''' Creates a Structured Numpy Array to Store Initial Conditions.
         converter: AMUSE NBody Converter Used in Tycho.
         options: Commandline Options Set by User.
     '''
     ic_dtype = np.dtype({'names': ['cluster_name','seed','num_stars','num_planets','total_smass','viral_radius','w0','IBF'], \
-					     'formats': ['S8', 'i8', 'i8', 'i8','f8','f8','f8','f4']})
+					     'formats': ['S8', 'S8', 'i8', 'i8','f8','f8','f8','f4']})
     ic_array = np.recarray(1, dtype=ic_dtype)
     ic_array[0].cluster_name = options.cluster_name
     ic_array[0].seed = options.seed
@@ -49,7 +63,7 @@ def store_ic(converter, options):
     ic_array[0].total_smass = tsm
     ic_array[0].viral_radius = vr
     ic_array[0].w0 = options.w0
-    ic_array[0].IBF = options.IBF
+    #ic_array[0].IBF = options.IBF
     return ic_array[0]
 
 def preform_EulerRotation(particle_set):
@@ -110,7 +124,6 @@ SMALLN = None
 def new_smalln():
     SMALLN.reset()
     return SMALLN
-
 
 # Initalizes a SmallN Instance
 def init_smalln(unit_converter = None):
