@@ -215,7 +215,7 @@ if __name__=="__main__":
     use_gpu = options.use_gpu
     gpu_ID = options.gpu_ID
 
-    # Setting PH4 as the Top-Level Gravity Code
+# Setting PH4 as the Top-Level Gravity Code
     if use_gpu == 1:
         gravity = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu", 
                       convert_nbody=LargeScaleConverter)
@@ -228,7 +228,7 @@ if __name__=="__main__":
     gravity.parameters.set_defaults()
     gravity.parameters.begin_time = time
     gravity.parameters.epsilon_squared = eps2
-    gravity.parameters.timestep_parameter = options.dt
+    gravity.parameters.timestSep_parameter = options.dt
 
 # Setting up the Code to Run with GPUs Provided by Command Line
     gravity.parameters.use_gpu = use_gpu
@@ -289,6 +289,7 @@ if __name__=="__main__":
 # Initializing the Bridge
     bridge_code = Bridge(verbose=False)
     bridge_code.add_system(multiples_code, (galactic_code,))
+    #bridge_code.add_system(gravity, (galactic_code,))
     #bridge_code.add_system(multiples_code, ())
     bridge_code.add_system(sev_code, (multiples_code,))
 
@@ -378,12 +379,10 @@ if __name__=="__main__":
 # Begin Evolving the Cluster
     while time < end_time:
         sys.stdout.flush()
+    # Kick the Gravity Bridge
         time += delta_t
-        #print MasterSet[:5]
-        #print MasterSet[-5:]
         bridge_code.evolve_model(time)
-        #gravity.synchronize_model()
-    
+        util.update_MasterSet(gravity, multiples_code, sev_code)
     # Copy the index (ID) as used in the module to the id field in
     # memory.  The index is not copied by default, as different
     # codes may have different indices for the same particle and
@@ -397,7 +396,7 @@ if __name__=="__main__":
 
     # Write Out the Data Every 5 Time Steps
         if step_index%5 == 0:
-            write.write_time_step(MasterSet, LargeScaleConverter, time, cluster_name)
+            write.write_time_step(MasterSet, time, cluster_name)
 
     # Write out a crash file every 50 steps
         #if step_index%50 == 0:
@@ -410,51 +409,6 @@ if __name__=="__main__":
         if step_index%10 == 0: #CHANGE LATER
             if doRestart:
                 # TODO: Need to figure out how this works with the new Bridge.
-                step = str(time.number)
-                write_file=write_file_base+step+restart_end
-                write.write_state_to_file(time, MasterSet, gravity, multiples_code, write_file)
-                gravity.stop()
-                kep.stop()
-                util.stop_smalln()
-                restart_file=write_file
-
-            # Setting PH4 as the Top-Level Gravity Code
-                if use_gpu == 1:
-                    gravity = ph4(number_of_workers = num_workers, redirection = "none", 
-                                  mode = "gpu", convert_nbody=LargeScaleConverter)
-                else:
-                    gravity = ph4(number_of_workers = num_workers, redirection = "none",
-                                   convert_nbody=LargeScaleConverter)
-
-            # Initializing PH4 with Initial Conditions
-                gravity.initialize_code()
-                gravity.parameters.set_defaults()
-                gravity.parameters.begin_time = time
-                gravity.parameters.epsilon_squared = eps2
-                gravity.parameters.timestep_parameter = delta_t.number
-
-            # Setting up the Code to Run with GPUs Provided by Command Line
-                gravity.parameters.use_gpu = use_gpu
-                gravity.parameters.gpu_id = gpu_ID
-
-            # Initializing Kepler and SmallN
-                kep = Kepler(unit_converter=SmallScaleConverter, redirection = "none")
-                kep.initialize_code()
-                util.init_smalln(unit_converter=SmallScaleConverter)
-
-                MasterSet = []
-                MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, 
-                                                                      kep, util.new_smalln)
-                write_file = ""
-                restart_file = ""
-
-            # Setting Up the Stopping Conditions in PH4
-                stopping_condition = gravity.stopping_conditions.collision_detection
-                stopping_condition.enable()
-                sys.stdout.flush()
-
-            # Starting the AMUSE Channel for PH4
-                grav_channel = gravity.particles.new_channel_to(MasterSet)
                 reset_flag=1
             # Log that a Reset happened		
                 print '\n-------------'
@@ -481,13 +435,13 @@ if __name__=="__main__":
                 pickle.dump(encounterInformation, encounter_file)		
                 encounter_file.close()
             # Log that a the Encounters have been Saved!		
-            print '\n-------------'
-            print '[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-            print '-------------\n'
-            sys.stdout.flush()
+                print '\n-------------'
+                print '[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+                print '-------------\n'
+                sys.stdout.flush()
 
+    # Increase the Step Counter
         step_index += 1
-
     # Log that a Step was Taken
         print '\n-------------'
         print '[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))

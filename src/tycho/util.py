@@ -63,7 +63,7 @@ def store_ic(converter, options):
     ic_array[0].total_smass = tsm
     ic_array[0].viral_radius = vr
     ic_array[0].w0 = options.w0
-    ic_array[0].IBF = options.IBF
+    #ic_array[0].IBF = options.IBF
     return ic_array[0]
 
 def preform_EulerRotation(particle_set):

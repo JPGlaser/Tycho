@@ -52,7 +52,7 @@ def king_cluster(num_stars, **kwargs):
 # Creates a List of Binary Companion Masses (in SI_Units) Drawn from the Kroupa IMF
     BMasses_SI = new_kroupa_mass_distribution(num_binaries, mass_max = 5 | units.MSun)
 # Creates the SI-NBody Converter
-    converter = nbody_system.nbody_to_si(SMasses_SI.sum()+BMasses_SI.sum(), 2 | units.parsec)
+    converter = nbody_system.nbody_to_si(SMasses_SI.sum()+BMasses_SI.sum(), 1 | units.parsec)
 # Creates a AMUS Particle Set Consisting of Positions (King) and Masses (Kroupa)
     stars_SI = new_king_model(num_stars, w0, convert_nbody=converter)
     stars_SI.mass = SMasses_SI
@@ -90,9 +90,10 @@ def king_cluster(num_stars, **kwargs):
 
 # Assigning SOI Estimate for Interaction Radius
     if num_stars == 1:
-        stars_SI.radius = 500*stars_SI.mass/(1.0 | units.MSun) | units.AU
+        stars_SI.radius = 5000*stars_SI.mass/(1.0 | units.MSun) | units.AU
     else:
-        stars_SI.radius = 500*stars_SI.mass/(1.0 | units.MSun) | units.AU # Temporary Solution
+	#stars_SI.radius = 2000 | units.AU
+        stars_SI.radius = 5000*stars_SI.mass/(1.0 | units.MSun) | units.AU # Temporary Solution
         # Need to think of a better way to calculate the SOI
         # stars_SI.radius = 100*util.calc_SOI(stars_SI.mass, np.var(stars_SI.velocity), G=units.constants.G)
         
@@ -301,3 +302,6 @@ class GalacticCenterGravityCode(object):
         m=self.mass*(r/self.radius)**self.alpha
         vc=(constants.G*m/r)**0.5
     	return vc
+    def move_particles_into_ellipictal_orbit(self, particles, Rinit):
+        particles.x += Rinit
+        particles.vy += 0.9*self.circular_velocity(Rinit)

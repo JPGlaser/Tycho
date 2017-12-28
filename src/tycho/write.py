@@ -59,7 +59,7 @@ def write_initial_state(master_set, ic_array, file_prefix):
     pickle.dump(ic_array, ic_file)
     ic_file.close()
 
-def write_time_step(master_set, converter, current_time, file_prefix):
+def write_time_step(gravity_set, current_time, file_prefix):
     ''' Writes out necessary information for a time step.
         master_set: The Master AMUSE Particle Set used in Tycho
         multiples_code: The Multiples Instance for Tycho
@@ -67,15 +67,13 @@ def write_time_step(master_set, converter, current_time, file_prefix):
         file_prefix: String Value for a Prefix to the Saved File
     '''
 # First, Define/Make the Directory for the Time Step to be Stored
-    file_dir_MS = os.getcwd()+"/Run/MasterParticleSet"
+    file_dir_MS = os.getcwd()+"/Snapshots"
     if not os.path.exists(file_dir_MS):
         os.makedirs(file_dir_MS)
     file_base_MS = file_dir_MS+"/"+file_prefix
-# Second, Write out the Master-Set
-    MS_SI = master_set
-# Fourth, Write the Master AMUSE Particle Set to a HDF5 File
+# Second, Write the AMUSE Particle Set to a HDF5 File
     file_format = "hdf5"
-    write_set_to_file(MS_SI, file_base_MS+"_MS_t%.3f.hdf5" %(current_time.number), \
+    write_set_to_file(gravity_set, file_base_MS+"_MS_t%.3f.hdf5" %(current_time.number), \
                       format=file_format, close_file=True)
 
 # ------------------------------------ #

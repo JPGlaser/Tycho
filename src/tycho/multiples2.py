@@ -477,8 +477,8 @@ class Multiples(object):
                     star2 = star2.as_particle_in_set(self._inmemory_particles)
 
                     cont = True
-                    if self.callback != None:
-                        cont = self.callback(time, star1, star2)
+                    #if self.callback != None:
+                    #    cont = self.callback(time, star1, star2)
 
                     if self.global_debug > 0:
                         print 'initial top-level:',         \
@@ -839,6 +839,9 @@ class Multiples(object):
                     return True, 0., 0., 0., 0., 0., None
 
         self.before.add_particles(scattering_stars)
+
+        if self.callback != None:
+	        junk = self.callback(global_time, star1.copy(), star2.copy())
 
         # Note: sorted_stars, etc. are used once more, when checking
         # for wide binaries (at 6b below).
