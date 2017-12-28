@@ -6,3 +6,7 @@ Logs/
 Restart/
 Run/
 Testing/
+TestData*
+TestData*/
+TestData*/*
+*.gif
