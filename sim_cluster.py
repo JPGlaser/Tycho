@@ -50,6 +50,7 @@ from amuse.community.smalln.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 from amuse.community.seba.interface import SeBa
 from amuse.couple.bridge import Bridge
+from amuse.ext.galactic_potentials import MWpotentialBovy2015
 #from amuse.couple import multiples
 
 # Import the Tycho Packages
@@ -93,7 +94,7 @@ class EncounterHandler(object):
             
         # Expand enconter returns a particle set with all of the children 
         # when given a particle set of two objects involved in an encounter
-        enc_particles = multiples_code.expand_encounter(scattering_com, delete=False)[0]
+        enc_particles = multiples_code.expand_encounter(scattering_com.copy(), delete=False)[0]
             
         # Assign the time of the encounter to the Encounter Particle Set.
         enc_particles.time = time
@@ -114,23 +115,51 @@ class ChildUpdater(object):
     def update_children_bodies(self, multiples_code, Individual_Stars, Planets):
         inmemory = (multiples_code._inmemory_particles).copy()
         parents = inmemory[inmemory.id >= 1000000]
-        children = self.retrieve_all_children(parents)
-        self.sync_particle_subsets_with_children(children, Individual_Stars, Planets)
+        children = self.retrieve_all_children(multiples_code, parents)
+        print "Parents: ", parents.id
+        self.sync_particle_subsets_with_children(children, parents, Individual_Stars, Planets)
         
-    def retrieve_all_children(self, parents):
-        return multiples_code.expand_encounter(parents, delete=False)[0]
+    def retrieve_all_children(self, multiples_code, parents):
+        children = Particles(0)
+        for parent in parents:
+            if parent in multiples_code.root_to_tree:
+                tree = multiples_code.root_to_tree[parent].copy()
+                leaves = tree.get_leafs_subset().copy()
+                print "Root ID: ", parent.id
+                print "Leaves ID: ", leaves.id
+                self.update_children_position(parent, tree, leaves)
+                children.add_particles(leaves)
+            else:
+                children.add_particle(parent)  
+        return children
+
+    def update_children_position(self, parent, tree, leaves):
+        print leaves.position.lengths().in_(units.parsec) 
+        leaves.position -= tree.particle.position
+        leaves.velocity -= tree.particle.velocity
+        print leaves.position.lengths().in_(units.parsec)  
+        leaves.position += parent.position
+        leaves.velocity += parent.velocity
+        tree.particle.position = parent.position
+        tree.particle.velocity = parent.velocity
+        print leaves.position.lengths().in_(units.parsec)    
         
-    def sync_particle_subsets_with_children(self, children, Individual_Stars, Planets):
+    def sync_particle_subsets_with_children(self, children, parents, Individual_Stars, Planets):
         limiting_mass_for_planets = 13 | units.MJupiter 
                 # ^ See Definition of an Exoplanet: http://home.dtm.ciw.edu/users/boss/definition.html
         # Seperate Chilren into Planets & Stars
         s_children = children[children.mass > limiting_mass_for_planets]
-        p_children = children[children.mass <=  limiting_mass_for_planets]
+        p_children = children[children.mass <= limiting_mass_for_planets]
+        p_children.host_star = p_children.nearest_neighbour(s_children).id
+        #print "Stellar Children: ", s_children.id
+        #print "Plenatary Children: ", p_children.id
+        #print "IStars Position Before Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec)
         # Update Positions of Children in Subsets
         (s_children.new_channel_to(Individual_Stars)).copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz'])
-        (p_children.new_channel_to(Planets)).copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz'])
-        return Individual_Stars, Planets
+        #print "IStars Position After Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec)
+        (p_children.new_channel_to(Planets)).copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz', 'host_star'])
         
+
     def move_particle(set_from, set_to, particle_id):
         set_to.add_particle(particle=set_from[particle_id])
         set_from.remove_particle(particle=set_to[particle_id])
@@ -163,9 +192,9 @@ if __name__=="__main__":
                       help="Enter the name of the cluster (Defaults to Numerical Naming Scheme).")
     parser.add_option("-w", "--w0", dest="w0", default=2.5, type="float", 
                       help="Enter the w0 parameter for the King's Model.")
-    parser.add_option("-T", "--end-time", dest="t_end", default=1, type="int", 
+    parser.add_option("-T", "--end-time", dest="t_end", default=1., type="float", 
                       help="Enter the desired end time in Myr.")
-    parser.add_option("-b", "--num-init-binaries", dest="num_init_binaries", default = 0, type ="float", 
+    parser.add_option("-b", "--num-init-binaries", dest="num_init_binaries", default = 0, type ="int", 
        		          help = "Enter the initial number of binaries.")
     parser.add_option("-S", "--seed", dest="seed", default = "42", type="str", 
                       help = "Enter a random seed for the simulation.")
@@ -211,10 +240,10 @@ if __name__=="__main__":
             pregen_file = "/home/draco/jthornton/Tycho/PregenClusters/DracoM3V02AnewSFplt0975.amuse"
             Starting_Stars = read_set_from_file(pregen_file, format='amuse')
             # Define Necessary Varriables & Particle Traits
-            num_stars = len(Starting_Bodies)
+            num_stars = len(Starting_Stars)
             Starting_Stars.type = "star"
             Starting_Stars.id = np.arange(num_stars) + 1
-            Starting_Stars.radius = 5000*Starting_Stars.mass/(1.0 | units.MSun) | units.AU
+            Starting_Stars.radius = 2000*Starting_Stars.mass/(1.0 | units.MSun) | units.AU
             # Create the Large Scale Converter & Store the Converter & Initial Conditions
             LargeScaleConverter = nbody_system.nbody_to_si(Starting_Stars.total_mass(), 
                                                            Starting_Stars.virial_radius())
@@ -242,6 +271,14 @@ if __name__=="__main__":
                                                             Jupiter=True)
     SmallScaleConverter = nbody_system.nbody_to_si(2*np.mean(Starting_Stars.mass), 
                                                    2*np.mean(Starting_Stars.radius))
+    # Ensuring the Minimum Interaction Radius for Stars is Held    
+    for star in Starting_Stars:
+        min_star_radius = 500 | units.AU
+        max_star_radius = 10000 | units.AU
+        if star.radius <= min_star_radius: 
+            star.radius = min_star_radius
+        elif star.radius >= max_star_radius:
+            star.radius = max_star_radius
 
 
 # ------------------------------------- #
@@ -250,6 +287,7 @@ if __name__=="__main__":
 
     # Setting up "Individual_Stars" (Tracking Individual Stellar Bodies)
     Individual_Stars = Starting_Stars.copy()
+    Individual_Stars.original_mass = Individual_Stars.mass
     
     # Setting up "Planets" (Tracking Planets)
     Planets = Starting_Planets.copy()
@@ -275,14 +313,22 @@ if __name__=="__main__":
 # ------------------------------------- #
 #       Setting up the Integrators      #
 # ------------------------------------- #
-
     # Setting up Galactic Potential Code (MGalaxy)
-    Rgal=1. | units.kpc
-    Mgal=1.6e10 | units.MSun
-    alpha=1.2
-    galactic_code = create.GalacticCenterGravityCode(Rgal, Mgal, alpha)
-    rinit_from_galaxy_core = 5.0 | units.kpc
-    galactic_code.move_particles_into_ellipictal_orbit(Gravitating_Bodies, rinit_from_galaxy_core)
+    galactic_code = MWpotentialBovy2015()
+    # Moving Gravitating_Bodies into a Circular Orbit Around Galactic Core
+    rinit_from_galactic_core = 9.0 | units.kpc
+    vcircular = galactic_code.circular_velocity(rinit_from_galactic_core)
+    Gravitating_Bodies.x += rinit_from_galactic_core
+    Gravitating_Bodies.vy += vcircular
+    
+    #Rgal=1. | units.kpc
+    #Mgal=1.6e10 | units.MSun
+    #alpha=1.2
+    #galactic_code = create.GalacticCenterGravityCode(Rgal, Mgal, alpha)
+    #rinit_from_galaxy_core = 5.0 | units.kpc
+    #galactic_code.move_particles_into_ellipictal_orbit(Gravitating_Bodies, rinit_from_galaxy_core)
+     
+
     # ----------------------------------------------------------------------------------------------------
 
     # Setting up Top-Level Gravity Code (PH4)
@@ -336,6 +382,7 @@ if __name__=="__main__":
     # Setting up Stellar Evolution Code (SeBa)
     sev_code = SeBa()
     sev_code.particles.add_particles(Stellar_Bodies)
+
     # ----------------------------------------------------------------------------------------------------
     
     
@@ -368,23 +415,49 @@ if __name__=="__main__":
 #        Setting up Final Tweeks        #
 # ------------------------------------- #
 
-# Piping all Terminal Output to the Log File
+    # Piping all Terminal Output to the Log File
     orig_stdout = sys.stdout
     f = file("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
     sys.stdout = f
     sys.stdout.flush()
         
-# Writing the Initial Conditions & Particle Sets
+    # Writing the Initial Conditions & Particle Sets
     if not crash:
         write.write_initial_state(Gravitating_Bodies, initial_conditions, cluster_name)
 
-# Initializing the Encounters Dictionary
-# Each Key (Star's ID) will Associate with a List of Encounter Particle Sets as Encounters are Detected
+    # Initializing the Encounters Dictionary
+    # Each Key (Star's ID) will Associate with a List of Encounter Particle 
+    # Sets as Encounters are Detected
     encounter_file = None
     encounterInformation = defaultdict(list)
     for star in Individual_Stars:
         dict_key = str(star.id)
         encounterInformation[dict_key] = []
+
+    snapshots_dir = os.getcwd()+"/Snapshots"
+    snapshots_s_dir = os.getcwd()+"/Snapshots/Stars"
+    snapshots_p_dir = os.getcwd()+"/Snapshots/Planets"
+    if not os.path.exists(snapshots_dir):
+        os.makedirs(snapshots_dir)
+    if not os.path.exists(snapshots_s_dir):
+        os.makedirs(snapshots_s_dir)
+    if not os.path.exists(snapshots_p_dir):
+        os.makedirs(snapshots_p_dir)
+ 
+    # Artificially Age the Stars
+    # TODO: Work on Non-Syncronus Stellar Evolution
+    if pregen:
+        t_start = 0.360453276406 | units.Myr # Average for Age of Bull Head Cluster
+        sev_code.evolve_model(t_start) 
+    elif not crash:
+        t_start = 10 | units.Myr # Average for Age of After Gas Ejection
+        sev_code.evolve_model(t_start) 
+    channel_from_sev_to_stellar.copy_attributes(["mass", "luminosity", "stellar_type", 
+                                                 "temperature", "age"])
+    channel_from_gravitating_to_multi.copy_attributes(["mass"])
+    
+    # Ensuring the Gravity Code Starts at the Right Time 
+    gravity_code.parameters.begin_time = t_start
 
 # ------------------------------------- #
 #          Evolving the Cluster         #
@@ -410,6 +483,7 @@ if __name__=="__main__":
         subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
         
         # Evolve the Stellar Codes (via SEV Code with Channels)
+        # TODO: Ensure Binaries are Evolved Correctly (See Section 3.2.8)
         sev_code.evolve_model(t_current)
         
         # Sync the Stellar Code w/ the "Stellar_Bodies" Superset
@@ -417,12 +491,19 @@ if __name__=="__main__":
                                                     "temperature", "age"])
         
         # Sync the Multiples Particle Set's Masses to the Stellar_Bodies' Masses
+        # TODO: Ensure that the 
         channel_from_gravitating_to_multi.copy_attributes(["mass"])
         # Note: The "mass" Attribute in "Gravitating_Bodies" is synced when "Stellar_Bodies" is.
 
+        if step_index == 1:
+            E0_1 = print_diagnostics(multiples_code)
+
         # Write out the "Gravitating_Bodies" Superset Every 5 Time-Steps
         if step_index%5 == 0:
-            write.write_time_step(Gravitating_Bodies, t_current, cluster_name)
+            snapshot_s_filename = snapshots_s_dir+"/"+cluster_name+"_stars_t%.3f.hdf5" %(t_current.number)
+            write_set_to_file(Individual_Stars, snapshot_s_filename, format="hdf5", close_file=True, version=2)
+            snapshot_p_filename = snapshots_p_dir+"/"+cluster_name+"_planets_t%.3f.hdf5" %(t_current.number)
+            write_set_to_file(Planets, snapshot_p_filename, format="hdf5", close_file=True, version=2)
         
         # TODO: Write out a Crash File Every 50 Time-Steps
         #crash_base = "CrashSave/"+cluster_name+"_time_"+t_current.in_(units.Myr)
@@ -469,8 +550,13 @@ if __name__=="__main__":
 # ------------------------------------- #
 
 print_diagnostics(multiples_code, E0)
+print_diagnostics(multiples_code, E0_1)
 sys.stdout.flush()
 
+sys.stdout = orig_stdout
+print '\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+print_diagnostics(multiples_code, E0)
+print_diagnostics(multiples_code, E0_1)
 sev_code.stop()
 gravity_code.stop()
 kep.stop()
@@ -480,7 +566,4 @@ try:
 except:
     pass
 
-sys.stdout = orig_stdout
-print '\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
 sys.stdout.flush()
-

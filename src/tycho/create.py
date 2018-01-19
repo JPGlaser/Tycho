@@ -87,13 +87,15 @@ def king_cluster(num_stars, **kwargs):
         stars_SI.remove_particles(stars_to_become_binaries)
     # Merge the Two Sets
         stars_SI.add_particles(binaries)
+    # Fix the ID Problem
+        stars_SI.id = np.arange(len(stars_SI.id)) + 1
 
 # Assigning SOI Estimate for Interaction Radius
     if num_stars == 1:
         stars_SI.radius = 5000*stars_SI.mass/(1.0 | units.MSun) | units.AU
     else:
-	#stars_SI.radius = 2000 | units.AU
-        stars_SI.radius = 5000*stars_SI.mass/(1.0 | units.MSun) | units.AU # Temporary Solution
+	    #stars_SI.radius = 2000 | units.AU
+        stars_SI.radius = 2000*stars_SI.mass/(1.0 | units.MSun) | units.AU # Temporary Solution
         # Need to think of a better way to calculate the SOI
         # stars_SI.radius = 100*util.calc_SOI(stars_SI.mass, np.var(stars_SI.velocity), G=units.constants.G)
         
@@ -131,7 +133,7 @@ def binary_system(star_to_become_binary, **kwargs):
     doFlatEcc = kwargs.get("FlatEcc",True) # Apply Uniform Eccentricity Distribution
     doBasic = kwargs.get("Basic", True) # Apply a Basic Binary Distribution
     doFlatQ = kwargs.get("FlatQ",True) # Apply a Uniform Mass-Ratio Distribution
-    doRag_P = kwargs.get("RagP",False) # Apply Raghavan et al. (2010) Period Distribution
+    doRag_P = kwargs.get("RagP",True) # Apply Raghavan et al. (2010) Period Distribution
     doSana_P = kwargs.get("SanaP", False) # Apply Sana et al. (2012) Period Distribution
     Pcirc = kwargs.get("Pcirc", 6 | units.day ) # Circularization Period 
     Pmin = kwargs.get("Pmin", 3. | units.day ) # Min Orbital Period Allowed
