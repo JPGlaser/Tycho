@@ -34,7 +34,7 @@ from tycho import util
 def king_cluster(num_stars, **kwargs):
     ''' Creates an open cluster according to the King Model & Kroupa IMF
         num_stars: The total number of stellar systems.
-        w0: The King density parameter.	
+        w0: The King density parameter.
         seed: The random seed used for cluster generation.
         num_binaries: The number of binary systems desired.
     '''
@@ -48,9 +48,9 @@ def king_cluster(num_stars, **kwargs):
     np.random.seed(rand_seed)
     #rp.seed(rand_seed)
 # Creates a List of Primary Masses (in SI Units) Drawn from the Kroupa IMF
-    SMasses_SI = new_kroupa_mass_distribution(num_stars, mass_max = 5 | units.MSun)
+    SMasses_SI = new_kroupa_mass_distribution(num_stars, mass_max = 10 | units.MSun)
 # Creates a List of Binary Companion Masses (in SI_Units) Drawn from the Kroupa IMF
-    BMasses_SI = new_kroupa_mass_distribution(num_binaries, mass_max = 5 | units.MSun)
+    BMasses_SI = new_kroupa_mass_distribution(num_binaries, mass_max = 10 | units.MSun)
 # Creates the SI-NBody Converter
     converter = nbody_system.nbody_to_si(SMasses_SI.sum()+BMasses_SI.sum(), 1 | units.parsec)
 # Creates a AMUS Particle Set Consisting of Positions (King) and Masses (Kroupa)
@@ -74,7 +74,7 @@ def king_cluster(num_stars, **kwargs):
         pass
     else:
         stars_SI.scale_to_standard(convert_nbody=converter)
-        
+
 # If Requested, Creates Binary Systems
     if int(num_binaries) != 0:
     # Loop the Creation of Binary Systems
@@ -98,7 +98,7 @@ def king_cluster(num_stars, **kwargs):
         stars_SI.radius = 2000*stars_SI.mass/(1.0 | units.MSun) | units.AU # Temporary Solution
         # Need to think of a better way to calculate the SOI
         # stars_SI.radius = 100*util.calc_SOI(stars_SI.mass, np.var(stars_SI.velocity), G=units.constants.G)
-        
+
 # Returns the Cluster & Converter
     return stars_SI, converter
 
@@ -135,10 +135,10 @@ def binary_system(star_to_become_binary, **kwargs):
     doFlatQ = kwargs.get("FlatQ",True) # Apply a Uniform Mass-Ratio Distribution
     doRag_P = kwargs.get("RagP",True) # Apply Raghavan et al. (2010) Period Distribution
     doSana_P = kwargs.get("SanaP", False) # Apply Sana et al. (2012) Period Distribution
-    Pcirc = kwargs.get("Pcirc", 6 | units.day ) # Circularization Period 
+    Pcirc = kwargs.get("Pcirc", 6 | units.day ) # Circularization Period
     Pmin = kwargs.get("Pmin", 3. | units.day ) # Min Orbital Period Allowed
     Pmax = kwargs.get("Pmax", 10.**5. | units.day ) # Max Orbital Period Allowed
-    
+
 # Define Original Star's Information
     rCM = star_to_become_binary.position
     vCM = star_to_become_binary.velocity
@@ -161,7 +161,7 @@ def binary_system(star_to_become_binary, **kwargs):
         q = np.random.random()
         star1.mass = star_to_become_binary.mass / (1. + q)
         star2.mass =  q * star1.mass
-        
+
 # If Desired, Apply Raghavan et al. (2010) Period Distribution
     if (doRag_P):
         sigma = 2.28
@@ -171,7 +171,7 @@ def binary_system(star_to_become_binary, **kwargs):
             logP = sigma * np.random.randn() + mu
             period = 10.**logP | units.day
             semi_major_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
-        
+
 
 # If Desired & Applicable, Apply Sana et al. (2012) Period Distribution
     if (doSana_P and star1.mass > 15 | units.MSun):
@@ -182,15 +182,15 @@ def binary_system(star_to_become_binary, **kwargs):
         logP = ((maxLogP**pMod-minLogP**pMod)*x1 + minLogP**pMod)**(1./pMod)
         period = 10.**logP | units.day
         semi_major_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
-        
+
 # If Desired, Apply Uniform Eccentricity Distribution
     if (doFlatEcc):
         e = rp.uniform(0.0,1.0)
     #if (period < Pcirc):
     #    e = 0.0
-        
+
 # Create the New Binary
-    newBinary = new_binary_from_orbital_elements(star1.mass, star2.mass, semi_major_axis, 
+    newBinary = new_binary_from_orbital_elements(star1.mass, star2.mass, semi_major_axis,
                                                  eccentricity = e, G = constants.G)
 # Rotate the System
     util.preform_EulerRotation(newBinary)
@@ -249,7 +249,7 @@ def planetary_systems(stars, num_systems, filename_planets, **kwargs):
     # Adds the System to the Provided AMUSE Particle Set
         systems.add_particles(planets)
     return systems
-    
+
 
 def planet(ID, host_star, planet_mass, init_a, init_e, random_orientation=False):
     ''' Creates a planet as an AMUSE Particle with provided characteristics.
