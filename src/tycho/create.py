@@ -75,6 +75,14 @@ def king_cluster(num_stars, **kwargs):
     else:
         stars_SI.scale_to_standard(convert_nbody=converter)
 
+# Assigning SOI Estimate for Interaction Radius
+    if num_stars == 1:
+        stars_SI.radius = 2000*stars_SI.mass/(1.0 | units.MSun) | units.AU
+    else:
+        stars_SI.radius = 2000*stars_SI.mass/(1.0 | units.MSun) | units.AU # Temporary Solution
+        # Need to think of a better way to calculate the SOI
+        # stars_SI.radius = 100*util.calc_SOI(stars_SI.mass, np.var(stars_SI.velocity), G=units.constants.G)
+
 # If Requested, Creates Binary Systems
     if int(num_binaries) != 0:
     # Loop the Creation of Binary Systems
@@ -90,14 +98,11 @@ def king_cluster(num_stars, **kwargs):
     # Fix the ID Problem
         stars_SI.id = np.arange(len(stars_SI.id)) + 1
 
-# Assigning SOI Estimate for Interaction Radius
-    if num_stars == 1:
-        stars_SI.radius = 5000*stars_SI.mass/(1.0 | units.MSun) | units.AU
-    else:
-	    #stars_SI.radius = 2000 | units.AU
-        stars_SI.radius = 2000*stars_SI.mass/(1.0 | units.MSun) | units.AU # Temporary Solution
-        # Need to think of a better way to calculate the SOI
-        # stars_SI.radius = 100*util.calc_SOI(stars_SI.mass, np.var(stars_SI.velocity), G=units.constants.G)
+# Final Radius Setting (Ensuring that the Interaction Distance is not Small)
+    min_stellar_radius = 1000 | units.AU
+    for star in stars_SI:
+        if star.radius < min_stellar_radius:
+            star.radius = min_stellar_radius
 
 # Returns the Cluster & Converter
     return stars_SI, converter
@@ -131,7 +136,7 @@ def find_possible_binaries(stars_SI, num_binaries, BMasses_SI):
 def binary_system(star_to_become_binary, **kwargs):
 # Check Keyword Arguments
     doFlatEcc = kwargs.get("FlatEcc",True) # Apply Uniform Eccentricity Distribution
-    doBasic = kwargs.get("Basic", True) # Apply a Basic Binary Distribution
+    doBasic = kwargs.get("Basic", False) # Apply a Basic Binary Distribution
     doFlatQ = kwargs.get("FlatQ",True) # Apply a Uniform Mass-Ratio Distribution
     doRag_P = kwargs.get("RagP",True) # Apply Raghavan et al. (2010) Period Distribution
     doSana_P = kwargs.get("SanaP", False) # Apply Sana et al. (2012) Period Distribution
@@ -158,9 +163,11 @@ def binary_system(star_to_become_binary, **kwargs):
 
 # If Desired, Apply the Uniform Mass-Ratio Distribution (Goodwin, 2012)
     if (doFlatQ):
-        q = np.random.random()
-        star1.mass = star_to_become_binary.mass / (1. + q)
-        star2.mass =  q * star1.mass
+        min_stellar_mass = 100 | units.MJupiter # Greater Mass Than "AB Doradus C"
+        while (star1.mass < min_stellar_mass) or (star2.mass < min_stellar_mass):
+            q = np.random.random()
+            star1.mass = star_to_become_binary.mass / (1. + q)
+            star2.mass =  q * star1.mass
 
 # If Desired, Apply Raghavan et al. (2010) Period Distribution
     if (doRag_P):
@@ -198,6 +205,11 @@ def binary_system(star_to_become_binary, **kwargs):
     star1.velocity = vCM + newBinary[0].velocity
     star2.position = rCM + newBinary[1].position
     star2.velocity = vCM + newBinary[1].velocity
+
+# Apply a Fitting Dynamical Radius
+    binary.radius = 5*semi_major_axis
+
+# Return the Particle Set of Stars in the Binary
     return binary
 
 

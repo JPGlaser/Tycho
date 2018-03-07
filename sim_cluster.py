@@ -447,7 +447,7 @@ if __name__=="__main__":
     # Artificially Age the Stars
     # TODO: Work on Non-Syncronus Stellar Evolution
     if pregen:
-        t_start = 0.360453276406 | units.Myr # Average for Age of Bull Head Cluster
+        t_start = 0.360453276406 | units.Myr # Average for Age of Draco Cluster
         sev_code.evolve_model(t_start)
     elif not crash:
         t_start = 10 | units.Myr # Average for Age of After Gas Ejection
