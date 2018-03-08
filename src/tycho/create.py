@@ -164,7 +164,9 @@ def binary_system(star_to_become_binary, **kwargs):
 # If Desired, Apply the Uniform Mass-Ratio Distribution (Goodwin, 2012)
     if (doFlatQ):
         min_stellar_mass = 100 | units.MJupiter # Greater Mass Than "AB Doradus C"
-        while (star1.mass < min_stellar_mass) or (star2.mass < min_stellar_mass):
+        star1.mass = 0 | units.MSun
+        star2.mass = 0 | units.MSun
+        while (star1.mass <= min_stellar_mass) or (star2.mass <= min_stellar_mass):
             q = np.random.random()
             star1.mass = star_to_become_binary.mass / (1. + q)
             star2.mass =  q * star1.mass
