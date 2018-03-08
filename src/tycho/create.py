@@ -170,6 +170,7 @@ def binary_system(star_to_become_binary, **kwargs):
             q = np.random.random()
             star1.mass = star_to_become_binary.mass / (1. + q)
             star2.mass =  q * star1.mass
+            print star1.mass.value_in(units.MSun), star2.mass.value_in(units.MSun)
 
 # If Desired, Apply Raghavan et al. (2010) Period Distribution
     if (doRag_P):
