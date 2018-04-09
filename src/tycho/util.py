@@ -27,6 +27,7 @@ from amuse.units import constants
 from amuse.datamodel import particle_attributes
 from amuse.io import *
 from amuse.lab import *
+from amuse.community.seba.interface import SeBa
 
 # ------------------------------------- #
 #           Defining Functions          #
@@ -137,3 +138,67 @@ def init_smalln(unit_converter = None):
 def stop_smalln():
     SMALLN.stop()
 
+# Take a particle set and a time, and perfrom stellar evolution on the particle set until that time
+def StellarEvolution(star_list, age):
+    se = SeBa()
+    # Looping through the particle set for asynchronous stellar evolution
+    for star in star_list:
+        # Immediately check that the particle is a star
+       	# Pass if it is NOT a star, using SE on a non-star will error
+        if star.type!="star":
+            pass
+        # A few options here:
+        # 1 figure out how often the code 'loses connection' when evolving 10k stars
+        #   and then reset the SE every x stars
+        # 2 try: evolve stars, except: when it crashes reset SE and goto try
+        # 
+
+        else:
+            end_time = 0
+            end_time= age+star.age
+            # Add the single star to the chosen SE code
+            se.particles.add_particle(star)
+            # Attempt to evolve the star to a stored age value
+            # If no value is stored evolve the star to 8 Myrs
+            '''
+            try:
+                # Use the star's stored age if it is greater than 0 otherwise evolve 8 years
+                if star.age > 0 |units.yr: age = star.age
+                else: age = 8 | units.Myr
+            except:
+                print "No stored age attribute for star id: "+str(star.id)
+                age = 8 | units.Myr
+            '''
+
+            # This part handles the actually stellar evolution
+            if end_time > 0 | units.Myr:
+                # not sure about using se.evolve_model or individually evolving parts
+                #se.evolve_model(end_time)
+                star, se = singleStarEvolution(star, end_time, se)
+
+    # Return the modified Particle set    
+    return star_list
+
+# The reason we separate the actual evolution into a separate class is to use a try except method on restarting SeBa
+# If you don't restart SeBa often enough the code crashes, but if you restart too often the overhead becomes very high
+# There could possibly be a better way to manage this but I was unaware of a better way.
+def singleStarEvolution(star, end_time, se):
+    # First attempt to evolve the star regularly
+    try:
+        star.mass = se.evolve_star(star.mass,end_time,0.02)[1]
+        star.luminosity = se.evolve_star(star.mass,end_time,0.02)[3]
+        star.physical_radius = se.evolve_star(star.mass,end_time,0.02)[2]
+        star.age = se.evolve_star(star.mass,end_time,0.02)[0]
+        star.temperature = se.evolve_star(star.mass,end_time,0.02)[4]
+
+    # If that fails for some reason reset the stellar evolution
+    except:
+	se.stop()
+        se = SeBa()
+        star.mass = se.evolve_star(star.mass,end_time,0.02)[1]
+        star.luminosity = se.evolve_star(star.mass,end_time,0.02)[3]
+        star.physical_radius = se.evolve_star(star.mass,end_time,0.02)[2]
+        star.age = se.evolve_star(star.mass,end_time,0.02)[0]
+        star.temperature = se.evolve_star(star.mass,end_time,0.02)[4]
+    # return the star and stellar evolution code
+    return star, se
