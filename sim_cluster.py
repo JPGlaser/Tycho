@@ -279,7 +279,7 @@ if __name__=="__main__":
                 PossibleHostStars = Starting_Stars.copy()
                 for star in PossibleHostStars:
                     if (star.mass in Binary_Singles.mass):
-                        PossibleHostStars.remove_particle(star) 
+                        PossibleHostStars.remove_particle(star)
                     elif star.mass < HostStar_MinMass or star.mass > HostStar_MaxMass:
                         PossibleHostStars.remove_particle(star)
 
@@ -476,20 +476,25 @@ if __name__=="__main__":
 
     # Ensuring the Gravity Code Starts at the Right Time
     gravity_code.parameters.begin_time = t_start
-
-    # Artificially Evolve the Cluster to Get Multiples to Pickup Planetary Systems & Binaries
+    t_current = t_start
 
 # ------------------------------------- #
 #          Evolving the Cluster         #
 # ------------------------------------- #
 
     # TODO: Implement Leap-Frog Coupling of Stellar Evolution & Gravity
-    t_current = t_start
     step_index = 0
+    t_catch = t_start+100 | units.yr
     E0 = print_diagnostics(multiples_code)
     while t_current <= t_end:
-        # Increase the Current Time by the Time-Step
-        t_current += delta_t
+        # Artificially Evolve the Cluster to Get Multiples to Pickup Planetary Systems & Binaries
+        if t_current <= t_catch:
+            t_current += 10 | units.day
+            increase_index = False
+        # Increase the Current Time by the Normal Time-Step
+        else:
+            t_current += delta_t
+            increase_index = True
 
         # Evolve the Gravitational Codes ( via Bridge Code)
         bridge_code.evolve_model(t_current)
@@ -555,7 +560,8 @@ if __name__=="__main__":
             sys.stdout.flush()
 
         # Increase the Step Index
-        step_index += 1
+        if increase_index:
+            step_index += 1
 
         # Log that a Step was Taken
         print '\n-------------'
