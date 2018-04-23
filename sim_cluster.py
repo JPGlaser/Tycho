@@ -194,8 +194,8 @@ if __name__=="__main__":
                       help="Enter the w0 parameter for the King's Model.")
     parser.add_option("-T", "--end-time", dest="t_end", default=1., type="float",
                       help="Enter the desired end time in Myr.")
-    parser.add_option("-b", "--num-init-binaries", dest="num_init_binaries", default = 0, type ="int",
-       		          help = "Enter the initial number of binaries.")
+    parser.add_option("-b", "--doBinaries", dest="doBinaries", action="store_true",
+       		          help = "Enables formation of Primordial Binaries.")
     parser.add_option("-S", "--seed", dest="seed", default = "42", type="str",
                       help = "Enter a random seed for the simulation.")
     parser.add_option("-R", "--doRestart", dest="doRestart", action="store_true",
@@ -207,7 +207,7 @@ if __name__=="__main__":
     # Set Commonly Used Python Variables from Options
     num_stars = options.num_stars
     num_psys = options.num_psys
-    num_init_binaries = options.num_init_binaries
+    w0 = options.w0
     t_start = 0.0 | units.Myr
     t_end = options.t_end | units.Myr
     delta_t = options.dt | units.Myr
@@ -215,6 +215,8 @@ if __name__=="__main__":
     if cluster_name == None:
         cluster_name = str(options.seed)
     pregen = options.pregen
+    doRestart = options.doRestart
+    doBinaries = options.doBinaries
 
 
 # ------------------------------------- #
@@ -261,14 +263,28 @@ if __name__=="__main__":
             # Should Matching I.C. Not Exist, Generate a New Cluster ...
             except:
                 # Generate a New Cluster Matching Desired Initial Conditions & the Large-Scale Converter
-                Starting_Stars, LargeScaleConverter = create.king_cluster(num_stars,
-                                                                        num_binaries = num_init_binaries,
-                                                                        seed = options.seed)
+                if doBinaries:
+                    Starting_Stars, LargeScaleConverter, Binary_CoMs, Binary_Singles = \
+                        create.king_cluster_v2(num_stars, w0 = w0, do_binaries = True,
+                                                split_binaries = True, seed = options.seed)
+                else:
+                    create.king_cluster_v2(num_stars, w0 = w0, do_binaries = False, seed = options.seed)
+
                 # Create Initial Conditions Array
                 initial_conditions = util.store_ic(LargeScaleConverter, options)
+
+                # Select Possible Stars to Become Planetary Systems (NO BINARIES ATM)
+                HostStar_MinMass = 0.09 | units.MSun # TRAPPIST-1
+                HostStar_MaxMass = 4.00 | units.MSun # NGC 4349-127 or HD 13189
+                PossibleHostStars = (Starting_Stars - Binary_Singles).copy()
+                for star in PossibleHostStars:
+                    if star.mass < HostStar_MinMass or star.mass > HostStar_MaxMass:
+                        PossibleHostStars.remove_particle(star)
+
                 # Create the Planetary Systems in SU Units
-                Starting_Planets = create.planetary_systems(Starting_Stars, num_psys, 'test_planets',
-                                                            Jupiter=True)
+                Starting_Planets = create.planetary_systems_v2(PossibleHostStars, num_psys, Jupiter=True)
+
+    # Set up the Small Scale Converter for Kepler/SmallN
     SmallScaleConverter = nbody_system.nbody_to_si(2*np.mean(Starting_Stars.mass),
                                                    2*np.mean(Starting_Stars.radius))
     # Ensuring the Minimum Interaction Radius for Stars is Held

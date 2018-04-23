@@ -71,7 +71,7 @@ def preform_EulerRotation(particle_set):
         particle_set: AMUSE particle set which it will preform the transform on.
 
         !! Based on James Arvo's 1996 "Fast Random Rotation Matrices"
-        !! https://pdfs.semanticscholar.org/04f3/beeee1ce89b9adf17a6fabde1221a328dbad.pdf  
+        !! https://pdfs.semanticscholar.org/04f3/beeee1ce89b9adf17a6fabde1221a328dbad.pdf
     '''
 # First: Generate the three Uniformly Distributed Numbers (Two Angles, One Decimal)
     n_1 = np.random.uniform(0.0, math.pi*2.0)
@@ -90,7 +90,7 @@ def preform_EulerRotation(particle_set):
          [s2*r3],
          [np.sqrt(1-n_3)]]
 # Third: Create the Rotation Matrix
-    rotate = (np.outer(V, V) - np.dot(np.eye(3),(R)))	
+    rotate = (np.outer(V, V) - np.dot(np.eye(3),(R)))
 # Forth: Preform the Rotation & Update the Particle
     for particle in particle_set:
         pos = np.matrix(([[particle.x.number], [particle.y.number], [particle.z.number]]))
@@ -108,6 +108,33 @@ def calc_HillRadius(a, e, m_planet, m_star):
     '''
     return a*(1.0-e)*(m_planet/(3*m_star))**(1.5)
 
+def calc_SnowLine(host_star):
+    ''' Calculates the Snow Line (Ida & Lin 2005, Kennedy & Kenyon 2008)
+    '''
+    return 2.7*(host_star.mass/units.MSun)**2.0 | units.AU
+
+def calc_JovianPlacement(host_star):
+    ''' Calculates the placement of a Jovian, scaling Jupiter's location based
+        on the host star's mass.
+    '''
+    a_jupiter = 5.454 | units.AU
+    return a_jupiter**(host_star.mass/units.MSun)**2.0
+
+def calc_PeriodRatio(planet1_a, planet2_a, mu):
+    period_1 = 2*np.pi*np.sqrt(planet1_a**3/mu)
+    period_2 = 2*np.pi*np.sqrt(planet2_a**3/mu)
+    return period_1/period_2
+
+def calc_RelativePlanetPlacement(host_star, planet_mass, period_ratio_to_jovian):
+    ''' Calculates the relative placement of a planet based on a stable period
+        ratio with the orbital period of the system's jovian.
+    '''
+    a_jovian = calc_JovianPlacement(host_star)
+    mu = constants.G*host_star.mass
+    period_jovian = 2*np.pi*np.sqrt(a_jovian**3/mu)
+    period_planet = period_ratio_to_jovian*period_jovian
+    init_a = ((period_planet**2.)/(4.*np.pi**2.)*mu)**(1./3.)
+    return init_a
 
 def calc_SOI(m_star, vel_var, G):
     ''' Approximates the Sphere of Influence for a singlular stellar object.
@@ -117,6 +144,21 @@ def calc_SOI(m_star, vel_var, G):
         !! https://en.wikipedia.org/wiki/Sphere_of_influence_(black_hole)
     '''
     return G*m_star/vel_var
+
+def new_truncated_kroupa(number_of_stars, **kwargs):
+    """ Returns a Kroupa (2001) Mass Distribution in SI units, with Mass Ranges:
+            [Min_Mass, 0.08, 0.5, Max_Mass] MSun,
+        and power-law exponents of each mass range:
+            [-0.3, -1.3, -2.3]
+        min_mass: the low-mass cut-off (Defaults to 0.01 MSun)
+        max_mass: the high-mass cut-off (Defaults to 100.0 MSun)
+    """
+    min_mass = kwargs.get("min_mass", 0.01 | units.MSun)
+    max_mass = kwargs.get("max_mass", 100 | units.MSun)
+    return MultiplePartIMF(
+        mass_boundaries = [min_mass, 0.08, 0.5, max_mass] | units.MSun,
+        alphas = [-0.3, -1.3, -2.3], random=True
+    ).next_mass(number_of_particles)
 
 
 SMALLN = None
@@ -136,4 +178,3 @@ def init_smalln(unit_converter = None):
 
 def stop_smalln():
     SMALLN.stop()
-
