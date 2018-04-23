@@ -227,7 +227,7 @@ def king_cluster_v2(num_stars, **kwargs):
     '''
 # Check Keyword Arguments
     w0 = kwargs.get("w0", 2.5)
-    viral_radius = kwargs.get("vradius", 1 | units.parsec)
+    virial_radius = kwargs.get("vradius", 1 | units.parsec)
     rand_seed = util.new_seed_from_string(kwargs.get("seed", 7))
     do_binaries = kwargs.get("do_binaries", True)
     binary_recursions = kwargs.get("binary_recursions", 1)
@@ -239,9 +239,7 @@ def king_cluster_v2(num_stars, **kwargs):
     min_stellar_mass = 100 | units.MJupiter
     max_stellar_mass = 10 | units.MSun
 # Creates a List of Primary Masses (in SI Units) Drawn from the Kroupa IMF
-    Masses_SI = util.new_truncated_kroupa(num_stars,
-                                           min_mass = min_stellar_mass,
-                                           max_mass = max_stellar_mass)
+    Masses_SI = util.new_truncated_kroupa(num_stars)
 
 # If Primordial Binaries are Desired, Start the Conversion Process
     if do_binaries:
@@ -302,7 +300,7 @@ def king_cluster_v2(num_stars, **kwargs):
             stars_SI.add_particles(singles_in_binary)
 
 # Set Particle Ids for Easy Referencing
-    star_SI.id = np.arange(len(star_SI)) + 1
+    stars_SI.id = np.arange(len(stars_SI)) + 1
 
 # Final Radius Setting (Ensuring that the Interaction Distance is not Small)
     min_stellar_radius = 1000 | units.AU
@@ -314,7 +312,7 @@ def king_cluster_v2(num_stars, **kwargs):
     if do_binaries:
         return stars_SI, converter, binaries, singles_in_binaries
     else:
-        retrun stars_SI, converter
+        return stars_SI, converter
 
 def find_possible_binaries_v2(com_mass_array, **kwargs):
     binary_recursions = kwargs.get("binary_recursions", 1)
@@ -329,15 +327,13 @@ def find_possible_binaries_v2(com_mass_array, **kwargs):
         for com_mass in com_mass_array:
             assigned_probability = rp.uniform(0, 1)
             if not current_com_id in ids_to_become_binaries:
-                fb = 0.2 * np.log10(com_mass) + 0.5
+                fb = 0.2 * np.log10(com_mass.value_in(units.MSun)) + 0.5
                 if assigned_probability <= fb:
                 # If the Assigned Probability is LTE the Binary Likihood ...
                 # Add the Index to the Array for Later CoM Removal
                     ids_to_become_binaries.append(current_com_id)
                 # Draw a Distrubution of Kroupa Masses
-                    possible_extra_mass = util.new_truncated_kroupa(100,
-                                            min_mass = min_stellar_mass,
-                                            max_mass = max_stellar_mass)
+                    possible_extra_mass = util.new_truncated_kroupa(100)
                 # Randomly Select one of the Above Masses
                     selected_index = int(np.floor(100*rp.uniform(0, 1)))
                     selected_extra_mass = possible_extra_mass[selected_index]
@@ -521,7 +517,7 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
             init_e = 0.016
             planets.add_particle(planet(ID_Earth+system, host_star, mass_E, init_a, init_e))
         if makeJupiter:
-            init_a = util.calc_JovianPlacement(host)
+            init_a = util.calc_JovianPlacement(host_star)
             init_e = 0.048
             mass_J = 1 | units.MJupiter
             planets.add_particle(planet(ID_Jupiter+system, host_star, mass_J, init_a, init_e))

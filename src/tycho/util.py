@@ -28,6 +28,8 @@ from amuse.datamodel import particle_attributes
 from amuse.io import *
 from amuse.lab import *
 
+from amuse.ic.brokenimf import MultiplePartIMF
+
 # ------------------------------------- #
 #           Defining Functions          #
 # ------------------------------------- #
@@ -111,14 +113,14 @@ def calc_HillRadius(a, e, m_planet, m_star):
 def calc_SnowLine(host_star):
     ''' Calculates the Snow Line (Ida & Lin 2005, Kennedy & Kenyon 2008)
     '''
-    return 2.7*(host_star.mass/units.MSun)**2.0 | units.AU
+    return 2.7*(host_star.mass/ (1.0 | units.MSun))**2.0 | units.AU
 
 def calc_JovianPlacement(host_star):
     ''' Calculates the placement of a Jovian, scaling Jupiter's location based
         on the host star's mass.
     '''
     a_jupiter = 5.454 | units.AU
-    return a_jupiter**(host_star.mass/units.MSun)**2.0
+    return a_jupiter*(host_star.mass/ (1.0 | units.MSun))**2.0
 
 def calc_PeriodRatio(planet1_a, planet2_a, mu):
     period_1 = 2*np.pi*np.sqrt(planet1_a**3/mu)
@@ -153,12 +155,12 @@ def new_truncated_kroupa(number_of_stars, **kwargs):
         min_mass: the low-mass cut-off (Defaults to 0.01 MSun)
         max_mass: the high-mass cut-off (Defaults to 100.0 MSun)
     """
-    min_mass = kwargs.get("min_mass", 0.01 | units.MSun)
-    max_mass = kwargs.get("max_mass", 100 | units.MSun)
+    min_mass = kwargs.get("min_mass", 0.01)
+    max_mass = kwargs.get("max_mass", 100)
     return MultiplePartIMF(
         mass_boundaries = [min_mass, 0.08, 0.5, max_mass] | units.MSun,
         alphas = [-0.3, -1.3, -2.3], random=True
-    ).next_mass(number_of_particles)
+    ).next_mass(number_of_stars)
 
 
 SMALLN = None

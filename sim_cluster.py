@@ -276,9 +276,11 @@ if __name__=="__main__":
                 # Select Possible Stars to Become Planetary Systems (NO BINARIES ATM)
                 HostStar_MinMass = 0.09 | units.MSun # TRAPPIST-1
                 HostStar_MaxMass = 4.00 | units.MSun # NGC 4349-127 or HD 13189
-                PossibleHostStars = (Starting_Stars - Binary_Singles).copy()
+                PossibleHostStars = Starting_Stars.copy()
                 for star in PossibleHostStars:
-                    if star.mass < HostStar_MinMass or star.mass > HostStar_MaxMass:
+                    if (star.mass in Binary_Singles.mass):
+                        PossibleHostStars.remove_particle(star) 
+                    elif star.mass < HostStar_MinMass or star.mass > HostStar_MaxMass:
                         PossibleHostStars.remove_particle(star)
 
                 # Create the Planetary Systems in SU Units
@@ -474,6 +476,8 @@ if __name__=="__main__":
 
     # Ensuring the Gravity Code Starts at the Right Time
     gravity_code.parameters.begin_time = t_start
+
+    # Artificially Evolve the Cluster to Get Multiples to Pickup Planetary Systems & Binaries
 
 # ------------------------------------- #
 #          Evolving the Cluster         #
