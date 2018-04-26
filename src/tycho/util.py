@@ -83,7 +83,7 @@ def preform_EulerRotation(particle_set):
     c1 = np.cos(n_1)
     c2 = np.cos(n_2)
     s1 = np.sin(n_1)
-    s2 = np.cos(n_2)
+    s2 = np.sin(n_2)
     r3 = np.sqrt(n_3)
     R = [[  c1,  s1, 0.0],
          [ -s1,  c1, 0.0],
@@ -92,7 +92,13 @@ def preform_EulerRotation(particle_set):
          [s2*r3],
          [np.sqrt(1-n_3)]]
 # Third: Create the Rotation Matrix
-    rotate = (np.outer(V, V) - np.dot(np.eye(3),(R)))
+    
+    # This was the old rotation matrix calculation...
+    #rotate = (np.outer(V, V) - np.dot(np.eye(3),(R)))
+
+    # But here is the new one which more correctly implements the equations from the paper referenced above...
+    rotate = (2 * np.dot(np.outer(V, V), R) - np.dot(np.eye(3), R))
+
 # Forth: Preform the Rotation & Update the Particle
     for particle in particle_set:
         pos = np.matrix(([[particle.x.number], [particle.y.number], [particle.z.number]]))
@@ -152,11 +158,11 @@ def new_truncated_kroupa(number_of_stars, **kwargs):
             [Min_Mass, 0.08, 0.5, Max_Mass] MSun,
         and power-law exponents of each mass range:
             [-0.3, -1.3, -2.3]
-        min_mass: the low-mass cut-off (Defaults to 0.01 MSun)
-        max_mass: the high-mass cut-off (Defaults to 100.0 MSun)
+        min_mass: the low-mass cut-off (Defaults to 0.1 MSun)
+        max_mass: the high-mass cut-off (Defaults to 10.0 MSun)
     """
-    min_mass = kwargs.get("min_mass", 0.01)
-    max_mass = kwargs.get("max_mass", 100)
+    min_mass = kwargs.get("min_mass", 0.1)
+    max_mass = kwargs.get("max_mass", 10)
     return MultiplePartIMF(
         mass_boundaries = [min_mass, 0.08, 0.5, max_mass] | units.MSun,
         alphas = [-0.3, -1.3, -2.3], random=True

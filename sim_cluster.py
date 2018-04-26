@@ -55,7 +55,7 @@ from amuse.ext.galactic_potentials import MWpotentialBovy2015
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
-from tycho import multiples2 as multiples
+from tycho import multiples3 as multiples
 
 
 # ------------------------------------- #
@@ -407,7 +407,7 @@ if __name__=="__main__":
     # Setting up Gravity Coupling Code (Bridge)
     bridge_code = Bridge(verbose=False)
     bridge_code.add_system(multiples_code, (galactic_code,))
-    bridge_code.timestep = delta_t
+    #bridge_code.timestep = delta_t
     # ----------------------------------------------------------------------------------------------------
 
 
@@ -477,6 +477,7 @@ if __name__=="__main__":
     # Ensuring the Gravity Code Starts at the Right Time
     gravity_code.parameters.begin_time = t_start
     t_current = t_start
+    bridge_code.evolve_model(t_current, timestep = 5 | units.Myr)
 
 # ------------------------------------- #
 #          Evolving the Cluster         #
@@ -484,17 +485,29 @@ if __name__=="__main__":
 
     # TODO: Implement Leap-Frog Coupling of Stellar Evolution & Gravity
     step_index = 0
-    t_catch = t_start+100 | units.yr
+    t_catch = t_start + (2000 | units.yr)
     E0 = print_diagnostics(multiples_code)
+
+    dt_small = 10 | units.yr
+    increase_index = False
+    timestep_reset = False
+
     while t_current <= t_end:
         # Artificially Evolve the Cluster to Get Multiples to Pickup Planetary Systems & Binaries
-        if t_current <= t_catch:
-            t_current += 10 | units.day
-            increase_index = False
+        if t_current >= t_start and t_current <= t_catch:
+            bridge_code.timestep = dt_small
+            t_current += dt_small
+            #gravity_code.parameters.timestep_parameter = 2**(-5)
+            gravity_code.parameters.force_sync = True
         # Increase the Current Time by the Normal Time-Step
         else:
             t_current += delta_t
             increase_index = True
+        if increase_index and not timestep_reset:
+            bridge_code.timestep = delta_t
+            #gravity_code.parameters.timestep_parameter = 2**(-5)
+            gravity_code.parameters.force_sync = False
+            timestep_reset = True
 
         # Evolve the Gravitational Codes ( via Bridge Code)
         bridge_code.evolve_model(t_current)

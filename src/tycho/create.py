@@ -297,7 +297,7 @@ def king_cluster_v2(num_stars, **kwargs):
         #       to match functionality exactly plus Kira.py features.
         if split_binaries:
             stars_SI.remove_particles(com_to_remove)
-            stars_SI.add_particles(singles_in_binary)
+            stars_SI.add_particles(singles_in_binaries)
 
 # Set Particle Ids for Easy Referencing
     stars_SI.id = np.arange(len(stars_SI)) + 1
@@ -317,7 +317,7 @@ def king_cluster_v2(num_stars, **kwargs):
 def find_possible_binaries_v2(com_mass_array, **kwargs):
     binary_recursions = kwargs.get("binary_recursions", 1)
     min_stellar_mass = kwargs.get("min_mass", 100 | units.MJupiter)
-    max_stellar_mass = kwargs.get("min_mass", 10 | units.MSun)
+    max_stellar_mass = kwargs.get("max_mass", 10 | units.MSun)
 
     ids_to_become_binaries = []
     recursion_counter = 0
@@ -362,6 +362,8 @@ def binary_system_v2(star_to_become_binary, **kwargs):
     star2 = singles_in_binary[1]
     star1.type = 'star'
     star2.type = 'star'
+    star1.mass = 0. | units.MSun
+    star2.mass = 0. | units.MSun
 
 # If Desired, Apply a Basic Binary Distribution
     if (doBasic):
@@ -372,12 +374,11 @@ def binary_system_v2(star_to_become_binary, **kwargs):
 
 # If Desired, Apply the Uniform Mass-Ratio Distribution (Goodwin, 2012)
     if (doFlatQ):
-        min_stellar_mass = 100 | units.MJupiter # Greater Mass Than "AB Doradus C"
-        star1.mass = 0 | units.MSun
-        star2.mass = 0 | units.MSun
-        q = np.random.random()
-        star1.mass = star_to_become_binary.mass / (1. + q)
-        star2.mass =  q * star1.mass
+        min_stellar_mass = 100. | units.MJupiter # Greater Mass Than "AB Doradus C"
+        while star2.mass <= min_stellar_mass:
+            q = np.random.random_sample()
+            star1.mass = star_to_become_binary.mass / (1. + q)
+            star2.mass =  q * star1.mass
 
 # If Desired, Apply Raghavan et al. (2010) Period Distribution
     if (doRag_P):
