@@ -18,7 +18,6 @@ import hashlib
 import copy
 import traceback
 import signal
-
 from time import gmtime
 from time import mktime
 from time import clock
@@ -474,10 +473,16 @@ if __name__=="__main__":
                                                  "temperature", "age"])
     channel_from_gravitating_to_multi.copy_attributes(["mass"])
 
+    # Ensuring that Multiples Picks up All Desired Systems
+    gravity_code.parameters.zero_step_mode = 1
+    multiples_code.evolve_model(gravity_code.model_time)
+    gravity_code.parameters.zero_step_mode = 0
+
     # Ensuring the Gravity Code Starts at the Right Time
     gravity_code.parameters.begin_time = t_start
     t_current = t_start
-    bridge_code.evolve_model(t_current, timestep = 5 | units.Myr)
+    bridge_code.evolve_model(t_current, timestep = t_start/4.)
+    
 
 # ------------------------------------- #
 #          Evolving the Cluster         #
@@ -485,29 +490,29 @@ if __name__=="__main__":
 
     # TODO: Implement Leap-Frog Coupling of Stellar Evolution & Gravity
     step_index = 0
-    t_catch = t_start + (2000 | units.yr)
+    #t_catch = t_start + (2000 | units.yr)
     E0 = print_diagnostics(multiples_code)
 
-    dt_small = 10 | units.yr
-    increase_index = False
-    timestep_reset = False
+    #dt_small = 10 | units.yr
+    #increase_index = False
+    #timestep_reset = False
 
     while t_current <= t_end:
-        # Artificially Evolve the Cluster to Get Multiples to Pickup Planetary Systems & Binaries
-        if t_current >= t_start and t_current <= t_catch:
-            bridge_code.timestep = dt_small
-            t_current += dt_small
-            #gravity_code.parameters.timestep_parameter = 2**(-5)
-            gravity_code.parameters.force_sync = True
-        # Increase the Current Time by the Normal Time-Step
-        else:
-            t_current += delta_t
-            increase_index = True
-        if increase_index and not timestep_reset:
-            bridge_code.timestep = delta_t
-            #gravity_code.parameters.timestep_parameter = 2**(-5)
-            gravity_code.parameters.force_sync = False
-            timestep_reset = True
+        ## Artificially Evolve the Cluster to Get Multiples to Pickup Planetary Systems & Binaries
+        #if t_current >= t_start and t_current <= t_catch:
+        #    bridge_code.timestep = dt_small
+        #    t_current += dt_small
+        #    #gravity_code.parameters.timestep_parameter = 2**(-5)
+        #    gravity_code.parameters.force_sync = True
+        ## Increase the Current Time by the Normal Time-Step
+        #else:
+        #    t_current += delta_t
+        #    increase_index = True
+        #if increase_index and not timestep_reset:
+        #    bridge_code.timestep = delta_t
+        #    #gravity_code.parameters.timestep_parameter = 2**(-5)
+        #    gravity_code.parameters.force_sync = False
+        #    timestep_reset = True
 
         # Evolve the Gravitational Codes ( via Bridge Code)
         bridge_code.evolve_model(t_current)

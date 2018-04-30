@@ -238,9 +238,6 @@ class Multiples(object):
 
         self.check_tidal_perturbation = False
 
-        # Close-Encounter Callback Function Definition
-        self.callback = None
-
     @property
     def particles(self):
         return self.gravity_code.particles
@@ -387,7 +384,7 @@ class Multiples(object):
             print 'number of multiples:', len(self.root_to_tree)
             sys.stdout.flush()
 
-    def evolve_model(self, end_time):
+    def evolve_model(self, end_time, callback=None):
 
         stopping_condition = \
             self.gravity_code.stopping_conditions.collision_detection
@@ -400,7 +397,7 @@ class Multiples(object):
         count_resolve_encounter = 0
         count_ignore_encounter = 0
 
-        while time <= end_time:     # the <= here allows zero-length steps
+        while time <= end_time:		# the <= here allows zero-length steps
 
             if self.global_debug > 1:
                 print ''
@@ -411,7 +408,7 @@ class Multiples(object):
             self.gravity_code.evolve_model(end_time)
             newtime = self.gravity_code.model_time
 
-            #JB modified this: in Bonsai we can take a zero-length
+            # JB modified this: in Bonsai we can take a zero-length
             # time step to detect multiples. That would cause the
             # newtime == time to evaluate to true when there are
             # multiples detected and break out of the evaluate loop
@@ -472,8 +469,8 @@ class Multiples(object):
                     star2 = star2.as_particle_in_set(self._inmemory_particles)
 
                     cont = True
-                    #if self.callback != None:
-                    #    cont = self.callback(time, star1, star2)
+                    if callback != None:
+                        cont = callback(time, star1, star2)
 
                     if self.global_debug > 0:
                         print 'initial top-level:',         \
@@ -669,7 +666,7 @@ class Multiples(object):
 
         self.channel_from_code_to_memory.copy_attribute("index_in_code", "id")
 
-    def expand_encounter(self, scattering_stars, delete=True):
+    def expand_encounter(self, scattering_stars):
 
         # Create an encounter particle set from the top-level stars.
         # Add stars to the encounter set, add in components when we
@@ -677,20 +674,17 @@ class Multiples(object):
 
         particles_in_encounter = Particles(0)
         Emul = zero
-        #print "Looking for Trees"
+
         for star in scattering_stars:
             if star in self.root_to_tree:
                 tree = self.root_to_tree[star]
                 isbin, dEmul = get_multiple_energy2(tree, self.gravity_constant)
                 Emul += dEmul
                 openup_tree(star, tree, particles_in_encounter)
-                if delete: del self.root_to_tree[star]
-        #print "Tree Found for ID: "+str(star.id)
+                del self.root_to_tree[star]
             else:
                 particles_in_encounter.add_particle(star)
-        #print "No Tree Found for ID: "+str(star.id)
-        #print ""
-        sys.stdout.flush()
+
         return particles_in_encounter, Emul
 
     def manage_encounter(self, global_time, star1, star2,
@@ -833,9 +827,6 @@ class Multiples(object):
                     return True, 0., 0., 0., 0., 0., None
 
         self.before.add_particles(scattering_stars)
-
-        if self.callback != None:
-	        junk = self.callback(global_time, star1.copy(), star2.copy())
 
         # Note: sorted_stars, etc. are used once more, when checking
         # for wide binaries (at 6b below).
