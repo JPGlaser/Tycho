@@ -350,7 +350,7 @@ if __name__=="__main__":
 
     # Setting up Top-Level Gravity Code (PH4)
     num_workers = 1
-    eps2 = 1 | units.AU**2
+    eps2 = (0.0|units.parsec)**2 #1 | units.AU**2
     try:
         no_gpu = options.no_gpu
         gpu_ID = options.gpu_ID
@@ -482,7 +482,7 @@ if __name__=="__main__":
     gravity_code.parameters.begin_time = t_start
     t_current = t_start
     bridge_code.evolve_model(t_current, timestep = t_start/4.)
-    
+
 
 # ------------------------------------- #
 #          Evolving the Cluster         #

@@ -301,7 +301,7 @@ def king_cluster_v2(num_stars, **kwargs):
 
 # Set Particle Ids for Easy Referencing
     stars_SI.id = np.arange(len(stars_SI)) + 1
-
+    
 # Final Radius Setting (Ensuring that the Interaction Distance is not Small)
     min_stellar_radius = 1000 | units.AU
     for star in stars_SI:
