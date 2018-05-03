@@ -301,7 +301,7 @@ def king_cluster_v2(num_stars, **kwargs):
 
 # Set Particle Ids for Easy Referencing
     stars_SI.id = np.arange(len(stars_SI)) + 1
-    
+
 # Final Radius Setting (Ensuring that the Interaction Distance is not Small)
     min_stellar_radius = 1000 | units.AU
     for star in stars_SI:
@@ -516,18 +516,18 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
             mass_E = 0.003 | units.MJupiter
             init_a = util.calc_RelativePlanetPlacement(host_star, mass_E, period_ratio)
             init_e = 0.016
-            planets.add_particle(planet(ID_Earth+system, host_star, mass_E, init_a, init_e))
+            planets.add_particle(planet_v2(ID_Earth+system, host_star, mass_E, init_a, init_e))
         if makeJupiter:
             init_a = util.calc_JovianPlacement(host_star)
             init_e = 0.048
             mass_J = 1 | units.MJupiter
-            planets.add_particle(planet(ID_Jupiter+system, host_star, mass_J, init_a, init_e))
+            planets.add_particle(planet_v2(ID_Jupiter+system, host_star, mass_J, init_a, init_e))
         if makeNeptune:
             period_ratio = calc_PeriodRatio(30.110 | units.AU,  5.454 | units.AU, mu)
             mass_N = 0.054 | units.MJupiter
             init_a = util.calc_RelativePlanetPlacement(host_star, mass_N, period_ratio)
             init_e = 0.009
-            planets.add_particle(planet(ID_Neptune+system, host_star, mass_N, init_a, init_e))
+            planets.add_particle(planet_v2(ID_Neptune+system, host_star, mass_N, init_a, init_e))
     # Moves Planetary System to the Origin and Applies a Random Euler Rotation
         for p in planets:
             p.position = p.position - host_star.position
@@ -539,6 +539,44 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
     # Adds the System to the Provided AMUSE Particle Set
         systems.add_particles(planets)
     return systems
+
+def planet_v2(ID, host_star, planet_mass, init_a, init_e, random_orientation=False):
+    ''' Creates a planet as an AMUSE Particle with provided characteristics.
+        ID: Identifying number unique to this planet.
+        host_star: The AMUSE Particle that is the host star for the planet.
+        planet_mass: The mass of the planet (in the nbody units).
+        init_a: Initial semi-major axis (in nbody units).
+        init_e: Initial eccentricity (in nbody units).
+        random_orientation: Boolean to incline the planet in a random fashion.
+    '''
+# Define the Host Star's Original Location & Position
+    rCM = host_star.position
+    vCM = host_star.velocity
+# Sets Planet Values to Provided Conditions
+    p = datamodel.Particle()
+    p.id = ID
+    p.type = "planet"
+    p.host_star = host_star.id
+    p.mass = planet_mass
+# Sets the Dynamical Radius to the Hill Sphere Approx.
+    p.radius = util.calc_HillRadius(init_a, init_e, p.mass, host_star.mass)
+# Generate a Random Position on the Orbit (True Anomaly)
+# This ensures that all the planets don't start out along the same joining line.
+    init_ta = 360*np.random.random() | units.deg
+# Get the Host Star & Planets Positions from Kepler Relative to the Origin
+    newPSystem = new_binary_from_orbital_elements(host_star.mass, p.mass, init_a,
+                                                 eccentricity = init_e,
+                                                 true_anomaly = init_ta,
+                                                 G = constants.G)
+# Rotate the Binary System & Move to the CoM's Position
+    if random_orientation:
+        util.preform_EulerRotation(newPSystem)
+    host_star.position = rCM + newPSystem[0].position
+    host_star.velocity = vCM + newPSystem[0].velocity
+    p.position = rCM + newPSystem[1].position
+    p.velocity = vCM + newPSystem[1].velocity
+# Returns the Created AMUSE Particle
+    return p
 
 def planet(ID, host_star, planet_mass, init_a, init_e, random_orientation=False):
     ''' Creates a planet as an AMUSE Particle with provided characteristics.

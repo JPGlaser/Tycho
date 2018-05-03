@@ -267,7 +267,8 @@ if __name__=="__main__":
                         create.king_cluster_v2(num_stars, w0 = w0, do_binaries = True,
                                                 split_binaries = True, seed = options.seed)
                 else:
-                    create.king_cluster_v2(num_stars, w0 = w0, do_binaries = False, seed = options.seed)
+                    Starting_Stars, LargeScaleConverter = \
+                        create.king_cluster_v2(num_stars, w0 = w0, do_binaries = False, seed = options.seed)
 
                 # Create Initial Conditions Array
                 initial_conditions = util.store_ic(LargeScaleConverter, options)
@@ -277,9 +278,11 @@ if __name__=="__main__":
                 HostStar_MaxMass = 4.00 | units.MSun # NGC 4349-127 or HD 13189
                 PossibleHostStars = Starting_Stars.copy()
                 for star in PossibleHostStars:
-                    if (star.mass in Binary_Singles.mass):
-                        PossibleHostStars.remove_particle(star)
-                    elif star.mass < HostStar_MinMass or star.mass > HostStar_MaxMass:
+                    if doBinaries:
+                        if (star.mass in Binary_Singles.mass):
+                            PossibleHostStars.remove_particle(star)
+                            continue
+                    if star.mass < HostStar_MinMass or star.mass > HostStar_MaxMass:
                         PossibleHostStars.remove_particle(star)
 
                 # Create the Planetary Systems in SU Units
@@ -364,9 +367,9 @@ if __name__=="__main__":
                            convert_nbody = LargeScaleConverter)
     gravity_code.initialize_code()
     gravity_code.parameters.set_defaults()
-    gravity_code.parameters.begin_time = t_start
+    #gravity_code.parameters.begin_time = t_start
     gravity_code.parameters.epsilon_squared = eps2
-    gravity_code.parameters.timestep_parameter = 2**(-5)
+    #gravity_code.parameters.timestep_parameter = 2**(-5)
     if no_gpu:
         pass
     else:
@@ -394,6 +397,7 @@ if __name__=="__main__":
     multiples_code.neighbor_perturbation_limit = 0.05
     multiples_code.neighbor_veto = True
     multiples_code.callback = EncounterHandler().handle_encounter_v5
+    multiples_code.global_debug = 3
     # ----------------------------------------------------------------------------------------------------
 
     # Setting up Stellar Evolution Code (SeBa)
@@ -506,7 +510,7 @@ if __name__=="__main__":
         #    gravity_code.parameters.force_sync = True
         ## Increase the Current Time by the Normal Time-Step
         #else:
-        #    t_current += delta_t
+        t_current += delta_t
         #    increase_index = True
         #if increase_index and not timestep_reset:
         #    bridge_code.timestep = delta_t
@@ -522,8 +526,8 @@ if __name__=="__main__":
 
         # (On a Copy) Recursively Expand All Top-Level Parent Particles & Update Subsets
         # Note: This Updates the Children's Positions Relative to their Top-Level Parent's Position
-        subset_sync = ChildUpdater()
-        subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
+        #subset_sync = ChildUpdater()
+        #subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
 
         # Evolve the Stellar Codes (via SEV Code with Channels)
         # TODO: Ensure Binaries are Evolved Correctly (See Section 3.2.8)
@@ -538,7 +542,7 @@ if __name__=="__main__":
         channel_from_gravitating_to_multi.copy_attributes(["mass"])
         # Note: The "mass" Attribute in "Gravitating_Bodies" is synced when "Stellar_Bodies" is.
 
-        if step_index == 1:
+        if step_index == 5:
             E0_1 = print_diagnostics(multiples_code)
 
         # Write out the "Gravitating_Bodies" Superset Every 5 Time-Steps
@@ -578,8 +582,8 @@ if __name__=="__main__":
             sys.stdout.flush()
 
         # Increase the Step Index
-        if increase_index:
-            step_index += 1
+        #if increase_index:
+        step_index += 1
 
         # Log that a Step was Taken
         print '\n-------------'
