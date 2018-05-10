@@ -516,18 +516,24 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
             mass_E = 0.003 | units.MJupiter
             init_a = util.calc_RelativePlanetPlacement(host_star, mass_E, period_ratio)
             init_e = 0.016
-            planets.add_particle(planet_v2(ID_Earth+system, host_star, mass_E, init_a, init_e))
+            Earth = planet_v2(ID_Earth+system, host_star, mass_E, init_a, init_e)
+            Earth.stellar_type = 1
+            planets.add_particle(Earth)
         if makeJupiter:
             init_a = util.calc_JovianPlacement(host_star)
             init_e = 0.048
             mass_J = 1 | units.MJupiter
-            planets.add_particle(planet_v2(ID_Jupiter+system, host_star, mass_J, init_a, init_e))
+            Jupiter = planet_v2(ID_Jupiter+system, host_star, mass_J, init_a, init_e)
+            Jupiter.stellar_type = 1
+            planets.add_particle(Jupiter)
         if makeNeptune:
             period_ratio = calc_PeriodRatio(30.110 | units.AU,  5.454 | units.AU, mu)
             mass_N = 0.054 | units.MJupiter
             init_a = util.calc_RelativePlanetPlacement(host_star, mass_N, period_ratio)
             init_e = 0.009
-            planets.add_particle(planet_v2(ID_Neptune+system, host_star, mass_N, init_a, init_e))
+            Neptune = planet_v2(ID_Neptune+system, host_star, mass_N, init_a, init_e)
+            Neptune.stellar_type = 1
+            planets.add_particle(Neptune)
     # Moves Planetary System to the Origin and Applies a Random Euler Rotation
         for p in planets:
             p.position = p.position - host_star.position

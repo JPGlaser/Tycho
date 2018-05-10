@@ -102,6 +102,10 @@ class EncounterHandler(object):
         enc_particles.position -= com_pos
         enc_particles.velocity -= com_vel
 
+        limiting_mass_for_planets = 13 | units.MJupiter
+        enc_stars = enc_particles[enc_particles.mass > limiting_mass_for_planets]
+        enc_planets = enc_particles[enc_particles.mass <= limiting_mass_for_planets]
+
         # Retrieve Star IDs to Use as Dictionary Keys, and Loop Over Those IDs
         # to Add Encounter Information to Each Star's Dictionary Entry.
         for s_id in [str(dict_key) for dict_key in enc_particles.id if dict_key<=len(Gravitating_Bodies)]:
