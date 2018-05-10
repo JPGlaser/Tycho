@@ -92,7 +92,7 @@ def preform_EulerRotation(particle_set):
          [s2*r3],
          [np.sqrt(1-n_3)]]
 # Third: Create the Rotation Matrix
-    
+
     # This was the old rotation matrix calculation...
     #rotate = (np.outer(V, V) - np.dot(np.eye(3),(R)))
 

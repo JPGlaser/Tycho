@@ -227,7 +227,7 @@ def king_cluster_v2(num_stars, **kwargs):
     '''
 # Check Keyword Arguments
     w0 = kwargs.get("w0", 2.5)
-    virial_radius = kwargs.get("vradius", 1 | units.parsec)
+    virial_radius = kwargs.get("vradius", 2 | units.parsec)
     rand_seed = util.new_seed_from_string(kwargs.get("seed", 7))
     do_binaries = kwargs.get("do_binaries", True)
     binary_recursions = kwargs.get("binary_recursions", 1)

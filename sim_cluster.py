@@ -401,7 +401,7 @@ if __name__=="__main__":
     multiples_code.neighbor_perturbation_limit = 0.05
     multiples_code.neighbor_veto = True
     multiples_code.callback = EncounterHandler().handle_encounter_v5
-    multiples_code.global_debug = 3
+    multiples_code.global_debug = 1
     # ----------------------------------------------------------------------------------------------------
 
     # Setting up Stellar Evolution Code (SeBa)
