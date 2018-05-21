@@ -530,8 +530,8 @@ if __name__=="__main__":
 
         # (On a Copy) Recursively Expand All Top-Level Parent Particles & Update Subsets
         # Note: This Updates the Children's Positions Relative to their Top-Level Parent's Position
-        #subset_sync = ChildUpdater()
-        #subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
+        subset_sync = ChildUpdater()
+        subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
 
         # Evolve the Stellar Codes (via SEV Code with Channels)
         # TODO: Ensure Binaries are Evolved Correctly (See Section 3.2.8)
