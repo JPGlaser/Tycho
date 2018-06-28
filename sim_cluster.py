@@ -119,7 +119,7 @@ class ChildUpdater(object):
         inmemory = (multiples_code._inmemory_particles).copy()
         parents = inmemory[inmemory.id >= 1000000]
         children = self.retrieve_all_children(multiples_code, parents)
-        print "Parents: ", parents.id
+        #print "Parents: ", parents.id
         self.sync_particle_subsets_with_children(children, parents, Individual_Stars, Planets)
 
     def retrieve_all_children(self, multiples_code, parents):
@@ -128,8 +128,8 @@ class ChildUpdater(object):
             if parent in multiples_code.root_to_tree:
                 tree = multiples_code.root_to_tree[parent].copy()
                 leaves = tree.get_leafs_subset().copy()
-                print "Root ID: ", parent.id
-                print "Leaves ID: ", leaves.id
+                #print "Root ID: ", parent.id
+                #print "Leaves ID: ", leaves.id
                 self.update_children_position(parent, tree, leaves)
                 children.add_particles(leaves)
             else:
@@ -137,15 +137,15 @@ class ChildUpdater(object):
         return children
 
     def update_children_position(self, parent, tree, leaves):
-        print leaves.position.lengths().in_(units.parsec)
+        #print leaves.position.lengths().in_(units.parsec)
         leaves.position -= tree.particle.position
         leaves.velocity -= tree.particle.velocity
-        print leaves.position.lengths().in_(units.parsec)
+        #print leaves.position.lengths().in_(units.parsec)
         leaves.position += parent.position
         leaves.velocity += parent.velocity
         tree.particle.position = parent.position
         tree.particle.velocity = parent.velocity
-        print leaves.position.lengths().in_(units.parsec)
+        #print leaves.position.lengths().in_(units.parsec)
 
     def sync_particle_subsets_with_children(self, children, parents, Individual_Stars, Planets):
         limiting_mass_for_planets = 13 | units.MJupiter
@@ -356,7 +356,6 @@ if __name__=="__main__":
     # ----------------------------------------------------------------------------------------------------
 
     # Setting up Top-Level Gravity Code (PH4)
-    num_workers = 1
     eps2 = (0.0|units.parsec)**2 #1 | units.AU**2
     try:
         no_gpu = options.no_gpu
@@ -364,9 +363,11 @@ if __name__=="__main__":
     except:
         no_gpu = False
     if no_gpu:
+        num_workers = 6
         gravity_code = ph4(number_of_workers = num_workers, redirection = "none",
                            convert_nbody = LargeScaleConverter)
     else:
+        num_workers = 4
         gravity_code = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu",
                            convert_nbody = LargeScaleConverter)
     gravity_code.initialize_code()
@@ -378,7 +379,8 @@ if __name__=="__main__":
         pass
     else:
         gravity_code.parameters.use_gpu = 1
-        gravity_code.parameters.gpu_id = gpu_ID
+        if num_workers == 1:
+            gravity_code.parameters.gpu_id = gpu_ID
     stopping_condition = gravity_code.stopping_conditions.collision_detection
     stopping_condition.enable()
     gravity_code.particles.add_particles(Gravitating_Bodies)
