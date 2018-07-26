@@ -386,7 +386,8 @@ def binary_system_v2(star_to_become_binary, **kwargs):
         mu = 5.03
         period = 2.*Pmax
         while (period > Pmax or period < Pmin):
-            logP = sigma * np.random.randn() + mu
+            #logP = sigma * np.random.randn() + mu
+            logP = np.random.normal(loc=mu, scale=sigma)
             period = 10.**logP | units.day
             semi_major_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
 
