@@ -350,8 +350,8 @@ def binary_system_v2(star_to_become_binary, **kwargs):
     doRag_P = kwargs.get("RagP",True) # Apply Raghavan et al. (2010) Period Distribution
     doSana_P = kwargs.get("SanaP", False) # Apply Sana et al. (2012) Period Distribution
     Pcirc = kwargs.get("Pcirc", 6 | units.day ) # Circularization Period
-    Pmin = kwargs.get("Pmin", 3. | units.day ) # Min Orbital Period Allowed
-    Pmax = kwargs.get("Pmax", 10.**5. | units.day ) # Max Orbital Period Allowed
+    Pmin = kwargs.get("Pmin", 10.**-1. | units.day ) # Min Orbital Period Allowed
+    Pmax = kwargs.get("Pmax", 10.**10. | units.day ) # Max Orbital Period Allowed
 
 # Define Original Star's Information
     rCM = star_to_become_binary.position
@@ -404,8 +404,8 @@ def binary_system_v2(star_to_become_binary, **kwargs):
 # If Desired, Apply Uniform Eccentricity Distribution
     if (doFlatEcc):
         e = rp.uniform(0.0,1.0)
-    #if (period < Pcirc):
-    #    e = 0.0
+    if (period < Pcirc):
+        e = 0.0
 
 # Get the Companion's Positions from Kepler Relative to the Origin
     newBinary = new_binary_from_orbital_elements(star1.mass, star2.mass, semi_major_axis,
