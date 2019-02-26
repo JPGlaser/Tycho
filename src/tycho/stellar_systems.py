@@ -236,8 +236,10 @@ def old_get_solar_systems(bodies, converter = None, rel_pos = True):
 
 def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=False):
     # Initialize Kepler
-    kep = Kepler(unit_converter = converter, redirection = 'none')
-    kep.initialize_code()
+    kep_p = Kepler(unit_converter = converter, redirection = 'none')
+    kep_p.initialize_code()
+    kep_s = Kepler(unit_converter = converter, redirection = 'none')
+    kep_s.initialize_code()
     # Seperate Out Planets and Stars from Bodies
     stars, planets = util.get_stars(bodies), util.get_planets(bodies)
     num_stars, num_planets = len(stars), len(planets)
@@ -246,26 +248,33 @@ def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=Fals
     # Start Looping Through Stars to Find Bound Planets
     for star in stars:
         system_id = star.id
+        star.semi_major_axis, star.eccentricity, star.period, star.true_anomaly, star.mean_anomaly, star.kep_energy, star.angular_momentum = \
+            None, None, None, None, None, None, None
         current_system = systems.setdefault(system_id, Particles()).add_particle(star)
         for planet in planets:
             total_mass = star.mass + planet.mass
             kep_pos = star.position - planet.position
             kep_vel = star.velocity - planet.velocity
-            kep.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
-            a, e = kep.get_elements()
+            kep_p.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
+            a, e = kep_p.get_elements()
             if e < 1.0:
                 # Check to See if The Stellar System is a Binary
                 # Note: Things get complicated if it is ...
                 for other_star in (stars-star):
-                    kep.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
-                                                                         star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
-                    a, e = kep.get_elements()
+                    kep_s.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
+                                              star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
+                    a, e = kep_s.get_elements()
                     if e >= 1.0:
                         noStellarHeirarchy = True
                     else:
                         noStellarHeirarchy = False
                 if noStellarHeirarchy:
-                    # Add the Planet to the System
+                    # Get Additional Information on Orbit
+                    planet.semi_major_axis, planet.eccentricity = a, e
+                    planet.period = kep_p.get_period()
+                    planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
+                    planet.kep_energy, planet.angular_momentum = kep_p.get_integrals()
+                    # Add the Planet to the System Set
                     current_system.add_particle(planet)
                 else:
                     # Handling for Planetary Systems in Stellar Heirarchical Structures
@@ -273,4 +282,3 @@ def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=Fals
                     pass
             else:
                 continue
-        
