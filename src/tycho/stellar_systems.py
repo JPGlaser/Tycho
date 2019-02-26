@@ -248,8 +248,8 @@ def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=Fals
     # Start Looping Through Stars to Find Bound Planets
     for star in stars:
         system_id = star.id
-        star.semi_major_axis, star.eccentricity, star.period, star.true_anomaly, star.mean_anomaly, star.kep_energy, star.angular_momentum = \
-            None, None, None, None, None, None, None
+        #star.semi_major_axis, star.eccentricity, star.period, star.true_anomaly, star.mean_anomaly, star.kep_energy, star.angular_momentum = \
+        #    None, None, None, None, None, None, None
         current_system = systems.setdefault(system_id, Particles()).add_particle(star)
         for planet in planets:
             total_mass = star.mass + planet.mass
