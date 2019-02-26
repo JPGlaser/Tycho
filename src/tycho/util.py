@@ -181,51 +181,6 @@ def get_planets(bodies):
     planets = bodies[bodies.mass <= limiting_mass_for_planets]
     return planets
 
-#------------------------------------------------------------------------------#
-#-The following function returns a list to match planets with their host stars-#
-#------------------------------------------------------------------------------#
-def get_solar_systems(bodies, converter = None, rel_pos = True):
-    # initialize Kepler before doing any orbital calculations!
-    kep = Kepler(unit_converter = converter, redirection = 'none')
-    kep.initialize_code()
-
-    # let's separate our stars and planets for searching
-    stars, planets = get_stars(bodies), get_planets(bodies)
-    num_stars, num_planets = len(stars), len(planets)
-    systems = []
-
-    for star in stars:
-        planetary_system = []
-        planetary_system.append(star.id)  # may need .id[0]
-        for planet in planets:
-            planetary_system.append(planet)
-            total_mass = star.mass + planet.mass
-            kep_pos = star.position - planet.position
-            kep_vel = star.velocity - planet.velocity
-            kep.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
-            a, e = kep.get_elements()
-            if e >= 1:
-                del planetary_system[-1]
-            else:
-                # there is a very slim chance that this could be a planet being "called bound" to a member of a two-star system
-                # to account for this, let's quickly chedk to make sure that this star isn't bounded to other stars
-                # yikes; if this can be true, couldn't other cases? i.e. massive lone star or massive star with planetary syst?
-                for other_star in stars - star:
-                    kep.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
-                                                                         star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
-                    a, e = kep.get_elements()
-                    if e < 1:
-                        safe_to_add_planets = False
-                        del planetary_system[-1]
-                        break
-                    else: safe_to_add_planets = True
-                if safe_to_add_planets and rel_pos:
-                    planetary_system[-1].position -= star.position
-        if planetary_system: systems.append(planetary_system)
-    #To stop Kepler (killing the worker instance), just run:
-    kep.stop()
-    return systems
-
 SMALLN = None
 # Creates a New SmallN Instance by Resetting the Previous
 def new_smalln():
