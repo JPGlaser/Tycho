@@ -282,3 +282,4 @@ def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=Fals
                     pass
             else:
                 continue
+    return systems
