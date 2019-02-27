@@ -29,7 +29,7 @@ sys.stdout.flush() # not sure if I need to have this?
 def get_stars(bodies):
 
     # anything with a Mass >= 13 Jupiter masses is a star
-    limiting_mass_for_planets = 13 | units.MJupiter 
+    limiting_mass_for_planets = 13 | units.MJupiter
     stars = bodies[bodies.mass > limiting_mass_for_planets]
 
     return stars
@@ -47,7 +47,7 @@ def get_planets(bodies):
 #-The following function returns a list to match planets with their host stars-#
 #------------------------------------------------------------------------------#
 def get_solar_systems(bodies, converter = None, rel_pos = True):
-    
+
     # initialize Kepler before doing any orbital calculations!
     kep = Kepler(unit_converter = converter, redirection = 'none')
     kep.initialize_code()
@@ -61,7 +61,7 @@ def get_solar_systems(bodies, converter = None, rel_pos = True):
     for star in stars:
 
         planetary_system = []
-        planetary_system.append(star.id)  # may need .id[0] 
+        planetary_system.append(star.id)  # may need .id[0]
 
         for planet in planets:
 
@@ -70,11 +70,11 @@ def get_solar_systems(bodies, converter = None, rel_pos = True):
             kep_pos = star.position - planet.position
             kep_vel = star.velocity - planet.velocity
             kep.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
-            
+
             a, e = kep.get_elements()
-            
+
             if e >= 1: del planetary_system[-1]
-            
+
             else:
 
                 # there is a very slim chance that this could be a planet being "called bound" to a member of a two-star system
@@ -82,19 +82,19 @@ def get_solar_systems(bodies, converter = None, rel_pos = True):
                 # yikes; if this can be true, couldn't other cases? i.e. massive lone star or massive star with planetary syst?
                 for other_star in stars - star:
 
-                    kep.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z, 
+                    kep.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
                                                                          star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
 
                     a, e = kep.get_elements()
-                      
-                    if e < 1: 
+
+                    if e < 1:
 
                         safe_to_add_planets = False
                         del planetary_system[-1]
                         break
- 
+
                     else: safe_to_add_planets = True
- 
+
                 if safe_to_add_planets and rel_pos:
 
                     planetary_system[-1].position -= star.position
@@ -113,13 +113,13 @@ def is_over(solar_systems, bodies):
 
     # let's separate our stars and planets
     stars, planets = get_stars(bodies), get_planets(bodies)
-    num_stars, num_planets = len(stars), len(planets)    
+    num_stars, num_planets = len(stars), len(planets)
 
     stellar_ids_with_planets = [solar_system[0] for solar_system in solar_systems if len(solar_system) > 1]
 
     stars_with_planets = [star for star in stars if star.id in stellar_ids_with_planets]
     # now we have the actual stars with planets...let's only worry about seeing if these stars are far enough away
-    
+
     # must compare these (plural to be general) stars to ALL others in system now.
     stars_are_done = False # so we can keep track of the stars that are not done interacting yet
 
@@ -143,21 +143,21 @@ def is_over(solar_systems, bodies):
             else: continue
 
             # If we get to here, then the stars must be far apart and moving apart from another
-            
+
             # Let's actually track which stars this thing is still interacting with
-            stars_are_done = True         
+            stars_are_done = True
 
     if stars_are_done:
-        
+
         # if this is the case, the stars must be done; now let's check if the planets are!
         planets_are_done = True #False
         for planet1 in planets:
             continue
             for planet2 in planets:
- 
+
                 # if these are the same planets, skip!
                 if planet1 == planet2: continue
-        
+
                 # now how can I check the paths of these planets to ensure they are not intersecting?
 
                 # basically, what we want to do is check for planets' stability and that they are not crossing
@@ -199,21 +199,21 @@ def run_collision(bodies, t_max, dt, identifier, path, planet_patching = False, 
 
     # This loop will iterate over all the time steps we wish to take
     for time_step in time_steps:
-        
+
         # Define variable for how many iterations have happened for a given encounter
         iteration = str("%06d" % int(1. / dt * time_step))
 
         # Now, we will evolve the system by the next time step
         gravity.evolve_model(time_step) # this line can take a while :///
 
-        # Copy over stars and planets 
+        # Copy over stars and planets
         channel.copy() # original
         channel.copy_attribute("index_in_code", "id")
 
         # Delete the child1 and child2 attributes in order to write set to files
         if 'child1' in bodies.get_attribute_names_defined_in_store(): del bodies.child1, bodies.child2
-         
-        # The following lines of code save our stars and planets to a file        
+
+        # The following lines of code save our stars and planets to a file
         dir_name = os.path.join(path, 'encounter' + identifier)
         if not os.path.isdir(dir_name): os.mkdir(dir_name) # make encounter directory if it doens't exist
         file_name = os.path.join(dir_name, str("%09.2f" % time_step.number) + '.hdf5')
@@ -221,25 +221,25 @@ def run_collision(bodies, t_max, dt, identifier, path, planet_patching = False, 
 
         # Just check if the system `is_over` after every 50 iterations -- worst case it runs a tad long but this is too expensive to run every time
         if int(iteration) % 50. == 0. and time_step.number > 0:
-            
+
             # Check to see if the evolution is over (verbose = 2 allows for recursive printing of details)
             over = gravity.is_over() # 1 => it's over, 0 => it's not over
 
             if over:
 
-                print time_step, 'it\'s over!' # let the user know that we're wrapping up 
+                print time_step, 'it\'s over!' # let the user know that we're wrapping up
 
                 gravity.update_particle_tree()
                 gravity.update_particle_set()
                 gravity.particles.synchronize_to(bodies)
                 channel.copy()
-     
-                break # since over was called, 'break' frees us from finishing the loop 
-    
+
+                break # since over was called, 'break' frees us from finishing the loop
+
             '''
             # Check to see if the evolution is over
             over = is_over(get_solar_systems(bodies, converter = converter), bodies)
-     
+
             if over:
 
                 print time_step, ' -- it\'s over! ' # let the user know that we're wrapping up i
@@ -250,7 +250,7 @@ def run_collision(bodies, t_max, dt, identifier, path, planet_patching = False, 
 
                 break # since over was called, 'break' frees us from finishing the loop
              '''
-    
+
     # Call for the stoppage of gravity -- hopefully this never happens in real life!
     gravity.stop()
 
@@ -261,11 +261,11 @@ def run_collision(bodies, t_max, dt, identifier, path, planet_patching = False, 
 #--The following function will install several cuts needed to run the program--#
 #------------------------------------------------------------------------------#
 def cut_function(bodies, converter = None):
-    
+
     cut_bodies = bodies.copy()
-    
-    clumps = get_solar_systems(cut_bodies, converter = converter, rel_pos = False)  
-    
+
+    clumps = get_solar_systems(cut_bodies, converter = converter, rel_pos = False)
+
     # if this is ever the case, SKIP; something must have been incorrectly triggered in the database
     if len(cut_bodies) > sum([len(clump) for clump in clumps]):
 
@@ -274,32 +274,32 @@ def cut_function(bodies, converter = None):
 
     # First, collect clump 1; this will necessarily have a planetary system
     clump_index = 0
-    
-    for clump in clumps:  
-        
+
+    for clump in clumps:
+
         # this means we have come across a planetary system; there is always at least one of these
         if len(clump) > 1:
 
             for i in range(len(clump)):
-                
-                if i == 0: 
- 
+
+                if i == 0:
+
                     clump_1 = cut_bodies[cut_bodies.id == clump[i]]
 
                 else:
-                    
+
                     clump_1.add_particle(cut_bodies[cut_bodies.id == clump[i].id])
 
             break
 
         clump_index += 1
-    
+
     # we've found our first clump, so remove it from the solar systems list
     del clumps[clump_index]
 
     # Now, collect clump_2; this will effectively be the original bodies minus clump_1
     clump_index = 0
-    
+
     for clump in clumps:
 
         # this means we have come across a planetary system; there is always at least one of these
@@ -314,7 +314,7 @@ def cut_function(bodies, converter = None):
                 else:
 
                     clump_2.add_particle(cut_bodies[cut_bodies.id == clump[i].id])
-            
+
         else:
 
             if clump_index == 0:
@@ -352,7 +352,7 @@ def cut_function(bodies, converter = None):
     ignore_distance = mass_ratio**(1. / 3) * 600 | units.AU
 
     # if it's this far away, don't worry about anything else; just toss it
-    if p > ignore_distance: 
+    if p > ignore_distance:
 
         # we're getting out of this function, so stop kepler
         kep.stop()
@@ -367,11 +367,11 @@ def cut_function(bodies, converter = None):
         particle.velocity -= cm_vel_1
 
     for particle in clump_2:
-    
+
         particle.position -= cm_pos_2
         particle.velocity -= cm_vel_2
 
-    # if you ever care to make an intermediate distance, these lines will make for a good start 
+    # if you ever care to make an intermediate distance, these lines will make for a good start
     # if is_bin is True, then the perturbing object is a binary; otherwise, it's a lone star (w/ or w/out planets doesn't matter)
     #if len(clump_2)
     #neptune_distance = np.linalg.norm(clump_1[clump_1.id >= 80000].position - clump_1[clump_1.id < 30000].position).in_(units.AU)
@@ -386,7 +386,7 @@ def cut_function(bodies, converter = None):
     vx, vy, vz = kep.get_velocity_vector()
     rel_vel_2 = rel_vel.copy()
     rel_vel_2[0], rel_vel_2[1], rel_vel_2[2] = vx, vy, vz
-    
+
     # now restore the absolute coordinates
     cm_pos_1, cm_pos_2 = -mass_2 * rel_pos_2 / total_mass, mass_1 * rel_pos_2 / total_mass
     cm_vel_1, cm_vel_2 = -mass_2 * rel_vel_2 / total_mass, mass_1 * rel_vel_2 / total_mass
@@ -401,10 +401,10 @@ def cut_function(bodies, converter = None):
 
         particle.position += cm_pos_2
         particle.velocity += cm_vel_2
-    
+
     # combine the clumps to reform our bodies; they have now been advanced to a more reasonable distance for simiulating
     combined_clumps = ParticlesSuperset([clump_1, clump_2])
-   
+
     kep.stop() # before leaving the function, we had best stop kepler
 
     return combined_clumps
@@ -426,9 +426,9 @@ if not os.path.exists(out_files_path): os.mkdir(out_files_path)
 files = os.listdir(data_files_path) # this creates a list of all files in the aforementioned directory
 
 # We will now loop through every data file in our directory
-for file in files: 
+for file in files:
 
-    # We create an individual `file` variable to automatically name each data file we'll be using    
+    # We create an individual `file` variable to automatically name each data file we'll be using
     file = os.path.join(data_files_path, file)
 
     # The data path will serve as the location for us to dump the data we generate with each file
@@ -436,15 +436,15 @@ for file in files:
     if not os.path.exists(data_path): os.mkdir(data_path)
     data_path = os.path.join(out_files_path, file[len(data_files_path) + 1:-4], par_seed)
     if not os.path.exists(data_path): os.mkdir(data_path)
-    
-    # If you're searching through multiple files, this print statement will help keep things organized 
+
+    # If you're searching through multiple files, this print statement will help keep things organized
     print '--------------------------------------------'
     print file, data_path
 
     # Load the enounter database into the variable `encounters`
     with open(file, 'rb') as f: encounters = pickle.load(f); f.close()
 
-    # The following lines will pull all keys which have two stars and one+ planet(s)    
+    # The following lines will pull all keys which have two stars and one+ planet(s)
     keys = []
 
     for key in encounters:
@@ -462,7 +462,7 @@ for file in files:
                             keys.append(key)
                             break
 
-    # Make directories which are titled after each stellar id so that one day we can go back and look at encounters by stellar id    
+    # Make directories which are titled after each stellar id so that one day we can go back and look at encounters by stellar id
     [os.mkdir(os.path.join(data_path, key)) for key in keys if not os.path.exists(os.path.join(data_path, key))]
 
     # the `multiples` code doesn't include the first encounter as an encounter, so slice all the first encounters off
@@ -482,32 +482,32 @@ for file in files:
 
         # Initialize a numerical encounter label, to be used as, i.e. encounter_${identifier}
         ID = 0
-        
-        # for this key, update the data path to allow for the creation of directories named after stella ids         
+
+        # for this key, update the data path to allow for the creation of directories named after stella ids
         data_path = os.path.join(out_files_path, file[len(data_files_path) + 1:-4], par_seed, keys[key])
- 
+
         # the number of times we need to patch planets; 1 if no patch needed
         num_patches = len(encounters[key])
-        
+
         for patch in range(num_patches):
 
             # Immediately determine if we will need to patch planets or not
             if num_patches - patch > 1: to_patch = True
             else: to_patch = False
-            
+
             ID += 1
-            
+
             identifier = str(("%0" + str(len(str(num_encounters))) + "d") % ID)
             encounter_path = os.path.join(data_path, 'encounter' + str(("%0" + str(len(str(num_encounters))) + "d") % (int(identifier))))
 
-            # get the bodies and create oarticle sets for their stars and planets                        
+            # get the bodies and create oarticle sets for their stars and planets
             bodies = encounters[key][patch]
             stars, planets = get_stars(bodies), get_planets(bodies)
             num_stars, num_planets = len(stars), len(planets)
-           
+
             # If there are no planets in this encounter, why would you simulate it??? ...move on
             if num_planets == 0: continue
-            
+
             # the following lines couple an Earth-Neptune to a system which initially only has a Jupiter
             converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
             kep = Kepler(unit_converter = converter, redirection = 'none')
@@ -515,7 +515,7 @@ for file in files:
 
             # Initially, let's assume we will not need to add anymore planets (Earths, Neptunes) to our system
             adding_planets = False
-            
+
             # however, we do still need to check this
             for star in stars:
 
@@ -534,12 +534,12 @@ for file in files:
                     a, e = kep.get_elements()
 
                     # if the eccentricity between this star-planet pair is < 1, then they are gravitationally bound
-                    if e < 1: 
-                         
+                    if e < 1:
+
                         # We have found a host star; let's remove its Jupiter and add a fresh planetary system
                         planetary_system = planetary_systems(stars = [star], num_systems = 1, Earth = True, Jupiter = True, Neptune = True)
-                       
-                        # At this point, we have added planets, so let's flag this as True 
+
+                        # At this point, we have added planets, so let's flag this as True
                         adding_planets = True
 
                         # Adjust the ids of the planets in our `temp_bodies` for future bookkeeping
@@ -548,48 +548,48 @@ for file in files:
                         # a note about this: temp_planet string is just going to range from 1 - `the number or encounters` so as to label every planet uniquely
                         # it may be smart to switch `temp_planet_string` with `star.id` that way an Earth orbiting Star 96 would be labeled as 30096
                         # and a Jupiter orbiting Star 235 would be labeled as 50235.
-                       
+
                         # Now that we have updated the new planets' ids, add them to our bodies
-                        bodies.add_particles(planetary_system)                       
-                        
+                        bodies.add_particles(planetary_system)
+
                         # If we've made it here, this host star should be documented so that we know about its past encounters
                         stellar_id_box.append(star.id) # possibly add [0] to this
-            
+
             #To stop Kepler (killing the worker instance), just run:
             kep.stop()
-            
+
             # If we have added planets, then we will want to append our temp_bodies
-            if adding_planets: 
-                
+            if adding_planets:
+
                 bodies.remove_particles(planets)
-               
-                # if we're here, then our converter has also changed; update it now.            
-                converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit) 
- 
+
+                # if we're here, then our converter has also changed; update it now.
+                converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
+
             # We have now possibly turned stars with Jupiters to stars with three planets, so let's update our number of planets, as well as star/planet indices
             stars, planets = get_stars(bodies), get_planets(bodies)
             num_stars, num_planets = len(stars), len(planets)
-            
+
             # This is where the planet patching actually happens
             if patch > 0: # in an ideal world, there would be a second condition since we may not need to patch i.e. in case of cutting (function) thus eliminating encounter 01 and skipping
 
                 for star in stars:
-                    
+
                     for stellar_id in stellar_id_box:
-                 
+
                         if star.id == stellar_id:
-                            
+
                             for systems in solar_systems:
-                               
+
                                 for system in systems:
-                                     
+
                                     if system[0] == star.id and len(system) > 1:
-                                        
+
                                         # at this point it is safe to remove the planet(s) attached to this star before we patch in the new ones(s)
                                         bodies.remove_particles(planets)
-                                        
+
                                         for planet in system[1:]:
-                                            
+
                                             planet.position += star.position#.x += star.x
                                             bodies.add_particle(planet)
 
@@ -598,26 +598,26 @@ for file in files:
 
             # we have updated the bodies, so let's make sure we're accounting for them all
             stars, planets = get_stars(bodies), get_planets(bodies)
-            num_stars, num_planets = len(stars), len(planets) 
+            num_stars, num_planets = len(stars), len(planets)
 
             # here, "cutting" means removing close encounters that aren't actually very close; we redefine what ie means to be "close" in the `cut_function`
-            cut_instruction = cut_function(bodies, converter = converter)            
-            
-            if cut_instruction == 'skip': 
-                
+            cut_instruction = cut_function(bodies, converter = converter)
+
+            if cut_instruction == 'skip':
+
                 # we need to be careful when skipping; we want to still include the solar system; do that now
                 if to_patch: solar_systems.append(get_solar_systems(bodies, converter = converter))
-              
+
                 # lower the ID by one; since we're skipping encounter N, we want to label the next one as encounter N, rather than encounter N+1
                 ID -= 1
 
                 continue
-               
+
             else: bodies = cut_instruction
-            
+
             # after cutting data and advancing the distance, it's possible we may need to update our converter?
             converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
-               
+
             # run the close encounter function!
             solar_systems.append(run_collision(bodies, t_max, dt, identifier = identifier, path = data_path, planet_patching = to_patch, converter = converter))
 
@@ -630,7 +630,7 @@ for file in files:
             secular_evolution(bodies, t_max)
 
             `bodies` will need to be the most recent planetary system simulated
-            `t_max` will be the time between Star X's next encounter and the time that Star X completed its last encounter 
+            `t_max` will be the time between Star X's next encounter and the time that Star X completed its last encounter
 
             ^^^ it will require some thought as to what the best way to get those two variables will be...
 
