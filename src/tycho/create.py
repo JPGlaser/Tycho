@@ -494,6 +494,7 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
     makeEarth = kwargs.get("Earth", False)
     makeJupiter = kwargs.get("Jupiter", True)
     makeNeptune = kwargs.get("Neptune", False)
+    makeTestPlanet = kwargs.get("TestP", False)
 
 # Selects the Stars to Become Planetary Systems
     num_stars = len(stars)
