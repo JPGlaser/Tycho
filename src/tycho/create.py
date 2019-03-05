@@ -527,6 +527,13 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
             Jupiter = planet_v2(ID_Jupiter+system, host_star, mass_J, init_a, init_e)
             Jupiter.stellar_type = 1
             planets.add_particle(Jupiter)
+        if makeTestPlanet:
+            init_a = util.calc_JovianPlacement(host_star)
+            init_e = 0.048
+            mass_J = 50 | units.MJupiter
+            TestP = planet_v2(ID_Jupiter+system, host_star, mass_J, init_a, init_e)
+            TestP.stellar_type = 1
+            planets.add_particle(TestP)
         if makeNeptune:
             period_ratio = np.sqrt((30.110 | units.AU)**3/(5.454 | units.AU)**3)
             mass_N = 0.054 | units.MJupiter
