@@ -172,6 +172,25 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     kep.stop()
     return ParticlesSuperset([sys_1, sys_2])
 
+def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
+    enc_systems = stellar_systems.get_planetary_systems_from_set(bodies, converter=converter)
+    sys_with_planets = []
+    # Remove Any Tracer Planets in the Encounter
+    for sys_key in enc_systems:
+        for particle in enc_systems[sys_key]:
+            if particle.id >= base_planet_ID:
+                enc_systems[sys_key].remove_particle(particle)
+                sys_with_planets.append(sys_key)
+    print sys_with_planets
+    # Add in a New Planetary System
+    for sys_key in sys_with_planets:
+        planets = create.planetary_systems_v2(enc_systems[sys_key], 1, Jupiter=True, Earth=True, Neptune=True)
+        enc_systems[sys_key].add_particles(planets)
+    new_bodies = Particles()
+    for sys_key in enc_systems:
+        new_bodies.add_particles(enc_systems[sys_key])
+    return new_bodies
+
 # ------------------------------------- #
 #         Main Production Script        #
 # ------------------------------------- #
@@ -231,9 +250,7 @@ if __name__=="__main__":
             if not os.path.exists(output_EncDirectory): os.mkdir(output_EncDirectory)
             while rotation_id <= max_number_of_rotations:
                 # Remove Jupiter
-
-
-                # Add New Planetary System that is Randomly Orientated
+                encounter = replace_planetary_system(encounter)
                 # Store Initial Conditions
                 # Run Encounter
                 # Store Final Conditions
