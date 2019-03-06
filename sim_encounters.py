@@ -51,16 +51,13 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_dir, save_id, **
     # Storing Initial Center of Mass Information for the Encounter
     rCM_i = GravitatingBodies.center_of_mass()
     vCM_i = GravitatingBodies.center_of_mass_velocity()
-
     # Fixing Stored Encounter Particle Set to Feed into SmallN
     GravitatingBodies = Particles(particles=GravitatingBodies)
     if 'child1' in GravitatingBodies.get_attribute_names_defined_in_store():
         del GravitatingBodies.child1, GravitatingBodies.child2
-
     # Moving the Encounter's Center of Mass to the Origin and Setting it at Rest
     GravitatingBodies.position -= rCM_i
     GravitatingBodies.velocity -= vCM_i
-
     # Setting Up Gravity Code
     gravity = SmallN(redirection = 'none', convert_nbody = converter)
     gravity.initialize_code()
@@ -70,11 +67,9 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_dir, save_id, **
     gravity.commit_particles()
     channel_from_grav_to_python = gravity.particles.new_channel_to(GravitatingBodies)
     channel_from_grav_to_python.copy()
-
     # Setting Coarse Timesteps
     list_of_times = np.arange(0. | units.yr, end_time, delta_time)
-    stepNumber +=0
-
+    stepNumber = 0
     # Integrate the Encounter Until Over ...
     for current_time in list_of_times:
         # Evolve the Model to the Desired Current Time
@@ -102,10 +97,8 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_dir, save_id, **
             else:
                 print "Encounter has NOT finished at Step #", stepNumber
         stepNumber +=1
-
     # Stop the Gravity Code Once the Encounter Finishes
     gravity.stop()
-
     # Seperate out the Systems to Prepare for Encounter Patching
     if doEncPatching:
         ResultingPSystems = get_planetary_systems_from_set(GravitatingBodies, converter=None, RelativePosition=True)
@@ -120,6 +113,8 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_dir, save_id, **
 def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     bodies = enc_bodies.copy()
     systems = stellar_systems.get_planetary_systems_from_set(bodies, converter=converter, RelativePosition=False)
+    if converter==None:
+        converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     # As this function is pulling from Multiples, there should never be more than 2 "Root" Particles ...
     if len(systems) > 2:
         print "Error: Encounter has more roots than expected! Total Root Particles:", len(systems)
@@ -128,41 +123,44 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     sys_1 = systems[int(primary_sysID)]
     secondary_sysID = [key for key in systems.keys() if key!=int(primary_sysID)][0]
     sys_2 = systems[secondary_sysID]
-
+    # Calculate Useful Quantities
     mass_ratio = sys_2.mass.sum()/sys_1.mass.sum()
     total_mass = sys_1.mass.sum() + sys_2.mass.sum()
     rel_pos = sys_1.center_of_mass() - sys_2.center_of_mass()
     rel_vel = sys_1.center_of_mass_velocity() - sys_2.center_of_mass_velocity()
-
+    # Initialize Kepler Worker
     kep = Kepler(unit_converter = converter, redirection = 'none')
     kep.initialize_code()
     kep.initialize_from_dyn(total_mass, rel_pos[0], rel_pos[1], rel_pos[2], rel_vel[0], rel_vel[1], rel_vel[2])
-
+    # Check to See if the Periastron is within the Ignore Distance for 10^3 Perturbation
     p = kep.get_periastron()
     ignore_distance = mass_ratio**(1./3.) * 600 | units.AU
     if p > ignore_distance:
-        print "Encounter Ignored due to Periastron of", p, "and an IgnoreDistance of", ignore_distance
+        print "Encounter Ignored due to Periastron of", p, "and an IgnoreDistance of",ignore_distance
         return None
     # Move the Particles to be Relative to their Respective Center of Mass
+    cm_sys_1, cm_sys_2 = sys_1.center_of_mass(), sys_2.center_of_mass()
+    cmv_sys_1, cmv_sys_2 = sys_1.center_of_mass_velocity(), sys_2.center_of_mass_velocity()
     for particle in sys_1:
-        particle.position -= sys_1.center_of_mass()
-        particle.velocity -= sys_1.center_of_mass_velocity()
+        particle.position -= cm_sys_1
+        particle.velocity -= cmv_sys_1
     for particle in sys_2:
-        particle.position -= sys_2.center_of_mass()
-        particle.velocity -= sys_2.center_of_mass_velocity()
-
+        particle.position -= cm_sys_2
+        particle.velocity -= cmv_sys_2
+    # Check to See if the Planets are Closer than the Ignore Distance
+    # Note: This shouldn't happen in the main code, but this prevents overshooting the periastron in debug mode.
+    if kep.get_separation() > ignore_distance:
+        kep.advance_to_radius(ignore_distance)
     # Advance the Center of Masses to the Desired Distance in Reduced Mass Coordinates
-    kep.advance_to_radius(ignore_distance)
     x, y, z = kep.get_separation_vector()
     rel_pos_f = rel_pos.copy()
     rel_pos_f[0], rel_pos_f[1], rel_pos_f[2] = x, y, z
     vx, vy, vz = kep.get_velocity_vector()
     rel_vel_f = rel_vel.copy()
     rel_vel_f[0], rel_vel_f[1], rel_vel_f[2] = vx, vy, vz
-
     # Transform to Absolute Coordinates from Kepler Reduced Mass Coordinates
-    cm_pos_1, cm_pos_2 = -sys_2.mass.sum() * rel_pos_f / total_mass, sys_1.mass.sum() * rel_pos_f / total_mass
-    cm_vel_1, cm_vel_2 = -sys_2.mass.sum() * rel_vel_f / total_mass, sys_1.mass.sum() * rel_vel_f / total_mass
+    cm_pos_1, cm_pos_2 = sys_2.mass.sum() * rel_pos_f / total_mass, -sys_1.mass.sum() * rel_pos_f / total_mass
+    cm_vel_1, cm_vel_2 = sys_2.mass.sum() * rel_vel_f / total_mass, -sys_1.mass.sum() * rel_vel_f / total_mass
     # Move the Particles to the New Postions of their Respective Center of Mass
     for particle in sys_1:
         particle.position += cm_pos_1
@@ -170,6 +168,7 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     for particle in sys_2:
         particle.position += cm_pos_2
         particle.velocity += cm_vel_2
+    # Stop Kepler and Return the Systems as a Particle Set
     kep.stop()
     return ParticlesSuperset([sys_1, sys_2])
 
@@ -192,7 +191,6 @@ if __name__=="__main__":
     # ------------------------------------- #
     output_MainDirectory = os.getcwd()+"/Encounters"
     if not os.path.exists(output_MainDirectory): os.mkdir(output_MainDirectory)
-
 
     # Read in Encounter Directory
     encounter_file = os.getcwd()+cluster_name+"_encounters.pkl"
@@ -232,8 +230,10 @@ if __name__=="__main__":
             output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_number)+"Rot-"+str(rotation_id)
             if not os.path.exists(output_EncDirectory): os.mkdir(output_EncDirectory)
             while rotation_id <= max_number_of_rotations:
-                # Add Other Planets
-                # Preform Random Rotation
+                # Remove Jupiter
+
+
+                # Add New Planetary System that is Randomly Orientated
                 # Store Initial Conditions
                 # Run Encounter
                 # Store Final Conditions

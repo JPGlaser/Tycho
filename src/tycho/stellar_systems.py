@@ -194,6 +194,8 @@ class PlanetarySystem():
 
 def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=False):
     # Initialize Kepler
+    if converter == None:
+        converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     kep_p = Kepler(unit_converter = converter, redirection = 'none')
     kep_p.initialize_code()
     kep_s = Kepler(unit_converter = converter, redirection = 'none')
