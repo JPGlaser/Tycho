@@ -531,7 +531,7 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
         if makeTestPlanet:
             init_a = util.calc_JovianPlacement(host_star)
             init_e = 0.048
-            mass_J = 50 | units.MJupiter
+            mass_J = 20 | units.MJupiter
             TestP = planet_v2(ID_Jupiter+system, host_star, mass_J, init_a, init_e)
             TestP.stellar_type = 1
             planets.add_particle(TestP)

@@ -254,7 +254,7 @@ if __name__=="__main__":
                                                            Starting_Stars.virial_radius())
             initial_conditions = util.store_ic(LargeScaleConverter, options)
             # Add Planets to the Pregenerated Cluster
-            Starting_Planets = create.planetary_systems_v2(Starting_Stars, num_psys, Earth=True, Jupiter=False, TestP=True)
+            Starting_Planets = create.planetary_systems_v2(Starting_Stars, num_psys, Jupiter=False, TestP=True)
         else:
             # Attempt to Load Matching Initial Conditions
             try:
