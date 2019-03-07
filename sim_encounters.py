@@ -41,7 +41,7 @@ import matplotlib; matplotlib.use('agg')
 #   Required Non-Seperable Functions    #
 # ------------------------------------- #
 
-def run_collision(GravitatingBodies, end_time, delta_time, save_dir, save_id, **kwargs):
+def run_collision(GravitatingBodies, end_time, delta_time, save_dir, **kwargs):
     # Define Additional User Options and Set Defaults Properly
     converter = kwargs.get("converter", None)
     doEncPatching = kwargs.get("doEncPatching", False)
@@ -101,9 +101,9 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_dir, save_id, **
     gravity.stop()
     # Seperate out the Systems to Prepare for Encounter Patching
     if doEncPatching:
-        ResultingPSystems = get_planetary_systems_from_set(GravitatingBodies, converter=None, RelativePosition=True)
+        ResultingPSystems = stellar_systems.get_planetary_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=True)
     else:
-        ResultingPSystems = None
+        ResultingPSystems = stellar_systems.get_planetary_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=False)
     return ResultingPSystems
 
 # ------------------------------------- #
@@ -202,6 +202,8 @@ if __name__=="__main__":
     cluster_name =
     base_planet_ID = 50000
     max_number_of_rotations = 100
+    max_runtime = 1000 | units.yr
+
 
     # ------------------------------------- #
     #   Defining File/Directory Structure   #
@@ -248,9 +250,10 @@ if __name__=="__main__":
             if not os.path.exists(output_EncDirectory): os.mkdir(output_EncDirectory)
             while rotation_id <= max_number_of_rotations:
                 # Remove Jupiter
-                encounter = replace_planetary_system(encounter)
+                enc_bodies = replace_planetary_system(encounter)
                 # Store Initial Conditions
                 # Run Encounter
+                run_collision(enc_bodies, max_runtime, delta_time, output_EncDirectory, doEncPatching=True)
                 # Store Final Conditions
                 rotation_id += 1
             encounter_id += 1
