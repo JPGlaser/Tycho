@@ -289,7 +289,7 @@ if __name__=="__main__":
                         PossibleHostStars.remove_particle(star)
 
                 # Create the Planetary Systems in SU Units
-                Starting_Planets = create.planetary_systems_v2(PossibleHostStars, num_psys, Earth=True, Jupiter=False, TestP=True)
+                Starting_Planets = create.planetary_systems_v2(PossibleHostStars, num_psys, Earth=False, Jupiter=False, TestP=True)
 
     # Set up the Small Scale Converter for Kepler/SmallN
     SmallScaleConverter = nbody_system.nbody_to_si(2*np.mean(Starting_Stars.mass),
