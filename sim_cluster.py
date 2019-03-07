@@ -254,7 +254,7 @@ if __name__=="__main__":
                                                            Starting_Stars.virial_radius())
             initial_conditions = util.store_ic(LargeScaleConverter, options)
             # Add Planets to the Pregenerated Cluster
-            Starting_Planets = create.planetary_systems_v2(Starting_Stars, num_psys, 'test_planets', Earth=True, Jupiter=False, TestP=True)
+            Starting_Planets = create.planetary_systems_v2(Starting_Stars, num_psys, Earth=True, Jupiter=False, TestP=True)
         else:
             # Attempt to Load Matching Initial Conditions
             try:
@@ -289,7 +289,7 @@ if __name__=="__main__":
                         PossibleHostStars.remove_particle(star)
 
                 # Create the Planetary Systems in SU Units
-                Starting_Planets = create.planetary_systems_v2(PossibleHostStars, num_psys, Jupiter=True)
+                Starting_Planets = create.planetary_systems_v2(PossibleHostStars, num_psys, Earth=True, Jupiter=False, TestP=True)
 
     # Set up the Small Scale Converter for Kepler/SmallN
     SmallScaleConverter = nbody_system.nbody_to_si(2*np.mean(Starting_Stars.mass),
