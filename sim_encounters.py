@@ -203,8 +203,6 @@ if __name__=="__main__":
     base_planet_ID = 50000
     max_number_of_rotations = 100
 
-
-
     # ------------------------------------- #
     #   Defining File/Directory Structure   #
     # ------------------------------------- #
