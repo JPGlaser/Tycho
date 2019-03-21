@@ -256,7 +256,7 @@ if __name__=="__main__":
     # ------------------------------------- #
 
     # Read in Encounter Directory
-    encounter_file = os.getcwd()+cluster_name+"_encounters.pkl"
+    encounter_file = open(os.getcwd()+cluster_name+"_encounters.pkl", "rb")
     encounter_db = pickle.load(encounter_file)
     encounter_file.close()
 
