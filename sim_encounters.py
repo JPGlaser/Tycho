@@ -277,12 +277,17 @@ if __name__=="__main__":
             continue
     for star_ID in encounter_db.keys():
         # Cut Out Stars with No Planets
-        for encounter in encounter_db[star_ID]:
+        enc_id_to_cut = []
+        for enc_id, encounter in enumerate(encounter_db[star_ID]):
             # Refine "No Planet" Cut to Deal with Hierarchical Stellar Systems
             # We are Looping Through Encounters to Deal with Rogue Jupiter Captures
-            if len([ID for ID in encounter.id if ID >= base_planet_ID]) == 0:
-                encounter_db[star_ID].remove(encounter)
-                continue
+            if len([ID for ID in encounter.id if ID >= 50000]) == 0:
+                enc_id_to_cut.append(enc_id)
+            elif len([ID for ID in encounter.id if ID >= 50000]) > 0:
+                if len([ID for ID in encounter.id if ID <= 50000]) == 1:
+                    enc_id_to_cut.append(enc_id)
+        for enc_id in sorted(enc_id_to_cut, reverse=True):
+            del encounter_db[star_ID][enc_id]
 
     sys.stdout.flush()
     print util.timestamp(), "Performing Second Cut on Encounter Database ..."
