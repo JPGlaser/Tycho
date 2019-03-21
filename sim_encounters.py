@@ -247,6 +247,7 @@ if __name__=="__main__":
     parser = OptionParser()
     parser.add_option("-c", "--cluster-name", dest="cluster_name", default=None, type="str",
                       help="Enter the name of the cluster (Defaults to Numerical Naming Scheme).")
+    (options, args) = parser.parse_args()
     cluster_name = options.cluster_name
     base_planet_ID = 50000
 
