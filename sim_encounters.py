@@ -83,7 +83,6 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     sys.stdout.flush()
     print util.timestamp, "All Encounters Simulated for Star ID:", star_id
     sys.stdout.flush()
-    return True
 
 def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
     # Define Additional User Options and Set Defaults Properly
@@ -248,6 +247,7 @@ if __name__=="__main__":
     parser = OptionParser()
     parser.add_option("-c", "--cluster-name", dest="cluster_name", default=None, type="str",
                       help="Enter the name of the cluster (Defaults to Numerical Naming Scheme).")
+    cluster_name = options.cluster_name
     base_planet_ID = 50000
 
     # ------------------------------------- #
@@ -263,6 +263,10 @@ if __name__=="__main__":
     #      Perform All Necessary Cuts       #
     # ------------------------------------- #
 
+    sys.stdout.flush()
+    print util.timestamp(), "Performing First Cut on Encounter Database ..."
+    sys.stdout.flush()
+
     # Perform a Cut on the Encounter Database
     for star_ID in encounter_db.keys():
         # Cut Out Stars Recorded with Only Initialization Pickups
@@ -276,6 +280,10 @@ if __name__=="__main__":
             if len([ID for ID in encounter.id if ID <= base_planet_ID]) == 0:
                 del encounter
                 continue
+
+    sys.stdout.flush()
+    print util.timestamp(), "Performing Second Cut on Encounter Database ..."
+    sys.stdout.flush()
 
     # Perform Cut & Advancement on Systems to Lower Integration Time
     for star_ID in encounter_db.keys():
@@ -307,6 +315,9 @@ if __name__=="__main__":
     pool.map(pool_func, star_ids)
     pool.close()
     pool.join()
+
+    # Picke the Resulting Database of Initial and Final Conditions
+    pickle.dump(resultDict, open( cluster_name+"_resultDB.pkl", "wb" ) )
 
     # Announce to Terminal that the Runs have Finished
     sys.stdout.flush()
