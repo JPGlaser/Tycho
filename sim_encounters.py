@@ -157,9 +157,9 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
 
 def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     bodies = enc_bodies.copy()
-    systems = stellar_systems.get_planetary_systems_from_set(bodies, converter=converter, RelativePosition=False)
     if converter==None:
         converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
+    systems = stellar_systems.get_planetary_systems_from_set(bodies, converter=converter, RelativePosition=False)
     # As this function is pulling from Multiples, there should never be more than 2 "Root" Particles ...
     if len(systems) > 2:
         print "Error: Encounter has more roots than expected! Total Root Particles:", len(systems)
@@ -288,12 +288,15 @@ if __name__=="__main__":
 
     # Perform Cut & Advancement on Systems to Lower Integration Time
     for star_ID in encounter_db.keys():
+        enc_id_to_cut = []
         for enc_id, encounter in enumerate(encounter_db[star_ID]):
-            PeriastronCut = CutOrAdvance(encounter)
+            PeriastronCut = CutOrAdvance(encounter, star_ID)
             if PeriastronCut != None:
                 encounter_db[star_ID][enc_id] = PeriastronCut
             elif PeriastronCut == None:
-                del encounter_db[star_ID][enc_id]
+                enc_id_to_cut.append(enc_id)
+        for enc_id in sorted(enc_id_to_cut, reverse=True)
+            del encounter_db[star_ID][enc_id]
 
     # Set Up Final Dictionary to Record Initial and Final States
     resultDict = {}
