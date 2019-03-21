@@ -256,7 +256,7 @@ if __name__=="__main__":
     # ------------------------------------- #
 
     # Read in Encounter Directory
-    encounter_file = open(os.getcwd()+cluster_name+"_encounters.pkl", "rb")
+    encounter_file = open(os.getcwd()+"/"+cluster_name+"_encounters.pkl", "rb")
     encounter_db = pickle.load(encounter_file)
     encounter_file.close()
 
@@ -318,7 +318,7 @@ if __name__=="__main__":
     pool.join()
 
     # Picke the Resulting Database of Initial and Final Conditions
-    pickle.dump(resultDict, open( cluster_name+"_resultDB.pkl", "wb" ) )
+    pickle.dump(resultDict, open(os.getcwd()+"/"+cluster_name+"_resultDB.pkl", "wb"))
 
     # Announce to Terminal that the Runs have Finished
     sys.stdout.flush()
