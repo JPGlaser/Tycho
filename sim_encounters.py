@@ -275,12 +275,13 @@ if __name__=="__main__":
         if len(encounter_db[star_ID]) <= 1:
             del encounter_db[star_ID]
             continue
+    for star_ID in encounter_db.keys()
         # Cut Out Stars with No Planets
         for encounter in encounter_db[star_ID]:
             # Refine "No Planet" Cut to Deal with Hierarchical Stellar Systems
             # We are Looping Through Encounters to Deal with Rogue Jupiter Captures
             if len([ID for ID in encounter.id if ID >= base_planet_ID]) == 0:
-                del encounter
+                encounter_db[star_ID].remove(encounter)
                 continue
 
     sys.stdout.flush()
