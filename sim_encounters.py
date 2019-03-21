@@ -295,7 +295,7 @@ if __name__=="__main__":
                 encounter_db[star_ID][enc_id] = PeriastronCut
             elif PeriastronCut == None:
                 enc_id_to_cut.append(enc_id)
-        for enc_id in sorted(enc_id_to_cut, reverse=True)
+        for enc_id in sorted(enc_id_to_cut, reverse=True):
             del encounter_db[star_ID][enc_id]
 
     # Set Up Final Dictionary to Record Initial and Final States
