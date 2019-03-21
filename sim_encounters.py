@@ -11,6 +11,10 @@ import random as rp
 from optparse import OptionParser
 import glob
 
+# Importing Multiprocessing Packages
+from functools import partial
+import multiprocessing as mp
+
 # Importing cPickle/Pickle
 try:
    import cPickle as pickle
@@ -41,7 +45,47 @@ import matplotlib; matplotlib.use('agg')
 #   Required Non-Seperable Functions    #
 # ------------------------------------- #
 
-def run_collision(GravitatingBodies, end_time, delta_time, save_dir, **kwargs):
+def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
+    max_number_of_rotations = kwargs.get("maxRotations", 100)
+    max_runtime = kwargs.get("maxRunTime", 1 | units.Myr)
+    delta_time = kwargs.get("dt", 0.1 | units.yr)
+    # Set Up Output Directory Structure
+    output_MainDirectory = os.getcwd()+"/Encounters"
+    if not os.path.exists(output_MainDirectory): os.mkdir(output_MainDirectory)
+    output_KeyDirectory = output_MainDirectory+"/"+str(star_id)
+    if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
+    # Set Up the Results Dictionary to Store Initial and Final ParticleSets for this Star
+    resultDict.set_defaults(star_id, {})
+    encounter_id = 0
+    for encounter in encounter_db[star_id]:
+        # Set Up Subdirectory for this Specific Encounter
+        output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_number)
+        if not os.path.exists(output_EncDirectory): os.mkdir(output_EncDirectory)
+        # Set up Encounter Key for this Specific Encounter for this Specific Star
+        resultDict[star_id].set_defaults(encounter_id, {})
+        rotation_id = 0
+        while rotation_id <= max_number_of_rotations:
+            # Set Up Output Directory for this Specific Iteration
+            output_HDF5File = output_EncDirectory+"Rot-"+str(rotation_id)+'.hdf5'
+            # Remove Jupiter and Add Desired Planetary System
+            enc_bodies = replace_planetary_system(encounter.copy())
+            # Set up Rotation Key for this Specific Iteration for this Specific Encounter for this Specific Star
+            resultDict[star_id][encounter_id].set_defaults(rotation_id, [])
+            # Store Initial Conditions
+            resultDict[star_id][encounter_id][rotation_id].append(enc_bodies.copy())
+            # Run Encounter
+            # TODO: Finalize Encounter Patching Methodology with SecularMultiples
+            enc_bodies = run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, doEncPatching=False)
+            # Store Final Conditions
+            resultDict[star_id][encounter_id][rotation_id].append(enc_bodies.copy())
+            rotation_id += 1
+        encounter_id += 1
+    sys.stdout.flush()
+    print util.timestamp, "All Encounters Simulated for Star ID:", star_id
+    sys.stdout.flush()
+    return True
+
+def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
     # Define Additional User Options and Set Defaults Properly
     converter = kwargs.get("converter", None)
     doEncPatching = kwargs.get("doEncPatching", False)
@@ -80,10 +124,12 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_dir, **kwargs):
         # Handle Writing Output of Integration
         if doVerboseSaves:
             # Write a Save Every Coarse Timestep
+            write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5')
         else:
             # Write a Save at the Begninning, Middle & End Times
             if stepNumber==0 or stepNumber==len(list_of_times) or stepNumber==len(list_of_times)/2:
                 # Write Set to File
+                write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5')
         # Check to See if the Encounter is Declared "Over" Every 50 Timesteps
         if stepNumber%50:
             over = gravity.is_over()
@@ -199,22 +245,23 @@ if __name__=="__main__":
     # ------------------------------------- #
     #      Setting up Required Variables    #
     # ------------------------------------- #
-    cluster_name =
+    parser = OptionParser()
+    parser.add_option("-c", "--cluster-name", dest="cluster_name", default=None, type="str",
+                      help="Enter the name of the cluster (Defaults to Numerical Naming Scheme).")
     base_planet_ID = 50000
-    max_number_of_rotations = 100
-    max_runtime = 1000 | units.yr
-
 
     # ------------------------------------- #
     #   Defining File/Directory Structure   #
     # ------------------------------------- #
-    output_MainDirectory = os.getcwd()+"/Encounters"
-    if not os.path.exists(output_MainDirectory): os.mkdir(output_MainDirectory)
 
     # Read in Encounter Directory
     encounter_file = os.getcwd()+cluster_name+"_encounters.pkl"
     encounter_db = pickle.load(encounter_file)
     encounter_file.close()
+
+    # ------------------------------------- #
+    #      Perform All Necessary Cuts       #
+    # ------------------------------------- #
 
     # Perform a Cut on the Encounter Database
     for star_ID in encounter_db.keys():
@@ -239,21 +286,29 @@ if __name__=="__main__":
             elif PeriastronCut == None:
                 del encounter_db[star_ID][enc_id]
 
-    # Begin Looping Through Stars (Each Star is a Pool Process)
-    for star_id in encounter_db.keys():
-        output_KeyDirectory = output_MainDirectory+"/"+str(star_id)
-        if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
-        for encounter in encounter_db[star_id]:
-            encounter_id = 0
-            rotation_id= 0
-            output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_number)+"Rot-"+str(rotation_id)
-            if not os.path.exists(output_EncDirectory): os.mkdir(output_EncDirectory)
-            while rotation_id <= max_number_of_rotations:
-                # Remove Jupiter
-                enc_bodies = replace_planetary_system(encounter)
-                # Store Initial Conditions
-                # Run Encounter
-                run_collision(enc_bodies, max_runtime, delta_time, output_EncDirectory, doEncPatching=True)
-                # Store Final Conditions
-                rotation_id += 1
-            encounter_id += 1
+    # Set Up Final Dictionary to Record Initial and Final States
+    resultDict = {}
+
+    # ------------------------------------- #
+    #     Perform All Req. Simulations      #
+    # ------------------------------------- #
+
+    # Announce to Terminal that the Runs are Starting
+    sys.stdout.flush()
+    print util.timestamp(), "Cluster", cluster_name, "has begun processing!"
+    sys.stdout.flush()
+
+    # Set Up the Multiprocessing Pool Environment Using Partial to Send Static Variables
+    pool_func = partial(bulk_run_for_star, encounter_db=encounter_db, dictionary_for_results=resultDict)
+    star_ids = encounter_db.keys()
+    pool = mp.Pool(processes=(mp.cpu_count()-2))
+
+    # Begin Looping Through Star IDs (Each Star is a Pool Process)
+    pool.map(pool_func, star_ids)
+    pool.close()
+    pool.join()
+
+    # Announce to Terminal that the Runs have Finished
+    sys.stdout.flush()
+    print util.timestamp(), "Cluster", cluster_name, "is finished processing!"
+    sys.stdout.flush()
