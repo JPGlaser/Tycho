@@ -275,7 +275,7 @@ if __name__=="__main__":
         if len(encounter_db[star_ID]) <= 1:
             del encounter_db[star_ID]
             continue
-    for star_ID in encounter_db.keys()
+    for star_ID in encounter_db.keys():
         # Cut Out Stars with No Planets
         for encounter in encounter_db[star_ID]:
             # Refine "No Planet" Cut to Deal with Hierarchical Stellar Systems
