@@ -163,6 +163,7 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     # As this function is pulling from Multiples, there should never be more than 2 "Root" Particles ...
     if len(systems) > 2:
         print "Error: Encounter has more roots than expected! Total Root Particles:", len(systems)
+        print bodies
         return None
     # Assign the Primary System to #1 and Perturbing System to #2
     sys_1 = systems[int(primary_sysID)]
