@@ -51,7 +51,7 @@ global job_queue
 job_queue = Queue.Queue()
 
 def remote_process(desiredFunction):
-    current_starID = code_queue.get()
+    current_starID = job_queue.get()
     desiredFunction(current_starID)
     job_queue.task_done()
     # Announce to Terminal that the Current Task is Done
