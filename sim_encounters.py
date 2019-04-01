@@ -45,7 +45,8 @@ import matplotlib; matplotlib.use('agg')
 #   Required Non-Seperable Functions    #
 # ------------------------------------- #
 
-global job_queue = mp.Queue.Queue()
+global job_queue
+job_queue = mp.Queue.Queue()
 
 def remote_process(desiredFunction):
     current_starID = code_queue.get()
