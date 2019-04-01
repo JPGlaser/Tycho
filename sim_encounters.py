@@ -64,7 +64,7 @@ def mpScatterExperiments(star_ids, desiredFunction):
         job_queue.put(starID)
     num_of_cpus = mp.cpu_count()-2
     for i in range(num_of_cpus):
-        th = threading.Thread(target=remote_process, agrs=(desiredFunction))
+        th = threading.Thread(target=remote_process, args=(desiredFunction))
         th.daemon = True
         th.start()
     job_queue.join()
