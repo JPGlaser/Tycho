@@ -14,6 +14,8 @@ import glob
 # Importing Multiprocessing Packages
 from functools import partial
 import multiprocessing as mp
+import Queue
+import threading
 
 # Importing cPickle/Pickle
 try:
@@ -46,7 +48,7 @@ import matplotlib; matplotlib.use('agg')
 # ------------------------------------- #
 
 global job_queue
-job_queue = mp.Queue.Queue()
+job_queue = Queue.Queue()
 
 def remote_process(desiredFunction):
     current_starID = code_queue.get()
@@ -62,7 +64,7 @@ def mpScatterExperiments(star_ids, desiredFunction):
         job_queue.put(starID)
     num_of_cpus = mp.cpu_count()-2
     for i in range(num_of_cpus):
-        th = mp.threading.Thread(target=remote_process, agrs=(desiredFunction))
+        th = threading.Thread(target=remote_process, agrs=(desiredFunction))
         th.daemon = True
         th.start()
     job_queue.join()
