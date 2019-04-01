@@ -45,27 +45,6 @@ import matplotlib; matplotlib.use('agg')
 #   Required Non-Seperable Functions    #
 # ------------------------------------- #
 
-job_queue = Queue.Queue()
-
-def remote_process(desiredFunction):
-    current_starID = code_queue.get()
-    desiredFunction(current_starID)
-    job_queue.task_done()
-    # Announce to Terminal that the Current Task is Done
-    sys.stdout.flush()
-    print util.timestamp(), "Star ID", current_starID, "has finished processing!"
-    sys.stdout.flush()
-
-def mpScatterExperiments(star_ids, desiredFunction):
-    for starID in star_ids:
-        job_queue.put(starID)
-    num_of_cpus = mp.cpu_count()-2
-    for i in range(num_of_cpus):
-        th = threading.Thread(target=remote_process, agrs=(desiredFunction))
-        th.daemon = True
-        th.start()
-    job_queue.join()
-
 def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     max_number_of_rotations = kwargs.get("maxRotations", 100)
     max_runtime = kwargs.get("maxRunTime", 1 | units.Myr)
@@ -184,7 +163,7 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     # As this function is pulling from Multiples, there should never be more than 2 "Root" Particles ...
     if len(systems) > 2:
         print "Error: Encounter has more roots than expected! Total Root Particles:", len(systems)
-        #print bodies
+        print bodies
         return None
     # Assign the Primary System to #1 and Perturbing System to #2
     sys_1 = systems[int(primary_sysID)]
@@ -339,11 +318,14 @@ if __name__=="__main__":
     sys.stdout.flush()
 
     # Set Up the Multiprocessing Pool Environment Using Partial to Send Static Variables
-    process_func = partial(bulk_run_for_star, encounter_db=encounter_db, dictionary_for_results=resultDict)
+    pool_func = partial(bulk_run_for_star, encounter_db=encounter_db, dictionary_for_results=resultDict)
     star_ids = encounter_db.keys()
+    pool = mp.Pool(processes=(mp.cpu_count()-2))
 
     # Begin Looping Through Star IDs (Each Star is a Pool Process)
-    mpScatterExperiments(star_ids, process_func)
+    pool.map(pool_func, star_ids)
+    pool.close()
+    pool.join()
 
     # Picke the Resulting Database of Initial and Final Conditions
     pickle.dump(resultDict, open(os.getcwd()+"/"+cluster_name+"_resultDB.pkl", "wb"))
