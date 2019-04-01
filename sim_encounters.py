@@ -45,7 +45,7 @@ import matplotlib; matplotlib.use('agg')
 #   Required Non-Seperable Functions    #
 # ------------------------------------- #
 
-job_queue = Queue.Queue()
+global job_queue = mp.Queue.Queue()
 
 def remote_process(desiredFunction):
     current_starID = code_queue.get()
@@ -61,7 +61,7 @@ def mpScatterExperiments(star_ids, desiredFunction):
         job_queue.put(starID)
     num_of_cpus = mp.cpu_count()-2
     for i in range(num_of_cpus):
-        th = threading.Thread(target=remote_process, agrs=(desiredFunction))
+        th = mp.threading.Thread(target=remote_process, agrs=(desiredFunction))
         th.daemon = True
         th.start()
     job_queue.join()
