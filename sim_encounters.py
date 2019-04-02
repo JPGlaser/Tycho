@@ -184,7 +184,6 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     if converter==None:
         converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     systems = stellar_systems.get_heirarchical_systems_from_set(bodies, converter=converter, RelativePosition=False)
-    print systems.keys()
     # As this function is pulling from Multiples, there should never be more than 2 "Root" Particles ...
     if len(systems) > 2:
         print "Error: Encounter has more roots than expected! Total Root Particles:", len(systems)
@@ -194,6 +193,10 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     sys_1 = systems[int(primary_sysID)]
     secondary_sysID = [key for key in systems.keys() if key!=int(primary_sysID)][0]
     sys_2 = systems[secondary_sysID]
+    print 'All System Keys:', systems.keys()
+    print 'Primary System Key:', primary_sysID
+    print 'System 1 IDs:', sys_1.id
+    print 'System 2 IDs:' sys_2.id
     # Calculate Useful Quantities
     mass_ratio = sys_2.mass.sum()/sys_1.mass.sum()
     total_mass = sys_1.mass.sum() + sys_2.mass.sum()
@@ -207,7 +210,7 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     p = kep.get_periastron()
     ignore_distance = mass_ratio**(1./3.) * 600 | units.AU
     if p > ignore_distance:
-        print "Encounter Ignored due to Periastron of", p, "and an IgnoreDistance of",ignore_distance
+        print "Encounter Ignored due to Periastron of", p.in_(units.AU), "and an IgnoreDistance of",ignore_distance
         kep.stop()
         return None
     # Move the Particles to be Relative to their Respective Center of Mass
@@ -243,8 +246,6 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     # Stop Kepler and Return the Systems as a Particle Set
     kep.stop()
     # Collect the Collective Particle Set to be Returned Back
-    print sys_1.id
-    print sys_2.id
     final_set = Particles()
     final_set.add_particles(sys_1)
     final_set.add_particles(sys_2)
