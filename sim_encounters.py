@@ -63,7 +63,7 @@ def remote_process(desiredFunction):
 def mpScatterExperiments(star_ids, desiredFunction):
     for starID in star_ids:
         job_queue.put(starID)
-    num_of_cpus = mp.cpu_count()-2
+    num_of_cpus = 1 #mp.cpu_count()-2
     for i in range(num_of_cpus):
         th = threading.Thread(target=remote_process, args=(desiredFunction,))
         th.daemon = True
@@ -206,6 +206,7 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     ignore_distance = mass_ratio**(1./3.) * 600 | units.AU
     if p > ignore_distance:
         print "Encounter Ignored due to Periastron of", p, "and an IgnoreDistance of",ignore_distance
+        kep.stop()
         return None
     # Move the Particles to be Relative to their Respective Center of Mass
     cm_sys_1, cm_sys_2 = sys_1.center_of_mass(), sys_2.center_of_mass()
