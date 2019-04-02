@@ -54,7 +54,7 @@ def remote_process(desiredFunction):
     while not job_queue.empty():
         try:
             current_starID = job_queue.get()
-        else:
+        except:
             return None
         desiredFunction(current_starID)
         job_queue.task_done()
