@@ -250,3 +250,75 @@ def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=Fals
     kep_p.stop()
     kep_s.stop()
     return systems
+
+# Note: The below function is nearly identical to the above function. However,
+#       it is to be used for determining "clumps" of systems for the CutOrAdvance
+#        function primarily. ~ Joe G. 4/1/20
+def get_heirarchical_systems_from_set(bodies, converter=None, RelativePosition=False):
+    # Initialize Kepler
+    if converter == None:
+        converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
+    kep_p = Kepler(unit_converter = converter, redirection = 'none')
+    kep_p.initialize_code()
+    kep_s = Kepler(unit_converter = converter, redirection = 'none')
+    kep_s.initialize_code()
+    # Seperate Out Planets and Stars from Bodies
+    stars, planets = util.get_stars(bodies), util.get_planets(bodies)
+    num_stars, num_planets = len(stars), len(planets)
+    # Initialize the Dictionary that Contains all Planetary Systems
+    systems = {}
+    # Initialize the List Used to Check Star IDs Against Already Classified Binaries
+    binary_ids = []
+    # Start Looping Through Stars to Find Bound Planets
+    for star in stars:
+        if star.id in binary_ids:
+            continue
+        system_id = star.id
+        #star.semi_major_axis, star.eccentricity, star.period, star.true_anomaly, star.mean_anomaly, star.kep_energy, star.angular_momentum = \
+        #    None, None, None, None, None, None, None
+        current_system = systems.setdefault(system_id, Particles())
+        current_system.add_particle(star)
+
+        noStellarHeirarchy = False
+        for other_star in (stars-star):
+            kep_s.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
+                                      star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
+            a_s, e_s = kep_s.get_elements()
+            print a_s, e_s
+            #r_apo = kep_s.get_apastron()
+            #HillR = util.calc_HillRadius(a_s, e_s, other_star.mass, star.mass)
+            #print r_apo, HillR
+            if e_s >= 1.0:
+                noStellarHeirarchy = True
+            else:
+                noStellarHeirarchy = False
+                print "Binary Found!"
+                current_system.add_particle(other_star)
+                binary_ids.append(other_star.id)
+        for planet in planets:
+            total_mass = star.mass + planet.mass
+            kep_pos = star.position - planet.position
+            kep_vel = star.velocity - planet.velocity
+            kep_p.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
+            a_p, e_p = kep_p.get_elements()
+            if e_p < 1.0:
+                # Check to See if The Planetary System is tied to a Stellar Binary
+                # Note: Things get complicated if it is ...
+                if noStellarHeirarchy:
+                    # Get Additional Information on Orbit
+                    planet.semi_major_axis = a_p
+                    planet.eccentricity = e_p
+                    planet.period = kep_p.get_period()
+                    planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
+                    #planet.kep_energy, planet.angular_momentum = kep_p.get_integrals()
+                    # Add the Planet to the System Set
+                    current_system.add_particle(planet)
+                else:
+                    # Handling for Planetary Systems in Stellar Heirarchical Structures
+                    # Note: This is empty for now, maybe consider doing it by the heaviest bound stellar object as the primary.
+                    pass
+            else:
+                continue
+    kep_p.stop()
+    kep_s.stop()
+    return systems
