@@ -79,14 +79,14 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     output_KeyDirectory = output_MainDirectory+"/"+str(star_id)
     if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
     # Set Up the Results Dictionary to Store Initial and Final ParticleSets for this Star
-    resultDict.set_defaults(star_id, {})
+    resultDict.setdefault(star_id, {})
     encounter_id = 0
     for encounter in encounter_db[star_id]:
         # Set Up Subdirectory for this Specific Encounter
         output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_number)
         if not os.path.exists(output_EncDirectory): os.mkdir(output_EncDirectory)
         # Set up Encounter Key for this Specific Encounter for this Specific Star
-        resultDict[star_id].set_defaults(encounter_id, {})
+        resultDict[star_id].setdefault(encounter_id, {})
         rotation_id = 0
         while rotation_id <= max_number_of_rotations:
             # Set Up Output Directory for this Specific Iteration
@@ -94,7 +94,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
             # Remove Jupiter and Add Desired Planetary System
             enc_bodies = replace_planetary_system(encounter.copy())
             # Set up Rotation Key for this Specific Iteration for this Specific Encounter for this Specific Star
-            resultDict[star_id][encounter_id].set_defaults(rotation_id, [])
+            resultDict[star_id][encounter_id].setdefault(rotation_id, [])
             # Store Initial Conditions
             resultDict[star_id][encounter_id][rotation_id].append(enc_bodies.copy())
             # Run Encounter
