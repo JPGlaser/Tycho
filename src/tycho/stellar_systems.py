@@ -294,10 +294,13 @@ def get_heirarchical_systems_from_set(bodies, converter=None, RelativePosition=F
                 noStellarHeirarchy = True
             else:
                 noStellarHeirarchy = False
+                for other_other_star in (stars-star-other_star):
+                    
                 print "Binary composed of Star", star.id, "and Star", other_star.id, "has been detected!"
                 current_system.add_particle(other_star)
                 binary_ids.append(star.id)
                 binary_ids.append(other_star.id)
+
         for planet in planets:
             total_mass = star.mass + planet.mass
             kep_pos = star.position - planet.position
