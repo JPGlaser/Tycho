@@ -51,14 +51,18 @@ global job_queue
 job_queue = Queue.Queue()
 
 def remote_process(desiredFunction):
-    current_starID = job_queue.get()
-    desiredFunction(current_starID)
-    job_queue.task_done()
-    # Announce to Terminal that the Current Task is Done
-    sys.stdout.flush()
-    print util.timestamp(), "Star ID", current_starID, "has finished processing!"
-    print util.timestamp(), "There are", job_queue.qsize(), "stars left to process!"
-    sys.stdout.flush()
+    while not job_queue.empty():
+        try:
+            current_starID = job_queue.get()
+        else:
+            return None
+        desiredFunction(current_starID)
+        job_queue.task_done()
+        # Announce to Terminal that the Current Task is Done
+        sys.stdout.flush()
+        print "\n", util.timestamp(), "Star ID", str(current_starID), "has finished processing!"
+        print "\n", util.timestamp(), "There are", job_queue.qsize(), "stars left to process!"
+        sys.stdout.flush()
 
 def mpScatterExperiments(star_ids, desiredFunction):
     for starID in star_ids:
@@ -103,9 +107,6 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
             dictionary_for_results[star_id][encounter_id][rotation_id].append(enc_bodies.copy())
             rotation_id += 1
         encounter_id += 1
-    sys.stdout.flush()
-    print util.timestamp(), "All Encounters Simulated for Star ID:", star_id
-    sys.stdout.flush()
 
 def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
     # Define Additional User Options and Set Defaults Properly
