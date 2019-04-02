@@ -85,7 +85,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     encounter_id = 0
     for encounter in encounter_db[star_id]:
         # Set Up Subdirectory for this Specific Encounter
-        output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_number)
+        output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_id)
         if not os.path.exists(output_EncDirectory): os.mkdir(output_EncDirectory)
         # Set up Encounter Key for this Specific Encounter for this Specific Star
         dictionary_for_results[star_id].setdefault(encounter_id, {})
