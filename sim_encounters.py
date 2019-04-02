@@ -91,7 +91,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
             output_HDF5File = output_EncDirectory+"Rot-"+str(rotation_id)+'.hdf5'
             # Remove Jupiter and Add Desired Planetary System
             enc_bodies = replace_planetary_system(encounter.copy())
-            print enc_bodies()
+            print enc_bodies
             # Set up Rotation Key for this Specific Iteration for this Specific Encounter for this Specific Star
             dictionary_for_results[star_id][encounter_id].setdefault(rotation_id, [])
             # Store Initial Conditions
