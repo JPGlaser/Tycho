@@ -95,7 +95,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
             output_HDF5File = output_EncDirectory+"Rot-"+str(rotation_id)+'.hdf5'
             # Remove Jupiter and Add Desired Planetary System
             enc_bodies = replace_planetary_system(encounter.copy())
-            print enc_bodies
+            #print enc_bodies
             # Set up Rotation Key for this Specific Iteration for this Specific Encounter for this Specific Star
             dictionary_for_results[star_id][encounter_id].setdefault(rotation_id, [])
             # Store Initial Conditions
@@ -196,7 +196,7 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     print 'All System Keys:', systems.keys()
     print 'Primary System Key:', primary_sysID
     print 'System 1 IDs:', sys_1.id
-    print 'System 2 IDs:' sys_2.id
+    print 'System 2 IDs:', sys_2.id
     # Calculate Useful Quantities
     mass_ratio = sys_2.mass.sum()/sys_1.mass.sum()
     total_mass = sys_1.mass.sum() + sys_2.mass.sum()
@@ -260,7 +260,7 @@ def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
             if particle.id >= base_planet_ID:
                 enc_systems[sys_key].remove_particle(particle)
                 sys_with_planets.append(sys_key)
-    print sys_with_planets
+    #print sys_with_planets
     # Add in a New Planetary System
     for sys_key in sys_with_planets:
         planets = create.planetary_systems_v2(enc_systems[sys_key], 1, Jupiter=True, Earth=True, Neptune=True)
