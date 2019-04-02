@@ -281,6 +281,8 @@ def get_heirarchical_systems_from_set(bodies, converter=None, RelativePosition=F
 
         noStellarHeirarchy = False
         for other_star in (stars-star):
+            if other_star.id in binary_ids:
+                continue
             kep_s.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
                                       star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
             a_s, e_s = kep_s.get_elements()
@@ -294,6 +296,7 @@ def get_heirarchical_systems_from_set(bodies, converter=None, RelativePosition=F
                 noStellarHeirarchy = False
                 print "Binary composed of Star", star.id, "and Star", other_star.id, "has been detected!"
                 current_system.add_particle(other_star)
+                binary_ids.append(star.id)
                 binary_ids.append(other_star.id)
         for planet in planets:
             total_mass = star.mass + planet.mass
