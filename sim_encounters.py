@@ -242,11 +242,11 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     # Stop Kepler and Return the Systems as a Particle Set
     kep.stop()
     # Collect the Collective Particle Set to be Returned Back
-    print sys1.id
-    print sys2.id
+    print sys_1.id
+    print sys_2.id
     final_set = Particles()
-    final_set.add_particles(sys1)
-    final_set.add_particles(sys2)
+    final_set.add_particles(sys_1)
+    final_set.add_particles(sys_2)
     return final_set
 
 def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
