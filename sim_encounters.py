@@ -241,7 +241,13 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
         particle.velocity += cm_vel_2
     # Stop Kepler and Return the Systems as a Particle Set
     kep.stop()
-    return ParticlesSuperset([sys_1, sys_2])
+    # Collect the Collective Particle Set to be Returned Back
+    print sys1.id
+    print sys2.id
+    final_set = Particles()
+    final_set.add_particles(sys1)
+    final_set.add_particles(sys2)
+    return final_set
 
 def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
     enc_systems = stellar_systems.get_planetary_systems_from_set(bodies, converter=converter)
@@ -333,7 +339,7 @@ if __name__=="__main__":
             del encounter_db[star_ID][enc_id]
 
     print len(encounter_db.keys())
-    
+
     # Set Up Final Dictionary to Record Initial and Final States
     resultDict = {}
 

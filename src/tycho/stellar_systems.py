@@ -284,7 +284,7 @@ def get_heirarchical_systems_from_set(bodies, converter=None, RelativePosition=F
             kep_s.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
                                       star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
             a_s, e_s = kep_s.get_elements()
-            print a_s, e_s
+            #print a_s, e_s
             #r_apo = kep_s.get_apastron()
             #HillR = util.calc_HillRadius(a_s, e_s, other_star.mass, star.mass)
             #print r_apo, HillR
