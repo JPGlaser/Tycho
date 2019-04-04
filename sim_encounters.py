@@ -83,6 +83,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     # Set Up the Results Dictionary to Store Initial and Final ParticleSets for this Star
     dictionary_for_results.setdefault(star_id, {})
     encounter_id = 0
+    print 'Testing. Excuted up to Encounter Loop'
     for encounter in encounter_db[star_id]:
         # Set Up Subdirectory for this Specific Encounter
         output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_id)
@@ -90,6 +91,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
         # Set up Encounter Key for this Specific Encounter for this Specific Star
         dictionary_for_results[star_id].setdefault(encounter_id, {})
         rotation_id = 0
+        print 'Testing. Executed up to Rotation Loop.'
         while rotation_id <= max_number_of_rotations:
             # Set Up Output Directory for this Specific Iteration
             output_HDF5File = output_EncDirectory+"Rot-"+str(rotation_id)+'.hdf5'
@@ -100,6 +102,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
             dictionary_for_results[star_id][encounter_id].setdefault(rotation_id, [])
             # Store Initial Conditions
             dictionary_for_results[star_id][encounter_id][rotation_id].append(enc_bodies.copy())
+            print 'Testing. Executed up to Run Collision.'
             # Run Encounter
             # TODO: Finalize Encounter Patching Methodology with SecularMultiples
             enc_bodies = run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, doEncPatching=False)
@@ -113,6 +116,7 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
     converter = kwargs.get("converter", None)
     doEncPatching = kwargs.get("doEncPatching", False)
     doVerboseSaves = kwargs.get("doVerboseSaves", False)
+    print 'Inside Run Collision!'
     if converter == None:
         converter = nbody_system.nbody_to_si(GravitatingBodies.mass.sum(), 2 * np.max(GravitatingBodies.radius.number) | GravitatingBodies.radius.unit)
     # Storing Initial Center of Mass Information for the Encounter
