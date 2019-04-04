@@ -284,9 +284,12 @@ if __name__=="__main__":
     # ------------------------------------- #
     parser = OptionParser()
     parser.add_option("-c", "--cluster-name", dest="cluster_name", default=None, type="str",
-                      help="Enter the name of the cluster (Defaults to Numerical Naming Scheme).")
+                      help="Enter the name of the cluster with suffixes.")
+    parser.add_option("-S", "--serial", dest="doSerial", action="store_true",
+                      help="Run the program in serial?.")
     (options, args) = parser.parse_args()
     cluster_name = options.cluster_name
+    doSerial = options.doSerial
     base_planet_ID = 50000
 
     # ------------------------------------- #
@@ -369,8 +372,12 @@ if __name__=="__main__":
         output_KeyDirectory = output_MainDirectory+"/"+str(starID)
         if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
 
-    # Begin Looping Through Star IDs (Each Star is a Pool Process)
-    mpScatterExperiments(star_ids, process_func)
+    if doSerial:
+        for starID in star_ids:
+            process_func(starID)
+    else:
+        # Begin Looping Through Star IDs (Each Star is a Queued Process)
+        mpScatterExperiments(star_ids, process_func)
 
     # Picke the Resulting Database of Initial and Final Conditions
     pickle.dump(resultDict, open(os.getcwd()+"/"+cluster_name+"_resultDB.pkl", "wb"))
