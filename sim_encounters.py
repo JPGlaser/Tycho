@@ -115,6 +115,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
             dictionary_for_results[star_id][encounter_id][rotation_id].append(enc_bodies.copy())
             rotation_id += 1
         encounter_id += 1
+        pickle.dump(resultDict, open(os.getcwd()+"/"+cluster_name+"_resultDB.pkl", "wb"))
 
 def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     # Define Additional User Options and Set Defaults Properly
