@@ -164,12 +164,12 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
             write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         else:
             # Write a Save at the Begninning, Middle & End Times
-            if stepNumber%100 == 0 or stepNumber==len(list_of_times)/2:
+            if stepNumber%50 == 0 or stepNumber==len(list_of_times)/2:
                 # Write Set to File
                 gravity.particles.synchronize_to(GravitatingBodies)
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         # Check to See if the Encounter is Declared "Over" Every 50 Timesteps
-        if stepNumber%50 == 0 and len(list_of_times)/3.- stepNumber <= 0:
+        if stepNumber%50 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
             over = gravity.is_over()
             if over:
                 gravity.update_particle_tree()
