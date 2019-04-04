@@ -144,7 +144,7 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
     channel_from_grav_to_python = gravity.particles.new_channel_to(GravitatingBodies)
     channel_from_grav_to_python.copy()
     # Setting Coarse Timesteps
-    list_of_times = np.arange(0. | units.yr, end_time, delta_time) | units.yr
+    list_of_times = np.arange(0., end_time, delta_time) | units.yr
     stepNumber = 0
     # Integrate the Encounter Until Over ...
     for current_time in list_of_times:
