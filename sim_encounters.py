@@ -75,6 +75,7 @@ def mpScatterExperiments(star_ids, desiredFunction):
     job_queue.join()
 
 def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
+    print len(encounter_db[star_id])
     max_number_of_rotations = kwargs.get("maxRotations", 10)
     max_runtime = kwargs.get("maxRunTime", 1 | units.Myr)
     delta_time = kwargs.get("dt", 0.1 | units.yr)
@@ -83,6 +84,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     # Set Up the Results Dictionary to Store Initial and Final ParticleSets for this Star
     dictionary_for_results.setdefault(star_id, {})
     encounter_id = 0
+    print len(encounter_db[star_id])
     print 'Testing. Excuted up to Encounter Loop'
     print len(encounter_db[star_id])
     for encounter in encounter_db[star_id]:
@@ -382,6 +384,7 @@ if __name__=="__main__":
 
     if doSerial:
         for starID in star_ids:
+            print len(encounter_db[starID])
             process_func(starID)
     else:
         # Begin Looping Through Star IDs (Each Star is a Queued Process)
