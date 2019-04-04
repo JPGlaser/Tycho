@@ -88,7 +88,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     print 'Testing. Excuted up to Encounter Loop'
     print len(encounter_db[star_id])
     for encounter in encounter_db[star_id]:
-        print type(encounter)
+        print encounter
         print "Inside Encounter Loop"
         # Set Up Subdirectory for this Specific Encounter
         output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_id)
@@ -160,12 +160,12 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
         # Handle Writing Output of Integration
         if doVerboseSaves:
             # Write a Save Every Coarse Timestep
-            write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5')
+            write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         else:
             # Write a Save at the Begninning, Middle & End Times
             if stepNumber==0 or stepNumber==len(list_of_times) or stepNumber==len(list_of_times)/2:
                 # Write Set to File
-                write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5')
+                write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         # Check to See if the Encounter is Declared "Over" Every 50 Timesteps
         if stepNumber%50 and len(list_of_times)/3.- stepNumber <= 0:
             over = gravity.is_over()
