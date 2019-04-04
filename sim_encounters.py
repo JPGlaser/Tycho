@@ -77,8 +77,8 @@ def mpScatterExperiments(star_ids, desiredFunction):
 def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     print len(encounter_db[star_id])
     max_number_of_rotations = kwargs.get("maxRotations", 10)
-    max_runtime = kwargs.get("maxRunTime", 1 | units.Myr)
-    delta_time = kwargs.get("dt", 0.1 | units.yr)
+    max_runtime = kwargs.get("maxRunTime", 10**5) # Units Years
+    delta_time = kwargs.get("dt", 1) # Units Years
     # Set Up Output Directory Structure
     output_KeyDirectory = os.getcwd()+"/Encounters/"+str(star_id)
     # Set Up the Results Dictionary to Store Initial and Final ParticleSets for this Star
@@ -137,7 +137,6 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
     gravity = SmallN(redirection = 'none', convert_nbody = converter)
     gravity.initialize_code()
     print "Code Initialized?"
-    tp.sleep(300)
     gravity.parameters.set_defaults()
     gravity.parameters.allow_full_unperturbed = 0
     gravity.particles.add_particles(GravitatingBodies) # adds bodies to gravity calculations
@@ -145,7 +144,7 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
     channel_from_grav_to_python = gravity.particles.new_channel_to(GravitatingBodies)
     channel_from_grav_to_python.copy()
     # Setting Coarse Timesteps
-    list_of_times = np.arange(0. | units.yr, end_time, delta_time)
+    list_of_times = np.arange(0. | units.yr, end_time, delta_time) | units.yr
     stepNumber = 0
     # Integrate the Encounter Until Over ...
     for current_time in list_of_times:
