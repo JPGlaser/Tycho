@@ -88,6 +88,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     print 'Testing. Excuted up to Encounter Loop'
     print len(encounter_db[star_id])
     for encounter in encounter_db[star_id]:
+        print type(encounter)
         print "Inside Encounter Loop"
         # Set Up Subdirectory for this Specific Encounter
         output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_id)
