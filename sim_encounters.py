@@ -75,7 +75,6 @@ def mpScatterExperiments(star_ids, desiredFunction):
     job_queue.join()
 
 def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
-    print len(encounter_db[star_id])
     max_number_of_rotations = kwargs.get("maxRotations", 10)
     max_runtime = kwargs.get("maxRunTime", 10**5) # Units Years
     delta_time = kwargs.get("dt", 1) # Units Years
@@ -84,19 +83,14 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     # Set Up the Results Dictionary to Store Initial and Final ParticleSets for this Star
     dictionary_for_results.setdefault(star_id, {})
     encounter_id = 0
-    print len(encounter_db[star_id])
-    print 'Testing. Excuted up to Encounter Loop'
-    print len(encounter_db[star_id])
     for encounter in encounter_db[star_id]:
         print encounter
-        print "Inside Encounter Loop"
         # Set Up Subdirectory for this Specific Encounter
         output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_id)
         if not os.path.exists(output_EncDirectory): os.mkdir(output_EncDirectory)
         # Set up Encounter Key for this Specific Encounter for this Specific Star
         dictionary_for_results[star_id].setdefault(encounter_id, {})
         rotation_id = 0
-        print 'Testing. Executed up to Rotation Loop.'
         while rotation_id <= max_number_of_rotations:
             # Set Up Output Directory for this Specific Iteration
             output_HDF5File = output_EncDirectory+"Rot-"+str(rotation_id)+'.hdf5'
@@ -107,7 +101,6 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
             dictionary_for_results[star_id][encounter_id].setdefault(rotation_id, [])
             # Store Initial Conditions
             dictionary_for_results[star_id][encounter_id][rotation_id].append(enc_bodies.copy())
-            print 'Testing. Executed up to Run Collision.'
             # Run Encounter
             # TODO: Finalize Encounter Patching Methodology with SecularMultiples
             enc_bodies = run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, doEncPatching=False)
@@ -122,7 +115,6 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     converter = kwargs.get("converter", None)
     doEncPatching = kwargs.get("doEncPatching", False)
     doVerboseSaves = kwargs.get("doVerboseSaves", False)
-    print 'Inside Run Collision!'
     if converter == None:
         converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     # Storing Initial Center of Mass Information for the Encounter
@@ -141,7 +133,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     # Setting Up Gravity Code
     gravity = SmallN(redirection = 'none', convert_nbody = converter)
     gravity.initialize_code()
-    print "Code Initialized?"
+    print "Code Initialized!"
     gravity.parameters.set_defaults()
     gravity.parameters.allow_full_unperturbed = 0
     gravity.particles.add_particles(GravitatingBodies) # adds bodies to gravity calculations
@@ -184,7 +176,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 gravity.particles.synchronize_to(GravitatingBodies)
                 channel_from_grav_to_python.copy()
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
-                print "Encounter has finished at Step #", stepNumber, '. Final Age:,' current_time.in_(units.yr)
+                print "Encounter has finished at Step #", stepNumber, '. Final Age:', current_time.in_(units.yr)
                 break
             else:
                 print "Encounter has NOT finished at Step #", stepNumber
