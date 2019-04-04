@@ -269,8 +269,10 @@ def get_heirarchical_systems_from_set(bodies, converter=None, RelativePosition=F
     systems = {}
     # Initialize the List Used to Check Star IDs Against Already Classified Binaries
     binary_ids = []
+    # Find Nearest Neighbors of the Set
+    closest_neighbours = stars.nearest_neighbour()
     # Start Looping Through Stars to Find Bound Planets
-    for star in stars:
+    for index, star in enumerate(stars):
         if star.id in binary_ids:
             continue
         system_id = star.id
@@ -278,7 +280,6 @@ def get_heirarchical_systems_from_set(bodies, converter=None, RelativePosition=F
         #    None, None, None, None, None, None, None
         current_system = systems.setdefault(system_id, Particles())
         current_system.add_particle(star)
-
         noStellarHeirarchy = False
         for other_star in (stars-star):
             if other_star.id in binary_ids:
@@ -290,12 +291,10 @@ def get_heirarchical_systems_from_set(bodies, converter=None, RelativePosition=F
             #r_apo = kep_s.get_apastron()
             #HillR = util.calc_HillRadius(a_s, e_s, other_star.mass, star.mass)
             #print r_apo, HillR
-            if e_s >= 1.0:
+            if e_s >= 1.0 and other_star.id != closest_neighbours[index]:
                 noStellarHeirarchy = True
             else:
                 noStellarHeirarchy = False
-                for other_other_star in (stars-star-other_star):
-                    
                 print "Binary composed of Star", star.id, "and Star", other_star.id, "has been detected!"
                 current_system.add_particle(other_star)
                 binary_ids.append(star.id)
