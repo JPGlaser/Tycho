@@ -115,19 +115,22 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
             rotation_id += 1
         encounter_id += 1
 
-def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
+def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     # Define Additional User Options and Set Defaults Properly
     converter = kwargs.get("converter", None)
     doEncPatching = kwargs.get("doEncPatching", False)
     doVerboseSaves = kwargs.get("doVerboseSaves", False)
     print 'Inside Run Collision!'
     if converter == None:
-        converter = nbody_system.nbody_to_si(GravitatingBodies.mass.sum(), 2 * np.max(GravitatingBodies.radius.number) | GravitatingBodies.radius.unit)
+        converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     # Storing Initial Center of Mass Information for the Encounter
-    rCM_i = GravitatingBodies.center_of_mass()
-    vCM_i = GravitatingBodies.center_of_mass_velocity()
+    rCM_i = bodies.center_of_mass()
+    vCM_i = bodies.center_of_mass_velocity()
+    GravitatingBodies = Particles()
+    for body in bodies:
+        GravitatingBodies.add_particle(body.copy())
     # Fixing Stored Encounter Particle Set to Feed into SmallN
-    GravitatingBodies = Particles(particles=GravitatingBodies)
+    #GravitatingBodies = Particles(particles=GravitatingBodies)
     if 'child1' in GravitatingBodies.get_attribute_names_defined_in_store():
         del GravitatingBodies.child1, GravitatingBodies.child2
     # Moving the Encounter's Center of Mass to the Origin and Setting it at Rest
