@@ -154,7 +154,7 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
                 # Write Set to File
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5')
         # Check to See if the Encounter is Declared "Over" Every 50 Timesteps
-        if stepNumber%50:
+        if stepNumber%50 and len(list_of_times)/3.- stepNumber <= 0:
             over = gravity.is_over()
             if over:
                 gravity.update_particle_tree()
@@ -184,7 +184,7 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     if converter==None:
         converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     systems = stellar_systems.get_heirarchical_systems_from_set(bodies, converter=converter, RelativePosition=False)
-    # Deal with Possible Key Issues with Encounters with 3+ Particles Being Run More than Other Systems ...
+    # Deal with Possible Key Issues with Encounters with 3+ Star Particles Being Run More than Other Systems ...
     if primary_sysID not in systems.keys():
         print "Error: Previously run binary system has been found! Not running this system ..."
         return None
