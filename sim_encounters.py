@@ -128,6 +128,8 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
     # Setting Up Gravity Code
     gravity = SmallN(redirection = 'none', convert_nbody = converter)
     gravity.initialize_code()
+    print "Code Initialized?"
+    time.sleep(300)
     gravity.parameters.set_defaults()
     gravity.parameters.allow_full_unperturbed = 0
     gravity.particles.add_particles(GravitatingBodies) # adds bodies to gravity calculations
