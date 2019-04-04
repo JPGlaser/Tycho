@@ -148,6 +148,9 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     gravity.commit_particles()
     channel_from_grav_to_python = gravity.particles.new_channel_to(GravitatingBodies)
     channel_from_grav_to_python.copy()
+    # Get Free-Fall Time for the Collision
+    s = util.get_stars(GravitatingBodies)
+    t_freefall = s.dynamical_timescale()
     # Setting Coarse Timesteps
     list_of_times = np.arange(0., end_time, delta_time) | units.yr
     stepNumber = 0
@@ -164,12 +167,12 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
             write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         else:
             # Write a Save at the Begninning, Middle & End Times
-            if stepNumber%50 == 0 or stepNumber==len(list_of_times)/2:
+            if stepNumber%50 == 0:
                 # Write Set to File
                 gravity.particles.synchronize_to(GravitatingBodies)
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         # Check to See if the Encounter is Declared "Over" Every 50 Timesteps
-        if stepNumber%50 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
+        if current_time > t_freefall and stepNumber%50 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
             over = gravity.is_over()
             if over:
                 gravity.update_particle_tree()
