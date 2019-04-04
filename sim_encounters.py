@@ -175,11 +175,16 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
         if current_time > t_freefall and stepNumber%50 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
             over = gravity.is_over()
             if over:
+                current_time += 250 | units.yr
+                # Get to a Final State After Several Planet Orbits
+                gravity.evolve_model(current_time)
+                # Update all Particle Sets
                 gravity.update_particle_tree()
                 gravity.update_particle_set()
                 gravity.particles.synchronize_to(GravitatingBodies)
                 channel_from_grav_to_python.copy()
-                print "Encounter has finished at Step #", stepNumber
+                write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
+                print "Encounter has finished at Step #", stepNumber, '. Final Age:,' current_time.in_(units.yr)
                 break
             else:
                 print "Encounter has NOT finished at Step #", stepNumber
