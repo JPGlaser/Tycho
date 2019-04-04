@@ -184,6 +184,10 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     if converter==None:
         converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     systems = stellar_systems.get_heirarchical_systems_from_set(bodies, converter=converter, RelativePosition=False)
+    # Deal with Possible Key Issues with Encounters with 3+ Particles Being Run More than Other Systems ...
+    if primary_sysID not in systems.keys():
+        print "Error: Previously run binary system has been found! Not running this system ..."
+        return None
     # As this function is pulling from Multiples, there should never be more than 2 "Root" Particles ...
     if len(systems) > 2:
         print "Error: Encounter has more roots than expected! Total Root Particles:", len(systems)
