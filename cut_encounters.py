@@ -201,5 +201,5 @@ if __name__ == '__main__':
     pickle.dump(encounter_db, encounter_cut_file)
     encounter_cut_file.close()
 
-    sys.stdout = old_stdout
+    sys.stdout = orig_stdout
     log_file.close()
