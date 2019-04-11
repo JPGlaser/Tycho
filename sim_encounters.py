@@ -67,7 +67,7 @@ def remote_process(desiredFunction):
 def mpScatterExperiments(star_ids, desiredFunction):
     for starID in star_ids:
         job_queue.put(starID)
-    num_of_cpus = 1 #mp.cpu_count()-2
+    num_of_cpus =  mp.cpu_count()-2
     for i in range(num_of_cpus):
         th = threading.Thread(target=remote_process, args=(desiredFunction,))
         th.daemon = True
@@ -75,7 +75,7 @@ def mpScatterExperiments(star_ids, desiredFunction):
     job_queue.join()
 
 def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
-    max_number_of_rotations = kwargs.get("maxRotations", 10)
+    max_number_of_rotations = kwargs.get("maxRotations", 100)
     max_runtime = kwargs.get("maxRunTime", 10**5) # Units Years
     delta_time = kwargs.get("dt", 1) # Units Years
     # Set Up Output Directory Structure
@@ -185,9 +185,9 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     gravity.stop()
     # Seperate out the Systems to Prepare for Encounter Patching
     if doEncPatching:
-        ResultingPSystems = stellar_systems.get_planetary_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=True)
+        ResultingPSystems = stellar_systems.get_heirarchical_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=True)
     else:
-        ResultingPSystems = stellar_systems.get_planetary_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=False)
+        ResultingPSystems = stellar_systems.get_heirarchical_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=False)
     return ResultingPSystems
 
 # ------------------------------------- #
