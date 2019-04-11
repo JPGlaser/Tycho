@@ -518,7 +518,6 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
             mass_E = 0.003 | units.MJupiter
             init_a = util.calc_RelativePlanetPlacement(host_star, mass_E, period_ratio)
             init_e = 0.016
-            print ID_Earth+host_star.id, type(ID_Earth+host_star.id)
             Earth = planet_v2(ID_Earth+host_star.id, host_star, mass_E, init_a, init_e)
             Earth.stellar_type = 1
             planets.add_particle(Earth)

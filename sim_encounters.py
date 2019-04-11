@@ -159,7 +159,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
             write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         else:
             # Write a Save at the Begninning, Middle & End Times
-            if stepNumber%50 == 0:
+            if stepNumber%25 == 0:
                 # Write Set to File
                 gravity.particles.synchronize_to(GravitatingBodies)
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
@@ -271,9 +271,14 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     final_set.add_particles(sys_1)
     final_set.add_particles(sys_2)
     return final_set
+    # Collect the Collective Particle Set to be Returned Back
+    final_set = Particles()
+    final_set.add_particles(sys_1)
+    final_set.add_particles(sys_2)
+    return final_set
 
 def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
-    enc_systems = stellar_systems.get_planetary_systems_from_set(bodies, converter=converter)
+    enc_systems = stellar_systems.get_heirarchical_systems_from_set(bodies, converter=converter)
     sys_with_planets = []
     # Remove Any Tracer Planets in the Encounter
     for sys_key in enc_systems.keys():
@@ -296,6 +301,8 @@ def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
 # ------------------------------------- #
 if __name__=="__main__":
 
+    import time
+    s_time = tp.time()
     # ------------------------------------- #
     #      Setting up Required Variables    #
     # ------------------------------------- #
@@ -350,7 +357,12 @@ if __name__=="__main__":
     print util.timestamp(), "Performing Second Cut on Encounter Database ..."
     sys.stdout.flush()
 
-    print len(encounter_db.keys())
+    star_id_to_cut = []
+    for star_ID in encounter_db.keys():
+        if len(encounter_db[star_ID]) == 0:
+            star_id_to_cut.append(star_ID)
+    for star_ID in sorted(star_id_to_cut, reverse=True):
+        del encounter_db[star_ID]
 
     # Perform Cut & Advancement on Systems to Lower Integration Time
     for star_ID in encounter_db.keys():
@@ -364,7 +376,14 @@ if __name__=="__main__":
         for enc_id in sorted(enc_id_to_cut, reverse=True):
             del encounter_db[star_ID][enc_id]
 
-    print len(encounter_db.keys())
+    star_id_to_cut = []
+    for star_ID in encounter_db.keys():
+        if len(encounter_db[star_ID]) == 0:
+            star_id_to_cut.append(star_ID)
+    for star_ID in sorted(star_id_to_cut, reverse=True):
+        del encounter_db[star_ID]
+
+    print "Estimated Number of Encounters to Process:" len(encounter_db.keys())*100
 
     # Set Up Final Dictionary to Record Initial and Final States
     resultDict = {}
@@ -400,7 +419,10 @@ if __name__=="__main__":
     # Picke the Resulting Database of Initial and Final Conditions
     pickle.dump(resultDict, open(os.getcwd()+"/"+cluster_name+"_resultDB.pkl", "wb"))
 
+    e_time = tp.time()
+
     # Announce to Terminal that the Runs have Finished
     sys.stdout.flush()
     print util.timestamp(), "Cluster", cluster_name, "is finished processing!"
+    print util.timestamp(), "The Cluster was processed in", (e_time - s_time), "seconds!"
     sys.stdout.flush()
