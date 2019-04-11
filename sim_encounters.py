@@ -84,7 +84,6 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     dictionary_for_results.setdefault(star_id, {})
     encounter_id = 0
     for encounter in encounter_db[star_id]:
-        print encounter
         # Set Up Subdirectory for this Specific Encounter
         output_EncDirectory = output_KeyDirectory+"/Enc-"+str(encounter_id)
         if not os.path.exists(output_EncDirectory): os.mkdir(output_EncDirectory)
@@ -133,7 +132,6 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     # Setting Up Gravity Code
     gravity = SmallN(redirection = 'none', convert_nbody = converter)
     gravity.initialize_code()
-    print "Code Initialized!"
     gravity.parameters.set_defaults()
     gravity.parameters.allow_full_unperturbed = 0
     gravity.particles.add_particles(GravitatingBodies) # adds bodies to gravity calculations
@@ -176,10 +174,10 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 gravity.particles.synchronize_to(GravitatingBodies)
                 channel_from_grav_to_python.copy()
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
-                print "Encounter has finished at Step #", stepNumber, '. Final Age:', current_time.in_(units.yr)
+                #print "Encounter has finished at Step #", stepNumber, '. Final Age:', current_time.in_(units.yr)
                 break
-            else:
-                print "Encounter has NOT finished at Step #", stepNumber
+            #else:
+                #print "Encounter has NOT finished at Step #", stepNumber
         stepNumber +=1
     # Stop the Gravity Code Once the Encounter Finishes
     gravity.stop()
@@ -202,8 +200,8 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     # Deal with Possible Key Issues with Encounters with 3+ Star Particles Being Run More than Other Systems ...
     if int(primary_sysID) not in systems.keys():
         print "...: Error: Previously run binary system has been found! Not running this system ..."
-        print primary_sysID
-        print systems.keys()
+        #print primary_sysID
+        #print systems.keys()
         return None
     # As this function is pulling from Multiples, there should never be more or less than 2 "Root" Particles ...
     if len(systems) != 2:
