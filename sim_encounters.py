@@ -195,12 +195,16 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
 def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
     enc_systems = stellar_systems.get_heirarchical_systems_from_set(bodies, converter=converter)
     sys_with_planets = []
-    # Remove Any Tracer Planets in the Encounter
+    # Remove Any Tracer Planets in the Encounter and Adds the Key to Add in the New System
     for sys_key in enc_systems.keys():
         for particle in enc_systems[sys_key]:
             if particle.id >= base_planet_ID:
                 enc_systems[sys_key].remove_particle(particle)
                 sys_with_planets.append(sys_key)
+    # Allows for Planets to be Added to Single Stars
+    for sys_key in enc_systems.keys():
+        if (len(enc_systems[sys_key]) == 1) and (sys_key not in sys_with_planets):
+            sys_with_planets.append(sys_key)
     #print sys_with_planets
     # Add in a New Planetary System
     for sys_key in sys_with_planets:
