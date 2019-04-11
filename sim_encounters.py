@@ -383,7 +383,7 @@ if __name__=="__main__":
     for star_ID in sorted(star_id_to_cut, reverse=True):
         del encounter_db[star_ID]
 
-    print "Estimated Number of Encounters to Process:" len(encounter_db.keys())*100
+    print "Estimated Number of Encounters to Process:", len(encounter_db.keys())*100
 
     # Set Up Final Dictionary to Record Initial and Final States
     resultDict = {}
