@@ -198,7 +198,7 @@ if __name__ == '__main__':
         del encounter_db[star_ID]
 
     encounter_cut_file = open(os.getcwd()+"/"+cluster_name+"_encounters_cut.pkl", "w")
-    pickle.dump(encounter_db, encounter_file)
+    pickle.dump(encounter_db, encounter_cut_file)
     encounter_cut_file.close()
 
     sys.stdout = old_stdout
