@@ -276,7 +276,7 @@ def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
     enc_systems = stellar_systems.get_planetary_systems_from_set(bodies, converter=converter)
     sys_with_planets = []
     # Remove Any Tracer Planets in the Encounter
-    for sys_key in enc_systems:
+    for sys_key in enc_systems.keys():
         for particle in enc_systems[sys_key]:
             if particle.id >= base_planet_ID:
                 enc_systems[sys_key].remove_particle(particle)
