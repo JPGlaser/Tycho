@@ -227,7 +227,11 @@ if __name__=="__main__":
     parser.add_option("-S", "--serial", dest="doSerial", action="store_true",
                       help="Run the program in serial?.")
     (options, args) = parser.parse_args()
-    cluster_name = options.cluster_name
+    if options.cluster_name != None:
+        cluster_name = options.cluster_name
+    else:
+        directory = os.getcwd()
+        cluster_name = directory.split("/")[-1]
     doSerial = options.doSerial
     base_planet_ID = 50000
 
@@ -236,7 +240,7 @@ if __name__=="__main__":
     # ------------------------------------- #
 
     # Read in Encounter Directory
-    encounter_file = open(os.getcwd()+"/"+cluster_name+"_encounters.pkl", "rb")
+    encounter_file = open(os.getcwd()+"/"+cluster_name+"_encounters_cut.pkl", "rb")
     encounter_db = pickle.load(encounter_file)
     encounter_file.close()
 
