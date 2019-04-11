@@ -133,7 +133,7 @@ if __name__ == '__main__':
         cluster_name = options.cluster_name
     else:
         directory = os.getcwd()
-        cluster_name = directory.split("/")[-2]
+        cluster_name = directory.split("/")[-1]
 
     base_planet_ID = 50000
 
