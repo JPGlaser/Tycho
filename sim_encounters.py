@@ -173,6 +173,11 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 gravity.update_particle_set()
                 gravity.particles.synchronize_to(GravitatingBodies)
                 channel_from_grav_to_python.copy()
+                # Removes the Heirarchical Particle from the HDF5 File
+                # This is done for personal convience.
+                for body in GravitatingBodies:
+                    if body.child1 != None or body.child1 != None:
+                        GravitatingBodies.remove_particle(body)
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
                 #print "Encounter has finished at Step #", stepNumber, '. Final Age:', current_time.in_(units.yr)
                 break
