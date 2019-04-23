@@ -77,7 +77,7 @@ def mpScatterExperiments(star_ids, desiredFunction):
 def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     max_number_of_rotations = kwargs.get("maxRotations", 100)
     max_runtime = kwargs.get("maxRunTime", 10**5) # Units Years
-    delta_time = kwargs.get("dt", 1) # Units Years
+    delta_time = kwargs.get("dt", 10) # Units Years
     # Set Up Output Directory Structure
     output_KeyDirectory = os.getcwd()+"/Encounters/"+str(star_id)
     # Set Up the Results Dictionary to Store Initial and Final ParticleSets for this Star
@@ -105,9 +105,11 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
             enc_bodies = run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, doEncPatching=False)
             # Store Final Conditions
             dictionary_for_results[star_id][encounter_id][rotation_id].append(enc_bodies.copy())
+            # Pickle Dictionary Every 10 Rotations
+            if rotation_id%10 == 0:
+                pickle.dump(resultDict, open(os.getcwd()+"/"+cluster_name+"_resultDB.pkl", "wb"))
             rotation_id += 1
         encounter_id += 1
-        pickle.dump(resultDict, open(os.getcwd()+"/"+cluster_name+"_resultDB.pkl", "wb"))
 
 def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     # Define Additional User Options and Set Defaults Properly
@@ -162,10 +164,10 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 gravity.particles.synchronize_to(GravitatingBodies)
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         # Check to See if the Encounter is Declared "Over" Every 50 Timesteps
-        if current_time > t_freefall and stepNumber%50 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
+        if current_time > t_freefall and stepNumber%25 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
             over = gravity.is_over()
             if over:
-                current_time += 250 | units.yr
+                current_time += 100 | units.yr
                 # Get to a Final State After Several Planet Orbits
                 gravity.evolve_model(current_time)
                 # Update all Particle Sets
