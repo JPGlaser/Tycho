@@ -74,7 +74,7 @@ def update_host_star(system, converter=None):
         if planet.eccentricity >= 1.0:
             for s in stars - likely_host:
                 update_orb_elem(s, [planet])
-                if planet.eccentricity < 1.0
+                if planet.eccentricity < 1.0:
                     planet.host_star = s.id
                     break
         else:
