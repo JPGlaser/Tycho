@@ -62,6 +62,24 @@ def update_orb_elem(host_star, planets, converter=None):
         planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
     kep_p.stop()
 
+def update_host_star(system, converter=None):
+    if converter == None:
+        converter = nbody_system.nbody_to_si(system.mass.sum(), 2 * np.max(system.radius.number) | host_star.radius.unit)
+    stars = util.get_stars(system)
+    planets = util.get_planets(system)
+    p_NearestStar = planets.nearest_neighbour(stars)
+    for i, planet in enumerate(planets):
+        likely_host = p_NearestStar[i]
+        update_orb_elem(likely_host, [planet])
+        if planet.eccentricity >= 1.0:
+            for s in stars - likely_host:
+                update_orb_elem(s, [planet])
+                if planet.eccentricity < 1.0
+                    planet.host_star = s.id
+                    break
+        else:
+            planet.host_star = likely_host.id
+
 
 def equation_35(inner_e, gamma, alpha):
     return alpha*inner_e + gamma*inner_e/np.sqrt(alpha*(1.-inner_e**2) + gamma**2*inner_e**2) - 1. + alpha
