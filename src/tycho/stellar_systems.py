@@ -60,6 +60,7 @@ def update_orb_elem(host_star, planets, converter=None):
         planet.semi_major_axis, planet.eccentricity = kep_p.get_elements()
         planet.period = kep_p.get_period()
         planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
+    kep_p.stop()
 
 
 def equation_35(inner_e, gamma, alpha):
