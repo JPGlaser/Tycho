@@ -49,7 +49,8 @@ def get_periods(host_star, planets):
 
 def update_orb_elem(host_star, planets, converter=None):
     if converter == None:
-        converter = nbody_system.nbody_to_si(host_star.mass+planets.mass.sum(), 2 * host_star.radius.number | host_star.radius.unit)
+        tot_sys = Particles(particles=(host_star, planets))
+        converter = nbody_system.nbody_to_si(tot_sys.mass.sum(), 2 * host_star.radius)
     kep_p = Kepler(unit_converter = converter, redirection = 'none')
     kep_p.initialize_code()
     for planet in planets:
@@ -79,7 +80,6 @@ def update_host_star(system, converter=None):
                     break
         else:
             planet.host_star = likely_host.id
-
 
 def equation_35(inner_e, gamma, alpha):
     return alpha*inner_e + gamma*inner_e/np.sqrt(alpha*(1.-inner_e**2) + gamma**2*inner_e**2) - 1. + alpha
