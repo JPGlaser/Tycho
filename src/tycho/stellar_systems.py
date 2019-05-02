@@ -47,6 +47,21 @@ def get_periods(host_star, planets):
         a = planet.semi_major_axis
         planet.period = 2.0*np.pi/np.sqrt(mu)*a**(3./2.)
 
+def update_orb_elem(host_star, planets, converter=None):
+    if converter == None:
+        converter = nbody_system.nbody_to_si(host_star.mass+planets.mass.sum(), 2 * host_star.radius.number | host_star.radius.unit)
+    kep_p = Kepler(unit_converter = converter, redirection = 'none')
+    kep_p.initialize_code()
+    for planet in planets:
+        total_mass = host_star.mass + planet.mass
+        kep_pos = host_star.position - planet.position
+        kep_vel = host_star.velocity - planet.velocity
+        kep_p.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
+        planet.semi_major_axis, planet.eccentricity = kep_p.get_elements()
+        planet.period = kep_p.get_period()
+        planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
+
+
 def equation_35(inner_e, gamma, alpha):
     return alpha*inner_e + gamma*inner_e/np.sqrt(alpha*(1.-inner_e**2) + gamma**2*inner_e**2) - 1. + alpha
 
