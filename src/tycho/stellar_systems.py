@@ -47,12 +47,15 @@ def get_periods(host_star, planets):
         a = planet.semi_major_axis
         planet.period = 2.0*np.pi/np.sqrt(mu)*a**(3./2.)
 
-def update_orb_elem(host_star, planets, converter=None):
-    if converter == None:
-        tot_sys = Particles(particles=(host_star, planets))
-        converter = nbody_system.nbody_to_si(tot_sys.mass.sum(), 2 * host_star.radius)
-    kep_p = Kepler(unit_converter = converter, redirection = 'none')
-    kep_p.initialize_code()
+def update_orb_elem(host_star, planets, converter=None, kepler_worker=None):
+    if kepler_worker == None:
+        if converter == None:
+            tot_sys = Particles(particles=(host_star, planets))
+            converter = nbody_system.nbody_to_si(tot_sys.mass.sum(), 2 * host_star.radius)
+        kep_p = Kepler(unit_converter = converter, redirection = 'none')
+        kep_p.initialize_code()
+    else:
+        kep_p = kepler_worker
     for planet in planets:
         total_mass = host_star.mass + planet.mass
         kep_pos = host_star.position - planet.position
@@ -61,17 +64,23 @@ def update_orb_elem(host_star, planets, converter=None):
         planet.semi_major_axis, planet.eccentricity = kep_p.get_elements()
         planet.period = kep_p.get_period()
         planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
-    kep_p.stop()
+    if kepler_worker == None:
+        kep_p.stop()
 
-def update_host_star(system, converter=None):
-    if converter == None:
-        converter = nbody_system.nbody_to_si(system.mass.sum(), 2 * np.max(system.radius.number) | host_star.radius.unit)
+def update_host_star(system, converter=None, kepler_worker=None):
+    if kepler_worker == None:
+        if converter == None:
+            converter = nbody_system.nbody_to_si(system.mass.sum(), 2 * np.max(system.radius.number) | system.radius.unit)
+        kep_p = Kepler(unit_converter = converter, redirection = 'none')
+        kep_p.initialize_code()
+    else:
+        kep_p = kepler_worker
     stars = util.get_stars(system)
     planets = util.get_planets(system)
     p_NearestStar = planets.nearest_neighbour(stars)
     for i, planet in enumerate(planets):
         likely_host = p_NearestStar[i]
-        update_orb_elem(likely_host, [planet])
+        update_orb_elem(likely_host, [planet], kepler_worker=kep_p)
         if planet.eccentricity >= 1.0:
             for s in stars - likely_host:
                 update_orb_elem(s, [planet])
@@ -80,6 +89,8 @@ def update_host_star(system, converter=None):
                     break
         else:
             planet.host_star = likely_host.id
+    if kepler_worker == None:
+        kep_p.stop()
 
 def equation_35(inner_e, gamma, alpha):
     return alpha*inner_e + gamma*inner_e/np.sqrt(alpha*(1.-inner_e**2) + gamma**2*inner_e**2) - 1. + alpha
