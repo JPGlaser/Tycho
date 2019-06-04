@@ -69,9 +69,6 @@ if __name__=="__main__":
         f_and_l = get_first_and_last_states(system)
         total_flDB[cluster_names[i]].append(f_and_l)
         if i%10==0:
-            flDB_file = open(rootDir+"TotalI-F_DB.pkl", "w")
-            pickle.dump(total_flDB, flDB_file)
-            flDB_file.close()
             print "!!!!!! Percent Completed:", i*1.0/len(paths_of_hdf5_files[::10])*100
     
     flDB_file = open(rootDir+"TotalI-F_DB.pkl", "w")
