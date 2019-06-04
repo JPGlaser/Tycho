@@ -83,7 +83,7 @@ def update_host_star(system, converter=None, kepler_worker=None):
         update_orb_elem(likely_host, [planet], converter=converter, kepler_worker=kep_p)
         if planet.eccentricity >= 1.0:
             for s in stars - likely_host:
-                update_orb_elem(s, [planet])
+                update_orb_elem(s, [planet], converter=converter, kepler_worker=kep_p)
                 if planet.eccentricity < 1.0:
                     planet.host_star = s.id
                     break
