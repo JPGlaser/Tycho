@@ -62,15 +62,18 @@ if __name__=="__main__":
     print "Number of Initial States Simulated:", len(rot_IDs)
     print "Total Number of Initial States to Simulate:", int(len(glob.glob(rootDir+'*/Encounters/*/')))*100
 
-    flDB_file = open(rootDir+"TotalI-F_DB.pkl", "w")
+
     total_flDB = defaultdict(list)
     for i, path in enumerate(paths_of_hdf5_files[::10]):
         system = read_set_from_file(path, 'hdf5',version='2.0', copy_history=True, close_file=True)
         f_and_l = get_first_and_last_states(system)
         total_flDB[cluster_names[i]].append(f_and_l)
         if i%10==0:
+            flDB_file = open(rootDir+"TotalI-F_DB.pkl", "w")
             pickle.dump(total_flDB, flDB_file)
+            flDB_file.close()
             print "!!!!!! Percent Completed:", i*1.0/len(paths_of_hdf5_files[::10])*100
-
+    
+    flDB_file = open(rootDir+"TotalI-F_DB.pkl", "w")
     pickle.dump(total_flDB, flDB_file)
-    encounter_cut_file.close()
+    flDB_file.close()
