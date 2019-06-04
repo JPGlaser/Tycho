@@ -22,10 +22,16 @@ from tycho import util, create, read, write, stellar_systems
 
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.day], precision = 6, prefix = "", separator = "[", suffix = "]")
 
+def get_first_and_last_states(bodies, end_time=(10 | units.Myr)):
+    first = bodies.get_state_at_timestamp(0 | units.yr)
+    last = bodies.get_state_at_timestamp(end_time)
+    result = [first, last]
+    for state in result:
+        stellar_systems.update_host_star(state)
+    return (first, last)
+
 if __name__=="__main__":
 
-    import time
-    s_time = tp.time()
     # ------------------------------------- #
     #      Setting up Required Variables    #
     # ------------------------------------- #
