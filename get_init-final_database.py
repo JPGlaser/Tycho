@@ -35,7 +35,7 @@ if __name__=="__main__":
     parser.add_option("-S", "--serial", dest="doSerial", action="store_true",
                       help="Run the program in serial?.")
     (options, args) = parser.parse_args()
-    if options. != None:
+    if options.rootDir != None:
         rootDir = options.rootDir
     else:
         rootDir = '/home/draco/jglaser/Public/Tycho_Runs/MarkG/'
