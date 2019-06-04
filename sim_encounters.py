@@ -136,6 +136,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     gravity.initialize_code()
     gravity.parameters.set_defaults()
     gravity.parameters.allow_full_unperturbed = 0
+    gravity.parameters.timestep_parameter = 0.05
     gravity.particles.add_particles(GravitatingBodies) # adds bodies to gravity calculations
     gravity.commit_particles()
     channel_from_grav_to_python = gravity.particles.new_channel_to(GravitatingBodies)
