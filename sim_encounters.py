@@ -166,7 +166,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         # Check to See if the Encounter is Declared "Over" Every 50 Timesteps
         if current_time > t_freefall and stepNumber%25 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
-            over = gravity.is_over()
+            over = util.check_isOver(gravity.particles)
             if over:
                 current_time += 100 | units.yr
                 # Get to a Final State After Several Planet Orbits
@@ -184,8 +184,9 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
                 #print "Encounter has finished at Step #", stepNumber, '. Final Age:', current_time.in_(units.yr)
                 break
-            #else:
+            else:
                 #print "Encounter has NOT finished at Step #", stepNumber
+                #t_freefall = util.get_stars(gravity.particles).dynamical_timescale()
         stepNumber +=1
     # Stop the Gravity Code Once the Encounter Finishes
     gravity.stop()
