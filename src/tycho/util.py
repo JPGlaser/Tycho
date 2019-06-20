@@ -206,7 +206,6 @@ def check_isOver(bodies, smallN_worker=None):
     stars = util.get_stars(bodies)
     smallN_worker.reset()
     smallN_worker.commit_particles(stars)
-    
     return smallN_worker.is_over()
 
 def timestamp():
