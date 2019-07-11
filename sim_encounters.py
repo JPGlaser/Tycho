@@ -170,7 +170,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 gravity.particles.synchronize_to(GravitatingBodies)
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         # Check to See if the Encounter is Declared "Over" Every 50 Timesteps
-        if current_time > t_freefall and stepNumber%25 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
+        if current_time > 1.25*t_freefall and stepNumber%25 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
             over = util.check_isOver(gravity.particles, over_grav)
             if over:
                 current_time += 100 | units.yr
@@ -199,7 +199,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     if doEncPatching:
         ResultingPSystems = stellar_systems.get_heirarchical_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=True)
     else:
-        ResultingPSystems = stellar_systems.get_heirarchical_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=False)
+        ResultingPSystems = GravitatingBodies
     return ResultingPSystems
 
 # ------------------------------------- #
