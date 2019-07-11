@@ -93,8 +93,10 @@ def bulk_run_for_star(star_id, encounter_db, **kwargs):
             next_outFile = output_EncPrefix+"_Rot-"+str(rotation_id+1)+'.hdf5'
             if os.path.exists(output_HDF5File):
                 if rotation_id == 99:
+                    rotation_id += 1
                     continue
                 elif os.path.exists(next_outFile):
+                    rotation_id += 1
                     continue
             # Remove Jupiter and Add Desired Planetary System
             enc_bodies = replace_planetary_system(encounter.copy())
