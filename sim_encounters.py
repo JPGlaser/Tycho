@@ -36,6 +36,7 @@ from tycho import util
 # Import the Amuse Gravity & Close-Encounter Packages
 from amuse.community.smalln.interface import SmallN
 from amuse.community.kepler.interface import Kepler
+from amuse.community.ph4.interface import ph4
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, stellar_systems
@@ -137,11 +138,15 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     over_grav.parameters.set_defaults()
     over_grav.parameters.allow_full_unperturbed = 0
     # Setting Up Gravity Code
-    gravity = SmallN(redirection = 'none', convert_nbody = converter)
-    gravity.initialize_code()
-    gravity.parameters.set_defaults()
-    gravity.parameters.allow_full_unperturbed = 0
-    gravity.parameters.timestep_parameter = 0.05
+    gravity_code = ph4(number_of_workers = 2, redirection = "none", mode = "gpu",
+                     convert_nbody = converter)
+    gravity_code.initialize_code()
+    gravity_code.parameters.set_defaults()
+    #gravity = SmallN(redirection = 'none', convert_nbody = converter)
+    #gravity.initialize_code()
+    #gravity.parameters.set_defaults()
+    #gravity.parameters.allow_full_unperturbed = 0
+    #gravity.parameters.timestep_parameter = 0.05
     gravity.particles.add_particles(GravitatingBodies) # adds bodies to gravity calculations
     gravity.commit_particles()
     channel_from_grav_to_python = gravity.particles.new_channel_to(GravitatingBodies)
@@ -177,7 +182,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 # Get to a Final State After Several Planet Orbits
                 gravity.evolve_model(current_time)
                 # Update all Particle Sets
-                gravity.update_particle_tree()
+                #gravity.update_particle_tree()
                 gravity.update_particle_set()
                 gravity.particles.synchronize_to(GravitatingBodies)
                 channel_from_grav_to_python.copy()
