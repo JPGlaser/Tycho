@@ -131,6 +131,11 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     # Moving the Encounter's Center of Mass to the Origin and Setting it at Rest
     GravitatingBodies.position -= rCM_i
     GravitatingBodies.velocity -= vCM_i
+    # Setting Up isOver Integrator
+    over_grav = SmallN(redirection = 'none', convert_nbody = converter)
+    over_grav.initialize_code()
+    over_grav.parameters.set_defaults()
+    over_grav.parameters.allow_full_unperturbed = 0
     # Setting Up Gravity Code
     gravity = SmallN(redirection = 'none', convert_nbody = converter)
     gravity.initialize_code()
@@ -166,7 +171,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
         # Check to See if the Encounter is Declared "Over" Every 50 Timesteps
         if current_time > t_freefall and stepNumber%25 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
-            over = util.check_isOver(gravity.particles)
+            over = util.check_isOver(gravity.particles, over_grav)
             if over:
                 current_time += 100 | units.yr
                 # Get to a Final State After Several Planet Orbits
@@ -184,7 +189,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 write_set_to_file(GravitatingBodies.savepoint(current_time), save_file, 'hdf5', version='2.0')
                 #print "Encounter has finished at Step #", stepNumber, '. Final Age:', current_time.in_(units.yr)
                 break
-            else:
+            #else:
                 #print "Encounter has NOT finished at Step #", stepNumber
                 #t_freefall = util.get_stars(gravity.particles).dynamical_timescale()
         stepNumber +=1
