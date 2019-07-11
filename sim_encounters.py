@@ -200,6 +200,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
         stepNumber +=1
     # Stop the Gravity Code Once the Encounter Finishes
     gravity.stop()
+    over_grav.stop()
     # Seperate out the Systems to Prepare for Encounter Patching
     if doEncPatching:
         ResultingPSystems = stellar_systems.get_heirarchical_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=True)
