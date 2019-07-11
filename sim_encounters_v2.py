@@ -75,32 +75,43 @@ def mpScatterExperiments(star_ids, desiredFunction):
         th.start()
     job_queue.join()
 
-def bulk_run_for_star(star_id, encounter_db, **kwargs):
+def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
     max_number_of_rotations = kwargs.get("maxRotations", 100)
     max_runtime = kwargs.get("maxRunTime", 10**5) # Units Years
     delta_time = kwargs.get("dt", 10) # Units Years
     # Set Up Output Directory Structure
     output_KeyDirectory = os.getcwd()+"/Encounters/"+str(star_id)
+    # Set Up the Results Dictionary to Store Initial and Final ParticleSets for this Star
+    dictionary_for_results.setdefault(star_id, {})
     encounter_id = 0
     for encounter in encounter_db[star_id]:
         # Set Up Subdirectory for this Specific Encounter
         output_EncPrefix = output_KeyDirectory+"/Enc-"+str(encounter_id)
         # Set up Encounter Key for this Specific Encounter for this Specific Star
+        dictionary_for_results[star_id].setdefault(encounter_id, {})
         rotation_id = 0
         while rotation_id <= max_number_of_rotations:
             # Set Up Output Directory for this Specific Iteration
             output_HDF5File = output_EncPrefix+"_Rot-"+str(rotation_id)+'.hdf5'
             next_outFile = output_EncPrefix+"_Rot-"+str(rotation_id+1)+'.hdf5'
             if os.path.exists(output_HDF5File):
-                if rotation_id == 99:
-                    continue
-                else if os.path.exists(next_outFile):
+                if rotation_id != 99 and os.path.exists(next_outFile):
                     continue
             # Remove Jupiter and Add Desired Planetary System
             enc_bodies = replace_planetary_system(encounter.copy())
+            #print enc_bodies
+            # Set up Rotation Key for this Specific Iteration for this Specific Encounter for this Specific Star
+            dictionary_for_results[star_id][encounter_id].setdefault(rotation_id, [])
+            # Store Initial Conditions
+            dictionary_for_results[star_id][encounter_id][rotation_id].append(enc_bodies.copy())
             # Run Encounter
             # TODO: Finalize Encounter Patching Methodology with SecularMultiples
             enc_bodies = run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, doEncPatching=False)
+            # Store Final Conditions
+            dictionary_for_results[star_id][encounter_id][rotation_id].append(enc_bodies.copy())
+            # Pickle Dictionary Every 10 Rotations
+            if rotation_id%10 == 0:
+                pickle.dump(resultDict, open(os.getcwd()+"/"+cluster_name+"_resultDB.pkl", "wb"))
             rotation_id += 1
         encounter_id += 1
 
@@ -267,6 +278,9 @@ if __name__=="__main__":
 
     print "Estimated Number of Encounters to Process:", len(encounter_db.keys())*100
 
+    # Set Up Final Dictionary to Record Initial and Final States
+    resultDict = {}
+
     # ------------------------------------- #
     #     Perform All Req. Simulations      #
     # ------------------------------------- #
@@ -277,7 +291,7 @@ if __name__=="__main__":
     sys.stdout.flush()
 
     # Set Up the Multiprocessing Pool Environment Using Partial to Send Static Variables
-    process_func = partial(bulk_run_for_star, encounter_db=encounter_db)
+    process_func = partial(bulk_run_for_star, encounter_db=encounter_db, dictionary_for_results=resultDict)
     star_ids = encounter_db.keys()
 
     # Set Up Output Directory Structure
@@ -294,6 +308,9 @@ if __name__=="__main__":
     else:
         # Begin Looping Through Star IDs (Each Star is a Queued Process)
         mpScatterExperiments(star_ids, process_func)
+
+    # Picke the Resulting Database of Initial and Final Conditions
+    pickle.dump(resultDict, open(os.getcwd()+"/"+cluster_name+"_resultDB.pkl", "wb"))
 
     e_time = tp.time()
 
