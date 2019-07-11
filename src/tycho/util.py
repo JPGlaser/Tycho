@@ -203,7 +203,7 @@ def stop_smalln():
     SMALLN.stop()
 
 def check_isOver(bodies, smallN_worker=None):
-    stars = get_stars(bodies)
+    stars = get_stars(bodies.copy())
     smallN_worker.reset()
     smallN_worker.particles.add_particles(stars)
     smallN_worker.commit_particles()
