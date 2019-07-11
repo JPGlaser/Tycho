@@ -203,7 +203,7 @@ def stop_smalln():
     SMALLN.stop()
 
 def check_isOver(bodies, smallN_worker=None):
-    if smallN_worker = None:
+    if smallN_worker == None:
         smallN_worker = SmallN(redirection = 'none', convert_nbody = converter)
         smallN_worker.initialize_code()
         smallN_worker.parameters.set_defaults()
