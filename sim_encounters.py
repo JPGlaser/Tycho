@@ -138,7 +138,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     over_grav.parameters.set_defaults()
     over_grav.parameters.allow_full_unperturbed = 0
     # Setting Up Gravity Code
-    gravity = ph4(number_of_workers = 2, redirection = "none", mode = "gpu", convert_nbody = converter)
+    gravity = ph4(number_of_workers = 1, redirection = "none", convert_nbody = converter)
     gravity.initialize_code()
     gravity.parameters.set_defaults()
     #gravity = SmallN(redirection = 'none', convert_nbody = converter)
