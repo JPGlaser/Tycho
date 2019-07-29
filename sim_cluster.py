@@ -153,7 +153,8 @@ class ChildUpdater(object):
         # Seperate Chilren into Planets & Stars
         s_children = children[children.mass > limiting_mass_for_planets]
         p_children = children[children.mass <= limiting_mass_for_planets]
-        p_children.host_star = p_children.nearest_neighbour(s_children).id
+        # TODO: For some reason nearest_neighbour isn't working well with reshapes?
+        #p_children.host_star = p_children.nearest_neighbour(s_children).id
         #print "Stellar Children: ", s_children.id
         #print "Plenatary Children: ", p_children.id
         #print "IStars Position Before Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec)
