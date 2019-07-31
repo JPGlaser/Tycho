@@ -40,8 +40,11 @@ def gen_scatteringIC(encounter_db):
     global rootDir
     global cluster_name
     max_number_of_rotations = 100
+    output_ICDirectory = rootDir+cluster_name+"/Scatter_IC/"
+    if not os.path.exists(output_ICDirectory): os.mkdir(output_ICDirectory)
     for star_ID in encounter_db.keys():
-        output_KeyDirectory = rootDir+cluster_name+"/Scatter_IC/"+str(star_ID)
+        output_KeyDirectory = output_ICDirectory+str(star_ID)
+        if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
         encounter_id = 0
         for encounter in encounter_db[star_ID]:
             # Set Up Subdirectory for this Specific Encounter
