@@ -42,6 +42,12 @@ def gen_scatteringIC(encounter_db):
     max_number_of_rotations = 100
     output_ICDirectory = rootDir+cluster_name+"/Scatter_IC/"
     if not os.path.exists(output_ICDirectory): os.mkdir(output_ICDirectory)
+    # Set up the Kepler Workers for Subroutines Now
+    kepler_workers = [Kepler(unit_converter = converter, redirection = 'none'),
+                      Kepler(unit_converter = converter, redirection = 'none')]
+    for kw in kepler_workers:
+        kw.initialize_code()
+    # Loop Through the Star_IDs
     for star_ID in encounter_db.keys():
         output_KeyDirectory = output_ICDirectory+str(star_ID)
         if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
@@ -67,13 +73,16 @@ def gen_scatteringIC(encounter_db):
                 write_set_to_file(enc_bodies.savepoint(0 | units.Myr), output_HDF5File, 'hdf5', version='2.0')
                 rotation_id += 1
             encounter_id += 1
+    # Stop the Kepler Workers 
+    for kw in kepler_workers:
+        kw.stop()
 
-def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
+def replace_planetary_system(bodies, kepler_workers=None, base_planet_ID=50000, converter=None):
     # Set up the Converter if not Provided
     if converter == None:
         converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     # Get the Hierarchical Systems from the Particle Set
-    enc_systems = stellar_systems.get_heirarchical_systems_from_set(bodies, converter=converter)
+    enc_systems = stellar_systems.get_heirarchical_systems_from_set(bodies, kepler_workers=kepler_workers, converter=converter)
     sys_with_planets = []
     # Remove Any Tracer Planets in the Encounter and Adds the Key to Add in the New System
     for sys_key in enc_systems.keys():
