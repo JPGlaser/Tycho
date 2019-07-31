@@ -105,10 +105,10 @@ if __name__ == '__main__':
         rootDir = '/home/draco/jglaser/Public/Tycho_Runs/MarkG/'
 
     orig_stdout = sys.stdout
-    log_file = open(os.getcwd()+"/rand_encounters.log","w")
+    log_file = open(os.getcwd()+"rand_encounters.log","w")
     sys.stdout = log_file
 
-    paths_of_enc_files = glob.glob(rootDir+'*_encounters_cut.pkl')
+    paths_of_enc_files = glob.glob(rootDir+'/*/*_encounters_cut.pkl')
     print paths_of_enc_files
     cluster_names = [path.split("/")[-2] for path in paths_of_enc_files]
 
