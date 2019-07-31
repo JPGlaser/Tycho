@@ -38,9 +38,10 @@ from tycho import create, util, read, write, stellar_systems
 
 def gen_scatteringIC(encounter_db):
     global rootDir
+    global cluster_name
     max_number_of_rotations = 100
     for star_ID in encounter_db.keys():
-        output_KeyDirectory = rootDir+"/Scatter_IC/"+str(star_ID)
+        output_KeyDirectory = rootDir+cluster_names+"/Scatter_IC/"+str(star_ID)
         encounter_id = 0
         for encounter in encounter_db[star_ID]:
             # Set Up Subdirectory for this Specific Encounter
@@ -111,13 +112,15 @@ if __name__ == '__main__':
     paths_of_enc_files = glob.glob(rootDir+'*/*_encounters_cut.pkl')
     print paths_of_enc_files
     cluster_names = [path.split("/")[-2] for path in paths_of_enc_files]
+    print cluster_names
 
     for i, path in enumerate(paths_of_enc_files):
         # Read in Encounter Directory
         encounter_db = pickle.load(open(path, "rb"))
+        cluster_name = cluster_names[i]
         # Report Start of Generating IC for Cut Encounter Directory
         sys.stdout.flush()
-        print util.timestamp(), "Generating initial conditions for", cluster_names[i],"..."
+        print util.timestamp(), "Generating initial conditions for", cluster_name,"..."
         sys.stdout.flush()
         # Generate IC for Scattering Experiments
         gen_scatteringIC(encounter_db)
