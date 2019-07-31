@@ -39,7 +39,7 @@ from tycho import create, util, read, write, stellar_systems
 def gen_scatteringIC(encounter_db):
     global rootDir
     max_number_of_rotations = 100
-    for star_ID in encounter_db.keys()
+    for star_ID in encounter_db.keys():
         output_KeyDirectory = rootDir+"/Scatter_IC/"+str(star_id)
         encounter_id = 0
         for encounter in encounter_db[star_ID]:
