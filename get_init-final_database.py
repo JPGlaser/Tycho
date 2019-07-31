@@ -38,7 +38,7 @@ if __name__=="__main__":
     # ------------------------------------- #
     parser = OptionParser()
     parser.add_option("-d", "--rootdirectory", dest="rootDir", default=None, type="str",
-                      help="Enter the full directory of the Root .")
+                      help="Enter the full directory of the Root Folder.")
     parser.add_option("-S", "--serial", dest="doSerial", action="store_true",
                       help="Run the program in serial?.")
     (options, args) = parser.parse_args()
@@ -70,7 +70,7 @@ if __name__=="__main__":
         total_flDB[cluster_names[i]].append(f_and_l)
         if i%10==0:
             print "!!!!!! Percent Completed:", i*1.0/len(paths_of_hdf5_files[::10])*100
-    
+
     flDB_file = open(rootDir+"TotalI-F_DB.pkl", "w")
     pickle.dump(total_flDB, flDB_file)
     flDB_file.close()
