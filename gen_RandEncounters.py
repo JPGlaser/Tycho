@@ -51,36 +51,36 @@ def gen_scatteringIC(encounter_db):
     for star_ID in encounter_db.keys():
         output_KeyDirectory = output_ICDirectory+str(star_ID)
         if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
-        encounter_id = 0
+        encounter_ID = 0
         for encounter in encounter_db[star_ID]:
             # Set Up Subdirectory for this Specific Encounter
-            output_EncPrefix = output_KeyDirectory+"/Enc-"+str(encounter_id)
+            output_EncPrefix = output_KeyDirectory+"/Enc-"+str(encounter_ID)
             # Set up Encounter Key for this Specific Encounter for this Specific Star
-            rotation_id = 0
-            while rotation_id <= max_number_of_rotations:
+            rotation_ID = 0
+            while rotation_ID <= max_number_of_rotations:
                 # Set Up Output Directory for this Specific Iteration
-                output_HDF5File = output_EncPrefix+"_Rot-"+str(rotation_id)+'.hdf5'
-                next_outFile = output_EncPrefix+"_Rot-"+str(rotation_id+1)+'.hdf5'
+                output_HDF5File = output_EncPrefix+"_Rot-"+str(rotation_ID)+'.hdf5'
+                next_outFile = output_EncPrefix+"_Rot-"+str(rotation_ID+1)+'.hdf5'
                 if os.path.exists(output_HDF5File):
-                    if rotation_id == 99:
-                        rotation_id += 1
+                    if rotation_ID == 99:
+                        rotation_ID += 1
                         continue
                     elif os.path.exists(next_outFile):
-                        rotation_id += 1
+                        rotation_ID += 1
                         continue
                 # Remove Jupiter and Add Desired Planetary System
                 enc_bodies = replace_planetary_system(encounter.copy())
                 write_set_to_file(enc_bodies.savepoint(0 | units.Myr), output_HDF5File, 'hdf5', version='2.0')
-                printID = str(star_ID)+"-"+str(encounter_ID)+"-"+str(rotation_id)
+                printID = str(star_ID)+"-"+str(encounter_ID)+"-"+str(rotation_ID)
                 print util.timestamp(), "Finished Generating Random Encounter ID:", printID, "..."
-                rotation_id += 1
-            encounter_id += 1
+                rotation_ID += 1
+            encounter_ID += 1
     # Stop the Kepler Workers
     for kw in kepler_workers:
         kw.stop()
 
 def replace_planetary_system(bodies, kepler_workers=None, base_planet_ID=50000, converter=None):
-    # Set up the Converter if not Provided
+    # Set up the Converter if not ProvIDed
     if converter == None:
         converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     # Get the Hierarchical Systems from the Particle Set
@@ -89,7 +89,7 @@ def replace_planetary_system(bodies, kepler_workers=None, base_planet_ID=50000, 
     # Remove Any Tracer Planets in the Encounter and Adds the Key to Add in the New System
     for sys_key in enc_systems.keys():
         for particle in enc_systems[sys_key]:
-            if particle.id >= base_planet_ID:
+            if particle.ID >= base_planet_ID:
                 enc_systems[sys_key].remove_particle(particle)
                 sys_with_planets.append(sys_key)
     # Allows for Planets to be Added to Single Stars
