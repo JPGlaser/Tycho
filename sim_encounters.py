@@ -125,8 +125,8 @@ def initialize_isOverCode(**kwargs):
         converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
     isOverCode = SmallN(redirection = "none", convert_nbody = converter)
     isOverCode.initialize_code()
-    over_grav.parameters.set_defaults()
-    over_grav.parameters.allow_full_unperturbed = 0
+    isOverCode.parameters.set_defaults()
+    isOverCode.parameters.allow_full_unperturbed = 0
     return isOverCode
 
 def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
