@@ -118,7 +118,7 @@ def initialize_GravCode(desiredCode, **kwargs):
     GCode.initialize_code()
     GCode.parameters.set_defaults()
     if desiredCode == ph4:
-        GCode.parameters.timestep_parameter = 0.05
+        GCode.parameters.timestep_parameter = 2.0**(-4.0)
     if desiredCode == SmallN:
         GCode.parameters.timestep_parameter = 0.05
     return GCode
