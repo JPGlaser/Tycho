@@ -116,7 +116,6 @@ def initialize_GravCode(desiredCode, **kwargs):
         desiredCode.parameters.timestep_parameter = 0.05
     if desiredCode == SmallN:
         desiredCode.parameters.timestep_parameter = 0.05
-        desiredCode.parameters.
     desiredCode.initialize_code()
     return GravCode
 
