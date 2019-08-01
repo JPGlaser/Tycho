@@ -104,7 +104,10 @@ def do_all_scatters_for_single_cluster(rootExecDir, **kwargs):
         enc_bodies = read_set_from_file(path_of_IC, format="hdf5", version='2.0', close_file=True)
         output_HDF5File = output_MainDirectory+"/"+star_IDs[i]+"/"+itteration_filename
         print output_HDF5File
-        run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, GCodes=GCodes, doEncPatching=False)
+        if not os.path.exists(output_HDF5File):
+            run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, GCodes=GCodes, doEncPatching=False)
+        else:
+            print util.timestamp(), "Skipping", itteration_filename.split(".hdf5")[0], "of system", star_IDs[i]
 
 def initialize_GravCode(desiredCode, **kwargs):
     converter = kwargs.get("converter", None)
