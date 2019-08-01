@@ -89,7 +89,7 @@ def replace_planetary_system(bodies, kepler_workers=None, base_planet_ID=50000, 
     # Remove Any Tracer Planets in the Encounter and Adds the Key to Add in the New System
     for sys_key in enc_systems.keys():
         for particle in enc_systems[sys_key]:
-            if particle.ID >= base_planet_ID:
+            if particle.id >= base_planet_ID:
                 enc_systems[sys_key].remove_particle(particle)
                 sys_with_planets.append(sys_key)
     # Allows for Planets to be Added to Single Stars
