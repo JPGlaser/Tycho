@@ -54,10 +54,10 @@ job_queue = Queue.Queue()
 def remote_process(desiredFunction):
     while not job_queue.empty():
         try:
-            current_starID = job_queue.get()
+            current_clusterDir = job_queue.get()
         except:
             return None
-        desiredFunction(current_starID)
+        desiredFunction(current_clusterDir)
         job_queue.task_done()
         # Announce to Terminal that the Current Task is Done
         #sys.stdout.flush()
@@ -65,9 +65,9 @@ def remote_process(desiredFunction):
         #print "\n", util.timestamp(), "There are", job_queue.qsize(), "stars left to process!"
         #sys.stdout.flush()
 
-def mpScatterExperiments(star_ids, desiredFunction):
-    for starID in star_ids:
-        job_queue.put(starID)
+def mpScatterExperiments(list_of_clusterDirs, desiredFunction):
+    for clusterDir in list_of_clusterDirs:
+        job_queue.put(clusterDir)
     num_of_cpus =  mp.cpu_count()-2
     for i in range(num_of_cpus):
         th = threading.Thread(target=remote_process, args=(desiredFunction,))
@@ -75,44 +75,76 @@ def mpScatterExperiments(star_ids, desiredFunction):
         th.start()
     job_queue.join()
 
-def bulk_run_for_star(star_id, encounter_db, **kwargs):
+def do_all_scatters_for_single_cluster(rootExecDir, **kwargs):
+    '''
+    This function will run all scatters for a single cluster in serial.
+    str rootExecDir -> The absolute root directory for all single cluster files.
+    '''
     max_number_of_rotations = kwargs.get("maxRotations", 100)
     max_runtime = kwargs.get("maxRunTime", 10**5) # Units Years
     delta_time = kwargs.get("dt", 10) # Units Years
+    GCodes = [initialize_GravCode(ph4), initialize_isOverCode()]
+    # Strip off Extra '/' if added by user to bring inline with os.cwd()
+    if rootExecDir.endswith("/"):
+        rootExecDir = rootExecDir[:-1]
+    # Define the Cluster's Name
+    cluster_name = rootExecDir.split("/")[-1]
+    # Generate List of Scattering IC HDF5 Paths
+    paths_of_IC_files = glob.glob(rootExecDir+'/Scatter_IC/*/*.hdf5')
+    # Find all Primary Star IDs
+    star_IDs = [path.split("/")[-2] for path in paths_of_IC_files] # '1221'
     # Set Up Output Directory Structure
-    output_KeyDirectory = os.getcwd()+"/Encounters/"+str(star_id)
-    encounter_id = 0
-    for encounter in encounter_db[star_id]:
-        # Set Up Subdirectory for this Specific Encounter
-        output_EncPrefix = output_KeyDirectory+"/Enc-"+str(encounter_id)
-        # Set up Encounter Key for this Specific Encounter for this Specific Star
-        rotation_id = 0
-        while rotation_id <= max_number_of_rotations:
-            # Set Up Output Directory for this Specific Iteration
-            output_HDF5File = output_EncPrefix+"_Rot-"+str(rotation_id)+'.hdf5'
-            next_outFile = output_EncPrefix+"_Rot-"+str(rotation_id+1)+'.hdf5'
-            if os.path.exists(output_HDF5File):
-                if rotation_id == 99:
-                    rotation_id += 1
-                    continue
-                elif os.path.exists(next_outFile):
-                    rotation_id += 1
-                    continue
-            # Remove Jupiter and Add Desired Planetary System
-            enc_bodies = replace_planetary_system(encounter.copy())
-            # Run Encounter
-            # TODO: Finalize Encounter Patching Methodology with SecularMultiples
-            enc_bodies = run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, doEncPatching=False)
-            rotation_id += 1
-        encounter_id += 1
+    output_MainDirectory = rootExecDir+"/Encounters"
+    if not os.path.exists(output_MainDirectory): os.mkdir(output_MainDirectory)
+    for star_ID in star_IDs:
+        output_KeyDirectory = output_MainDirectory+"/"+star_ID
+        if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
+    for i, path_of_IC in enumerate(paths_of_IC_files):
+        itteration_filename = path_of_IC.split('/')[-1] # 'Enc-0_Rot_0.hdf5'
+        enc_bodies = read_set_from_file(path_of_IC, format="hdf5", version='2.0')
+        output_HDF5File = output_MainDirectory+"/"+star_IDs[i]+"/"+itteration_filename
+        run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, GCodes=GCodes, doEncPatching=False)
+
+def initialize_GravCode(desiredCode, **kwargs):
+    converter = kwargs.get("converter", None)
+    n_workers = kwargs.get("number_of_workers", 1)
+    if converter == None:
+        converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
+    desiredCode(number_of_workers = n_workers, redirection = "none", convert_nbody = converter)
+    desiredCode.parameters.set_defaults()
+    if desiredCode == ph4:
+        desiredCode.parameters.timestep_parameter = 0.05
+    if desiredCode == SmallN:
+        desiredCode.parameters.timestep_parameter = 0.05
+        desiredCode.parameters.
+    desiredCode.initialize_code()
+    return GravCode
+
+def initialize_isOverCode(**kwargs):
+    converter = kwargs.get("converter", None)
+    if converter == None:
+        converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
+    isOverCode = SmallN(redirection = "none", convert_nbody = converter)
+    isOverCode.initialize_code()
+    over_grav.parameters.set_defaults()
+    over_grav.parameters.allow_full_unperturbed = 0
+    return isOverCode
 
 def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     # Define Additional User Options and Set Defaults Properly
     converter = kwargs.get("converter", None)
     doEncPatching = kwargs.get("doEncPatching", False)
     doVerboseSaves = kwargs.get("doVerboseSaves", False)
-    if converter == None:
-        converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
+    GCodes = kwargs.get("GCodes", None)
+    # Set Up the Integrators
+    if GCodes == None:
+        if converter == None:
+            converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
+        gravity = initialize_GravCode(ph4, converter=converter)
+        over_grav = initialize_isOverCode(converter=converter)
+    else:
+        gravity = GCodes[0]
+        over_grav = GCodes[1]
     # Storing Initial Center of Mass Information for the Encounter
     rCM_i = bodies.center_of_mass()
     vCM_i = bodies.center_of_mass_velocity()
@@ -126,22 +158,10 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     # Moving the Encounter's Center of Mass to the Origin and Setting it at Rest
     GravitatingBodies.position -= rCM_i
     GravitatingBodies.velocity -= vCM_i
-    # Setting Up isOver Integrator
-    over_grav = SmallN(redirection = 'none', convert_nbody = converter)
-    over_grav.initialize_code()
-    over_grav.parameters.set_defaults()
-    over_grav.parameters.allow_full_unperturbed = 0
-    # Setting Up Gravity Code
-    gravity = ph4(number_of_workers = 1, redirection = "none", convert_nbody = converter)
-    gravity.initialize_code()
-    gravity.parameters.set_defaults()
-    #gravity = SmallN(redirection = 'none', convert_nbody = converter)
-    #gravity.initialize_code()
-    #gravity.parameters.set_defaults()
-    #gravity.parameters.allow_full_unperturbed = 0
-    #gravity.parameters.timestep_parameter = 0.05
+    # Add and Commit the Scattering Particles
     gravity.particles.add_particles(GravitatingBodies) # adds bodies to gravity calculations
     gravity.commit_particles()
+    # Create the Channel to Python Set & Copy it Over
     channel_from_grav_to_python = gravity.particles.new_channel_to(GravitatingBodies)
     channel_from_grav_to_python.copy()
     # Get Free-Fall Time for the Collision
@@ -192,9 +212,13 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
                 #print "Encounter has NOT finished at Step #", stepNumber
                 #t_freefall = util.get_stars(gravity.particles).dynamical_timescale()
         stepNumber +=1
-    # Stop the Gravity Code Once the Encounter Finishes
-    gravity.stop()
-    over_grav.stop()
+    if GCodes == None:
+        # Stop the Gravity Code Once the Encounter Finishes
+        gravity.stop()
+        over_grav.stop()
+    else:
+        gravity.reset()
+        over_grav.reset()
     # Seperate out the Systems to Prepare for Encounter Patching
     if doEncPatching:
         ResultingPSystems = stellar_systems.get_heirarchical_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=True)
@@ -205,29 +229,6 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
 # ------------------------------------- #
 #           Defining Functions          #
 # ------------------------------------- #
-
-def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
-    enc_systems = stellar_systems.get_heirarchical_systems_from_set(bodies, converter=converter)
-    sys_with_planets = []
-    # Remove Any Tracer Planets in the Encounter and Adds the Key to Add in the New System
-    for sys_key in enc_systems.keys():
-        for particle in enc_systems[sys_key]:
-            if particle.id >= base_planet_ID:
-                enc_systems[sys_key].remove_particle(particle)
-                sys_with_planets.append(sys_key)
-    # Allows for Planets to be Added to Single Stars
-    for sys_key in enc_systems.keys():
-        if (len(enc_systems[sys_key]) == 1) and (sys_key not in sys_with_planets):
-            sys_with_planets.append(sys_key)
-    #print sys_with_planets
-    # Add in a New Planetary System
-    for sys_key in sys_with_planets:
-        planets = create.planetary_systems_v2(enc_systems[sys_key], 1, Jupiter=True, Earth=True, Neptune=True)
-        enc_systems[sys_key].add_particles(planets)
-    new_bodies = Particles()
-    for sys_key in enc_systems:
-        new_bodies.add_particles(enc_systems[sys_key])
-    return new_bodies
 
 # ------------------------------------- #
 #         Main Production Script        #
@@ -240,62 +241,44 @@ if __name__=="__main__":
     #      Setting up Required Variables    #
     # ------------------------------------- #
     parser = OptionParser()
-    parser.add_option("-c", "--cluster-name", dest="cluster_name", default=None, type="str",
-                      help="Enter the name of the cluster with suffixes.")
+    parser.add_option("-d", "--rootdirectory", dest="rootDir", default=None, type="str",
+                      help="Enter the full directory of the Cluster's Folder.")
     parser.add_option("-S", "--serial", dest="doSerial", action="store_true",
                       help="Run the program in serial?.")
     (options, args) = parser.parse_args()
-    if options.cluster_name != None:
-        cluster_name = options.cluster_name
+
+    if options.rootDir != None:
+        rootDir = options.rootDir
     else:
-        directory = os.getcwd()
-        cluster_name = directory.split("/")[-1]
+        rootDir = '/home/draco/jglaser/Public/Tycho_Runs/MarkG'
+    # Bring Root Directory Path Inline with os.cwd()
+    if rootDir.endswith("/"):
+        rootDir = rootDir[:-1]
+
     doSerial = options.doSerial
+
     base_planet_ID = 50000
 
     # ------------------------------------- #
     #   Defining File/Directory Structure   #
     # ------------------------------------- #
 
-    # Read in Encounter Directory
-    encounter_file = open(os.getcwd()+"/"+cluster_name+"_encounters_cut.pkl", "rb")
-    encounter_db = pickle.load(encounter_file)
-    encounter_file.close()
-
-    # ------------------------------------- #
-    #      Perform All Necessary Cuts       #
-    # ------------------------------------- #
-
-
-    print "Estimated Number of Encounters to Process:", len(encounter_db.keys())*100
+    all_clusterDirs = glob.glob(rootDir+"/*/")
 
     # ------------------------------------- #
     #     Perform All Req. Simulations      #
     # ------------------------------------- #
 
-    # Announce to Terminal that the Runs are Starting
-    sys.stdout.flush()
-    print util.timestamp(), "Cluster", cluster_name, "has begun processing!"
-    sys.stdout.flush()
-
-    # Set Up the Multiprocessing Pool Environment Using Partial to Send Static Variables
-    process_func = partial(bulk_run_for_star, encounter_db=encounter_db)
-    star_ids = encounter_db.keys()
-
-    # Set Up Output Directory Structure
-    output_MainDirectory = os.getcwd()+"/Encounters"
-    if not os.path.exists(output_MainDirectory): os.mkdir(output_MainDirectory)
-    for starID in star_ids:
-        output_KeyDirectory = output_MainDirectory+"/"+str(starID)
-        if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
-
     if doSerial:
-        for starID in star_ids:
-            print len(encounter_db[starID])
-            process_func(starID)
+        for clusterDir in all_clusterDirs:
+            # Announce to Terminal that the Runs are Starting
+            sys.stdout.flush()
+            print util.timestamp(), "Cluster", clusterDir.split("/")[-2], "has begun processing!"
+            sys.stdout.flush()
+            do_all_scatters_for_single_cluster(clusterDir)
     else:
-        # Begin Looping Through Star IDs (Each Star is a Queued Process)
-        mpScatterExperiments(star_ids, process_func)
+        # Begin Looping Through Clusters (Each Cluster is a Queued Process)
+        mpScatterExperiments(all_clusterDirs, do_all_scatters_for_single_cluster)
 
     e_time = tp.time()
 
