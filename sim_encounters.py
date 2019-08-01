@@ -103,6 +103,7 @@ def do_all_scatters_for_single_cluster(rootExecDir, **kwargs):
         itteration_filename = path_of_IC.split('/')[-1] # 'Enc-0_Rot_0.hdf5'
         enc_bodies = read_set_from_file(path_of_IC, format="hdf5", version='2.0')
         output_HDF5File = output_MainDirectory+"/"+star_IDs[i]+"/"+itteration_filename
+        print output_HDF5File
         run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, GCodes=GCodes, doEncPatching=False)
 
 def initialize_GravCode(desiredCode, **kwargs):
