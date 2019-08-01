@@ -29,6 +29,8 @@ from amuse.io import *
 from amuse.lab import *
 from tycho import util
 
+from amuse.community.kepler.interface import Kepler
+
 # ------------------------------------- #
 #           Defining Functions          #
 # ------------------------------------- #
@@ -301,9 +303,9 @@ def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=Fals
 #        function primarily. ~ Joe G. 4/1/20
 def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=None, RelativePosition=False):
     # Initialize Kepler
-    if converter == None:
-        converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     if kepler_workers == None:
+        if converter == None:
+            converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
         kep_p = Kepler(unit_converter = converter, redirection = 'none')
         kep_p.initialize_code()
         kep_s = Kepler(unit_converter = converter, redirection = 'none')
@@ -311,10 +313,6 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
     else:
         kep_p = kepler_workers[0]
         kep_s = kepler_workers[1]
-        kep_p.unit_converter = converter
-        kep_s.unit_converter = converter
-        kep_p.commit_parameters()
-        kep_s.commit_parameters()
     # Seperate Out Planets and Stars from Bodies
     stars, planets = util.get_stars(bodies), util.get_planets(bodies)
     num_stars, num_planets = len(stars), len(planets)

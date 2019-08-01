@@ -81,7 +81,7 @@ def gen_scatteringIC(encounter_db):
 
 def replace_planetary_system(bodies, kepler_workers=None, base_planet_ID=50000, converter=None):
     # Set up the Converter if not ProvIDed
-    if converter == None:
+    if kepler_workers == None and converter == None:
         converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     # Get the Hierarchical Systems from the Particle Set
     enc_systems = stellar_systems.get_heirarchical_systems_from_set(bodies, kepler_workers=kepler_workers, converter=converter)
