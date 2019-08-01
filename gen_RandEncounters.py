@@ -43,8 +43,8 @@ def gen_scatteringIC(encounter_db):
     output_ICDirectory = rootDir+cluster_name+"/Scatter_IC/"
     if not os.path.exists(output_ICDirectory): os.mkdir(output_ICDirectory)
     # Set up the Kepler Workers for Subroutines Now
-    kepler_workers = [Kepler(unit_converter = converter, redirection = 'none'),
-                      Kepler(unit_converter = converter, redirection = 'none')]
+    kepler_workers = [Kepler(redirection = 'none'),
+                      Kepler(redirection = 'none')]
     for kw in kepler_workers:
         kw.initialize_code()
     # Loop Through the Star_IDs
@@ -73,7 +73,7 @@ def gen_scatteringIC(encounter_db):
                 write_set_to_file(enc_bodies.savepoint(0 | units.Myr), output_HDF5File, 'hdf5', version='2.0')
                 rotation_id += 1
             encounter_id += 1
-    # Stop the Kepler Workers 
+    # Stop the Kepler Workers
     for kw in kepler_workers:
         kw.stop()
 
