@@ -71,6 +71,8 @@ def gen_scatteringIC(encounter_db):
                 # Remove Jupiter and Add Desired Planetary System
                 enc_bodies = replace_planetary_system(encounter.copy())
                 write_set_to_file(enc_bodies.savepoint(0 | units.Myr), output_HDF5File, 'hdf5', version='2.0')
+                printID = str(star_ID)+"-"str(encounter_ID)+"-"+str(rotation_id)
+                print util.timestamp(), "Finished Generating Random Encounter ID:", printID, "..."
                 rotation_id += 1
             encounter_id += 1
     # Stop the Kepler Workers
@@ -117,9 +119,9 @@ if __name__ == '__main__':
     else:
         rootDir = '/home/draco/jglaser/Public/Tycho_Runs/MarkG/'
 
-    orig_stdout = sys.stdout
-    log_file = open(os.getcwd()+"rand_encounters.log","w")
-    sys.stdout = log_file
+    #orig_stdout = sys.stdout
+    #log_file = open(rootDir+"rand_encounters.log","w")
+    #sys.stdout = log_file
 
     paths_of_enc_files = glob.glob(rootDir+'*/*_encounters_cut.pkl')
     print paths_of_enc_files
@@ -137,5 +139,5 @@ if __name__ == '__main__':
         # Generate IC for Scattering Experiments
         gen_scatteringIC(encounter_db)
 
-    sys.stdout = orig_stdout
-    log_file.close()
+    #sys.stdout = orig_stdout
+    #log_file.close()
