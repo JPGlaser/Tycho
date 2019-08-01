@@ -111,12 +111,12 @@ def initialize_GravCode(desiredCode, **kwargs):
     if converter == None:
         converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
     desiredCode(number_of_workers = n_workers, redirection = "none", convert_nbody = converter)
+    desiredCode.initialize_code()
     desiredCode.parameters.set_defaults()
     if desiredCode == ph4:
         desiredCode.parameters.timestep_parameter = 0.05
     if desiredCode == SmallN:
         desiredCode.parameters.timestep_parameter = 0.05
-    desiredCode.initialize_code()
     return GravCode
 
 def initialize_isOverCode(**kwargs):
