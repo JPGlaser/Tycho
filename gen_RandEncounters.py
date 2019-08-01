@@ -43,8 +43,9 @@ def gen_scatteringIC(encounter_db):
     output_ICDirectory = rootDir+cluster_name+"/Scatter_IC/"
     if not os.path.exists(output_ICDirectory): os.mkdir(output_ICDirectory)
     # Set up the Kepler Workers for Subroutines Now
-    kepler_workers = [Kepler(redirection = 'none'),
-                      Kepler(redirection = 'none')]
+    converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
+    kepler_workers = [Kepler(unit_converter = converter, redirection = 'none'),
+                      Kepler(unit_converter = converter, redirection = 'none')]
     for kw in kepler_workers:
         kw.initialize_code()
     # Loop Through the Star_IDs
