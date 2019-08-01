@@ -101,7 +101,7 @@ def do_all_scatters_for_single_cluster(rootExecDir, **kwargs):
         if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
     for i, path_of_IC in enumerate(paths_of_IC_files):
         itteration_filename = path_of_IC.split('/')[-1] # 'Enc-0_Rot_0.hdf5'
-        enc_bodies = read_set_from_file(path_of_IC, format="hdf5", version='2.0')
+        enc_bodies = read_set_from_file(path_of_IC, format="hdf5", version='2.0', close_file=True)
         output_HDF5File = output_MainDirectory+"/"+star_IDs[i]+"/"+itteration_filename
         print output_HDF5File
         run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, GCodes=GCodes, doEncPatching=False)
