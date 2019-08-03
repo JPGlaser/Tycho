@@ -12,6 +12,9 @@ import matplotlib as plt
 import time as tp
 import random as rp
 import hashlib
+import scipy as sp
+from scipy import optimize
+from scipy import special
 
 # Importing cPickle/Pickle
 try:
