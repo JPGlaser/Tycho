@@ -139,11 +139,14 @@ class PlanetarySystem():
         HCc = self.get_Hill_CritC(p_index)
         betaH = eta/HCc
         if betaH < 1.0:
+            self.planets[p_index].AMDBeta = betaH
             return betaH
         elif betaH >= 1.0:
             LCc = self.get_Laskar_CritC(p_index)
             betaL = eta/LCc
+            self.planets[p_index].AMDBeta = betaL
             return betaL
+
     def get_alpha(self, p_index):
         if p_index == 0:
             return 0.0
