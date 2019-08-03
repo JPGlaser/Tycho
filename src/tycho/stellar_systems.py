@@ -89,6 +89,8 @@ def update_host_star(system, converter=None, kepler_worker=None):
                 if planet.eccentricity < 1.0:
                     planet.host_star = s.id
                     break
+                elif planet.eccentricity >= 1.0:
+                    planet.host_star = -1
         else:
             planet.host_star = likely_host.id
     if kepler_worker == None:
