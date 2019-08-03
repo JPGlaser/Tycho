@@ -363,7 +363,7 @@ if __name__=="__main__":
     except:
         no_gpu = False
     if no_gpu:
-        num_workers = 9
+        num_workers = 8
         gravity_code = ph4(number_of_workers = num_workers, redirection = "none",
                            convert_nbody = LargeScaleConverter)
     else:
@@ -374,7 +374,7 @@ if __name__=="__main__":
     gravity_code.parameters.set_defaults()
     #gravity_code.parameters.begin_time = t_start
     gravity_code.parameters.epsilon_squared = eps2
-    #gravity_code.parameters.timestep_parameter = 2**(-5)
+    gravity_code.parameters.timestep_parameter = 2**(-4)
     if no_gpu:
         pass
     else:
