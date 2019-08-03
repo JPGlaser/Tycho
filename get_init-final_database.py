@@ -70,6 +70,8 @@ if __name__=="__main__":
     enc_IDs = [path.split("/")[-1].split("-")[1].split('Rot')[0] for path in paths_of_hdf5_files]
     rot_IDs = [path.split("/")[-1].split("-")[2].split('.hdf5')[0] for path in paths_of_hdf5_files]
 
+    print cluster_names
+
     counter_finished = 0
     for rot_ID in rot_IDs:
         if rot_ID == '100':
