@@ -90,7 +90,7 @@ if __name__=="__main__":
         if i%10==0:
             print "!!!!!! Percent Completed:", i*1.0/len(paths_of_hdf5_files[::sample_rate])*100
 
-    flDB_file = open(rootDir+"TotalI-F_DB.pkl", "w")
+    flDB_file = open(rootDir+"/Total_IF_DB.pkl", "w")
     pickle.dump(total_flDB, flDB_file)
     flDB_file.close()
 
