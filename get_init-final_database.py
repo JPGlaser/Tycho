@@ -5,7 +5,7 @@ import scipy as sp
 from optparse import OptionParser
 from scipy import optimize
 from scipy import special
-import pickle
+import cPickle as pickle
 import glob
 from collections import defaultdict
 
