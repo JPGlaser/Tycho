@@ -130,7 +130,7 @@ class PlanetarySystem():
 
     def get_SystemBetaValues(self):
         """Calculate the AMD Stability Coefficient, Beta, values for the system."""
-        res = [self.get_AMDBeta(i) for i in range(self.nplanets)]
+        res = [self.get_AMDBeta(i) for i in range(self.number_of_planets)]
         return np.array(res)
 
     def get_AMDBeta(self, p_index):
