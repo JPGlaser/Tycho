@@ -363,7 +363,7 @@ if __name__=="__main__":
     except:
         no_gpu = False
     if no_gpu:
-        num_workers = 8
+        num_workers = 7
         gravity_code = ph4(number_of_workers = num_workers, redirection = "none",
                            convert_nbody = LargeScaleConverter)
     else:
