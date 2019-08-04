@@ -38,7 +38,7 @@ def get_first_and_last_states(bodies, end_time=(10 | units.Myr), kepler_worker=N
         stellar_systems.update_host_star(state, kepler_worker=kep_p)
     if kepler_worker ==None:
         kep_p.stop()
-    return (first, last)
+    return (first.copy(), last.copy())
 
 if __name__=="__main__":
 
@@ -92,8 +92,11 @@ if __name__=="__main__":
         if i%10==0:
             print "!!!!!! Percent Completed:", i*1.0/len(paths_of_hdf5_files[::sample_rate])*100
 
-    flDB_file = open(rootDir+"/Total_IF_DB.pkl", "w")
-    pickle.dump(total_flDB, flDB_file)
-    flDB_file.close()
-
+    sys.setrecursionlimit(13438)
+    for key in total_flDB.keys():
+        temp = defaultdict(list)
+        temp[key] = total_flDB[key]
+        flDB_file = open(rootDir+"/"+str(key)+"-Total_IF_DB.pkl", "w")
+        pickle.dump(temp, flDB_file, protocol=pickle.HIGHEST_PROTOCOL)
+        flDB_file.close()
     kep.stop()
