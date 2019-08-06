@@ -35,6 +35,10 @@ def get_first_and_last_states(bodies, end_time=(10 | units.Myr), kepler_worker=N
     last = bodies.get_state_at_timestamp(end_time)
     result = [first, last]
     for state in result:
+        print state
+        print util.get_stars(state)
+        print util.get_planets(state).id
+        print util.get_planets(state).host_star
         stellar_systems.update_host_star(state, kepler_worker=kep_p)
     if kepler_worker ==None:
         kep_p.stop()
