@@ -35,10 +35,10 @@ def get_first_and_last_states(bodies, end_time=(10 | units.Myr), kepler_worker=N
     last = bodies.get_state_at_timestamp(end_time)
     result = [first, last]
     for state in result:
-        print state
-        print util.get_stars(state)
-        print util.get_planets(state).id
-        print util.get_planets(state).host_star
+        #print state
+        #print util.get_stars(state)
+        #print util.get_planets(state).id
+        #print util.get_planets(state).host_star
         stellar_systems.update_host_star(state, kepler_worker=kep_p)
     if kepler_worker ==None:
         kep_p.stop()
@@ -91,10 +91,15 @@ if __name__=="__main__":
     total_flDB = defaultdict(list)
     for i, path in enumerate(paths_of_hdf5_files[::sample_rate]):
         system = read_set_from_file(path, 'hdf5',version='2.0', copy_history=True, close_file=True)
+        try util.get_planets(system):
+            pass
+        except:
+            print "!!!!!!", util.timestamp(), "Skipping", path.split("/")[-1], "for Star ID", path.split("/")[-2], "in Cluster", cluster_name[i]
+
         f_and_l = get_first_and_last_states(system, kepler_worker=kep)
         total_flDB[cluster_names[i]].append(f_and_l)
         if i%10==0:
-            print "!!!!!! Percent Completed:", i*1.0/len(paths_of_hdf5_files[::sample_rate])*100
+            print "!!!!!!", util.timestamp(), "Percent Completed:", i*1.0/len(paths_of_hdf5_files[::sample_rate])*100
 
     sys.setrecursionlimit(13438)
     for key in total_flDB.keys():
