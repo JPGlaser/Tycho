@@ -94,7 +94,7 @@ if __name__=="__main__":
         try:
             util.get_planets(system).host_star
         except:
-            print "!!!!!!", util.timestamp(), "Skipping", path.split("/")[-1], "for Star ID", path.split("/")[-2], "in Cluster", cluster_name[i]
+            print "!!!!!!", util.timestamp(), "Skipping", path.split("/")[-1], "for Star ID", path.split("/")[-2], "in Cluster", cluster_names[i]
             continue
         f_and_l = get_first_and_last_states(system, kepler_worker=kep)
         total_flDB[cluster_names[i]].append(f_and_l)
