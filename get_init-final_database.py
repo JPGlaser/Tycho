@@ -97,7 +97,7 @@ if __name__=="__main__":
             print "!!!!!!", util.timestamp(), "Skipping", path.split("/")[-1], "for Star ID", path.split("/")[-2], "in Cluster", cluster_names[i]
             continue
         f_and_l = get_first_and_last_states(system, kepler_worker=kep)
-        total_flDB[cluster_names[i]].append(f_and_l)
+        total_flDB[cluster_names[i]].append((path, f_and_l))
         if i%10==0:
             print "!!!!!!", util.timestamp(), "Percent Completed:", i*1.0/len(paths_of_hdf5_files[::sample_rate])*100
 
