@@ -99,6 +99,20 @@ def update_host_star(system, converter=None, kepler_worker=None):
     if kepler_worker == None:
         kep_p.stop()
 
+def get_zaxis_inclination(host_star, planets):
+    for planet in planets:
+        rel_pos = planet.position - host_star.position
+        rel_vel = planet.velocity - host_star.velocity
+        mom_vec = np.cross(rel_pos.number, rel_vel.number)
+        mom_norm = np.sqrt(mom_vec[0]**2 + mom_vec[1]**2 + mom_vec[2]**2)
+        planet.z_inc = to_quantity(np.arccos(mom_vec[2]/mom_norm)*180.0/np.pi) | units.deg
+
+def get_rel_inclination(planets, method='Jovian'):
+    if method == 'Jovian':
+        largest_p = planets.sorted_by_attribute('mass')[-1]
+        for planet in planets:
+            planet.rel_inc = planet.z_inc - largest_p.z_inc
+
 def equation_35(inner_e, gamma, alpha):
     return alpha*inner_e + gamma*inner_e/np.sqrt(alpha*(1.-inner_e**2) + gamma**2*inner_e**2) - 1. + alpha
 
