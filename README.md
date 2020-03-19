@@ -47,9 +47,8 @@ $ git clone https://github.com/JPGlaser/Tycho.git
 You'll need to add the *src* folder inside of the git repository to your $PYTHONPATH:
 ```
 $ nano .profile
-# Add the following to the end of the file:
-```
-export PYTHONPATH="ABSOLUTE_PATH_TO_REPOSITORY/Tycho/src:$PYTHONPATH"
+## Add the following to the end of the file:
+## export PYTHONPATH="ABSOLUTE_PATH_TO_REPOSITORY/Tycho/src:$PYTHONPATH"
 ```
 
 ## Production Walk-Through

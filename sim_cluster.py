@@ -19,8 +19,6 @@ import copy
 import traceback
 import signal
 from time import gmtime
-from time import mktime
-from time import clock
 
 from collections import defaultdict
 
