@@ -12,7 +12,6 @@ install:
     - pip install rebound
     - pip install amuse-framework
     - pip install amuse-ph4 amuse-kepler amuse-sse amuse-seba amuse-smalln
-    - pip install time
 
 script:
     - pytest --capture=sys sim_cluster.py
