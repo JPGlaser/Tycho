@@ -13,7 +13,7 @@ import glob
 
 # Importing cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -122,7 +122,7 @@ if __name__=="__main__":
     kep.initialize_code()
     util.init_smalln()
 
-    print time
+    print(time)
 
     time, multiples_code = read.recover_crash(crash_file, gravity, kep, util.new_smalln)
     

@@ -30,7 +30,7 @@ from amuse.ic.kroupa import new_kroupa_mass_distribution
 
 # Import cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -77,7 +77,7 @@ def read_state_from_file(restart_file, gravity_code, kep, SMALLN):
     with open(restart_file + ".bookkeeping", "rb") as f:
         bookkeeping = pickle.load(f)
         f.close()
-    print bookkeeping
+    print(bookkeeping)
     root_to_tree = {}
     for root in stars:
         if hasattr(root, 'components') and not root.components is None:
@@ -108,7 +108,7 @@ def recover_crash(restart_file, gravity_code, kep, SMALLN):
     with open(restart_file + ".bookkeeping", "rb") as f:
         bookkeeping = pickle.load(f)
         f.close()
-    print bookkeeping
+    print(bookkeeping)
     root_to_tree = {}
     for root in stars:
         if hasattr(root, 'components') and not root.components is None:

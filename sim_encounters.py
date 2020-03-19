@@ -14,12 +14,12 @@ import glob
 # Importing Multiprocessing Packages
 from functools import partial
 import multiprocessing as mp
-import Queue
+import queue
 import threading
 
 # Importing cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -49,7 +49,7 @@ import matplotlib; matplotlib.use('agg')
 # ------------------------------------- #
 
 global job_queue
-job_queue = Queue.Queue()
+job_queue = queue.Queue()
 
 def remote_process(desiredFunction):
     while not job_queue.empty():
@@ -103,11 +103,11 @@ def do_all_scatters_for_single_cluster(rootExecDir, **kwargs):
         itteration_filename = path_of_IC.split('/')[-1] # 'Enc-0_Rot_0.hdf5'
         enc_bodies = read_set_from_file(path_of_IC, format="hdf5", version='2.0', close_file=True)
         output_HDF5File = output_MainDirectory+"/"+star_IDs[i]+"/"+itteration_filename
-        print output_HDF5File
+        print(output_HDF5File)
         if not os.path.exists(output_HDF5File):
             run_collision(enc_bodies, max_runtime, delta_time, output_HDF5File, GCodes=GCodes, doEncPatching=False)
         else:
-            print util.timestamp(), "Skipping", itteration_filename.split(".hdf5")[0], "of system", star_IDs[i]
+            print(util.timestamp(), "Skipping", itteration_filename.split(".hdf5")[0], "of system", star_IDs[i])
 
 def initialize_GravCode(desiredCode, **kwargs):
     converter = kwargs.get("converter", None)
@@ -193,7 +193,7 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
         # Check to See if the Encounter is Declared "Over" Every 50 Timesteps
         if current_time > 1.25*t_freefall and stepNumber%25 == 0: #and len(list_of_times)/3.- stepNumber <= 0:
             over = util.check_isOver(gravity.particles, over_grav)
-            print over
+            print(over)
             if over:
                 current_time += 100 | units.yr
                 # Get to a Final State After Several Planet Orbits
@@ -276,7 +276,7 @@ if __name__=="__main__":
         for clusterDir in all_clusterDirs:
             # Announce to Terminal that the Runs are Starting
             sys.stdout.flush()
-            print util.timestamp(), "Cluster", clusterDir.split("/")[-2], "has begun processing!"
+            print(util.timestamp(), "Cluster", clusterDir.split("/")[-2], "has begun processing!")
             sys.stdout.flush()
             do_all_scatters_for_single_cluster(clusterDir)
     else:
@@ -287,6 +287,6 @@ if __name__=="__main__":
 
     # Announce to Terminal that the Runs have Finished
     sys.stdout.flush()
-    print util.timestamp(), "Cluster", cluster_name, "is finished processing!"
-    print util.timestamp(), "The Cluster was processed in", (e_time - s_time), "seconds!"
+    print(util.timestamp(), "Cluster", cluster_name, "is finished processing!")
+    print(util.timestamp(), "The Cluster was processed in", (e_time - s_time), "seconds!")
     sys.stdout.flush()

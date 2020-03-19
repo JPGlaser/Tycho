@@ -17,7 +17,7 @@ import multiprocessing as mp
 
 # Importing cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -81,7 +81,7 @@ def bulk_run_for_star(star_id, encounter_db, dictionary_for_results, **kwargs):
             rotation_id += 1
         encounter_id += 1
     sys.stdout.flush()
-    print util.timestamp, "All Encounters Simulated for Star ID:", star_id
+    print(util.timestamp, "All Encounters Simulated for Star ID:", star_id)
     sys.stdout.flush()
 
 def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
@@ -137,10 +137,10 @@ def run_collision(GravitatingBodies, end_time, delta_time, save_file, **kwargs):
                 gravity.update_particle_set()
                 gravity.particles.synchronize_to(GravitatingBodies)
                 channel_from_grav_to_python.copy()
-                print "Encounter has finished at Step #", stepNumber
+                print("Encounter has finished at Step #", stepNumber)
                 break
             else:
-                print "Encounter has NOT finished at Step #", stepNumber
+                print("Encounter has NOT finished at Step #", stepNumber)
         stepNumber +=1
     # Stop the Gravity Code Once the Encounter Finishes
     gravity.stop()
@@ -162,12 +162,12 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     systems = stellar_systems.get_planetary_systems_from_set(bodies, converter=converter, RelativePosition=False)
     # As this function is pulling from Multiples, there should never be more than 2 "Root" Particles ...
     if len(systems) > 2:
-        print "Error: Encounter has more roots than expected! Total Root Particles:", len(systems)
-        print bodies
+        print("Error: Encounter has more roots than expected! Total Root Particles:", len(systems))
+        print(bodies)
         return None
     # Assign the Primary System to #1 and Perturbing System to #2
     sys_1 = systems[int(primary_sysID)]
-    secondary_sysID = [key for key in systems.keys() if key!=int(primary_sysID)][0]
+    secondary_sysID = [key for key in list(systems.keys()) if key!=int(primary_sysID)][0]
     sys_2 = systems[secondary_sysID]
     # Calculate Useful Quantities
     mass_ratio = sys_2.mass.sum()/sys_1.mass.sum()
@@ -182,7 +182,7 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     p = kep.get_periastron()
     ignore_distance = mass_ratio**(1./3.) * 600 | units.AU
     if p > ignore_distance:
-        print "Encounter Ignored due to Periastron of", p, "and an IgnoreDistance of",ignore_distance
+        print("Encounter Ignored due to Periastron of", p, "and an IgnoreDistance of",ignore_distance)
         return None
     # Move the Particles to be Relative to their Respective Center of Mass
     cm_sys_1, cm_sys_2 = sys_1.center_of_mass(), sys_2.center_of_mass()
@@ -227,7 +227,7 @@ def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
             if particle.id >= base_planet_ID:
                 enc_systems[sys_key].remove_particle(particle)
                 sys_with_planets.append(sys_key)
-    print sys_with_planets
+    print(sys_with_planets)
     # Add in a New Planetary System
     for sys_key in sys_with_planets:
         planets = create.planetary_systems_v2(enc_systems[sys_key], 1, Jupiter=True, Earth=True, Neptune=True)
@@ -266,16 +266,16 @@ if __name__=="__main__":
     # ------------------------------------- #
 
     sys.stdout.flush()
-    print util.timestamp(), "Performing First Cut on Encounter Database ..."
+    print(util.timestamp(), "Performing First Cut on Encounter Database ...")
     sys.stdout.flush()
 
     # Perform a Cut on the Encounter Database
-    for star_ID in encounter_db.keys():
+    for star_ID in list(encounter_db.keys()):
         # Cut Out Stars Recorded with Only Initialization Pickups
         if len(encounter_db[star_ID]) <= 1:
             del encounter_db[star_ID]
             continue
-    for star_ID in encounter_db.keys():
+    for star_ID in list(encounter_db.keys()):
         # Cut Out Stars with No Planets
         enc_id_to_cut = []
         for enc_id, encounter in enumerate(encounter_db[star_ID]):
@@ -290,11 +290,11 @@ if __name__=="__main__":
             del encounter_db[star_ID][enc_id]
 
     sys.stdout.flush()
-    print util.timestamp(), "Performing Second Cut on Encounter Database ..."
+    print(util.timestamp(), "Performing Second Cut on Encounter Database ...")
     sys.stdout.flush()
 
     # Perform Cut & Advancement on Systems to Lower Integration Time
-    for star_ID in encounter_db.keys():
+    for star_ID in list(encounter_db.keys()):
         enc_id_to_cut = []
         for enc_id, encounter in enumerate(encounter_db[star_ID]):
             PeriastronCut = CutOrAdvance(encounter, star_ID)
@@ -314,12 +314,12 @@ if __name__=="__main__":
 
     # Announce to Terminal that the Runs are Starting
     sys.stdout.flush()
-    print util.timestamp(), "Cluster", cluster_name, "has begun processing!"
+    print(util.timestamp(), "Cluster", cluster_name, "has begun processing!")
     sys.stdout.flush()
 
     # Set Up the Multiprocessing Pool Environment Using Partial to Send Static Variables
     pool_func = partial(bulk_run_for_star, encounter_db=encounter_db, dictionary_for_results=resultDict)
-    star_ids = encounter_db.keys()
+    star_ids = list(encounter_db.keys())
     pool = mp.Pool(processes=(mp.cpu_count()-2))
 
     # Begin Looping Through Star IDs (Each Star is a Pool Process)
@@ -332,5 +332,5 @@ if __name__=="__main__":
 
     # Announce to Terminal that the Runs have Finished
     sys.stdout.flush()
-    print util.timestamp(), "Cluster", cluster_name, "is finished processing!"
+    print(util.timestamp(), "Cluster", cluster_name, "is finished processing!")
     sys.stdout.flush()

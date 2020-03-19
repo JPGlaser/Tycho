@@ -13,7 +13,7 @@ import glob
 
 # Importing cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -164,8 +164,8 @@ if __name__=="__main__":
     multiples_code.neighbor_veto = True
 
 # Alerts the Terminal User that the Run has Started!
-    print '\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-    print '-------------'
+    print('\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+    print('-------------')
     sys.stdout.flush()
 # Creates the Log File and Redirects all Print Statements
     orig_stdout = sys.stdout
@@ -252,8 +252,8 @@ if __name__=="__main__":
             grav_channel = gravity.particles.new_channel_to(MasterSet)
 
 
-            print '\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-            print '-------------'
+            print('\n [UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+            print('-------------')
             sys.stdout.flush()
             flag = 0
 
@@ -262,18 +262,18 @@ if __name__=="__main__":
             flag = 1
 
     # Log that a Step was Taken
-        print '-------------'
-        print '[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-        print '-------------'
+        print('-------------')
+        print('[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+        print('-------------')
         sys.stdout.flush()
     
 # Log that the simulation Ended & Switch to Terminal Output
-    print '[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+    print('[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
     sys.stdout = orig_stdout
 #    f.close()
 
 # Alerts the Terminal User that the Run has Ended!
-    print '[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+    print('[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
     sys.stdout.flush()
 
 # Closes PH4, Kepler & SmallN Instances

@@ -5,7 +5,7 @@ import scipy as sp
 from optparse import OptionParser
 from scipy import optimize
 from scipy import special
-import cPickle as pickle
+import pickle as pickle
 import glob
 from collections import defaultdict
 
@@ -74,15 +74,15 @@ if __name__=="__main__":
     enc_IDs = [path.split("/")[-1].split("-")[1].split('Rot')[0] for path in paths_of_hdf5_files]
     rot_IDs = [path.split("/")[-1].split("-")[2].split('.hdf5')[0] for path in paths_of_hdf5_files]
 
-    print cluster_names
+    print(cluster_names)
 
     counter_finished = 0
     for rot_ID in rot_IDs:
         if rot_ID == '100':
             counter_finished += 1
-    print "Number of Encounters Fully Simulated:", counter_finished
-    print "Number of Initial States Simulated:", len(rot_IDs)
-    print "Total Number of Initial States to Simulate:", int(len(glob.glob(rootDir+'/*/Encounters/*/')))*101
+    print("Number of Encounters Fully Simulated:", counter_finished)
+    print("Number of Initial States Simulated:", len(rot_IDs))
+    print("Total Number of Initial States to Simulate:", int(len(glob.glob(rootDir+'/*/Encounters/*/')))*101)
 
     converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
     kep = Kepler(unit_converter = converter, redirection = 'none')
@@ -94,15 +94,15 @@ if __name__=="__main__":
         try:
             util.get_planets(system).host_star
         except:
-            print "!!!!!!", util.timestamp(), "Skipping", path.split("/")[-1], "for Star ID", path.split("/")[-2], "in Cluster", cluster_names[i]
+            print("!!!!!!", util.timestamp(), "Skipping", path.split("/")[-1], "for Star ID", path.split("/")[-2], "in Cluster", cluster_names[i])
             continue
         f_and_l = get_first_and_last_states(system, kepler_worker=kep)
         total_flDB[cluster_names[i]].append((path, f_and_l))
         if i%10==0:
-            print "!!!!!!", util.timestamp(), "Percent Completed:", i*1.0/len(paths_of_hdf5_files[::sample_rate])*100
+            print("!!!!!!", util.timestamp(), "Percent Completed:", i*1.0/len(paths_of_hdf5_files[::sample_rate])*100)
 
     sys.setrecursionlimit(13438)
-    for key in total_flDB.keys():
+    for key in list(total_flDB.keys()):
         temp = defaultdict(list)
         temp[key] = total_flDB[key]
         flDB_file = open(rootDir+"/"+str(key)+"-Total_IF_DB.pkl", "w")

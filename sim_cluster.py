@@ -26,7 +26,7 @@ from collections import defaultdict
 
 # Importing cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -66,21 +66,21 @@ def print_diagnostics(grav, E0=None):
     ke = grav.kinetic_energy
     pe = grav.potential_energy
     Nmul, Nbin, Emul = grav.get_total_multiple_energy()
-    print ''
-    print 'Time =', grav.get_time().in_(units.Myr)
-    print '    top-level kinetic energy =', ke
-    print '    top-level potential energy =', pe
-    print '    total top-level energy =', ke + pe
-    print '   ', Nmul, 'multiples,', 'total energy =', Emul
+    print('')
+    print('Time =', grav.get_time().in_(units.Myr))
+    print('    top-level kinetic energy =', ke)
+    print('    top-level potential energy =', pe)
+    print('    total top-level energy =', ke + pe)
+    print('   ', Nmul, 'multiples,', 'total energy =', Emul)
     E = ke + pe + Emul
-    print '    uncorrected total energy =', E
+    print('    uncorrected total energy =', E)
     # Apply known corrections.
     Etid = grav.multiples_external_tidal_correction \
             + grav.multiples_internal_tidal_correction  # tidal error
     Eerr = grav.multiples_integration_energy_error	# integration error
     E -= Etid + Eerr
-    print '    corrected total energy =', E
-    if E0 is not None: print '    relative energy error=', (E-E0)/E0
+    print('    corrected total energy =', E)
+    if E0 is not None: print('    relative energy error=', (E-E0)/E0)
     return E
 
 
@@ -582,9 +582,9 @@ if __name__=="__main__":
             pickle.dump(encounterInformation, encounter_file)
             encounter_file.close()
             # Log that a the Encounters have been Saved!
-            print '\n-------------'
-            print '[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-            print '-------------\n'
+            print('\n-------------')
+            print('[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+            print('-------------\n')
             sys.stdout.flush()
 
         # Increase the Step Index
@@ -592,9 +592,9 @@ if __name__=="__main__":
         step_index += 1
 
         # Log that a Step was Taken
-        print '\n-------------'
-        print '[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-        print '-------------\n'
+        print('\n-------------')
+        print('[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+        print('-------------\n')
 
         # Flush Terminal Output to Log File
         sys.stdout.flush()
@@ -608,7 +608,7 @@ print_diagnostics(multiples_code, E0_1)
 sys.stdout.flush()
 
 sys.stdout = orig_stdout
-print '\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+print('\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
 print_diagnostics(multiples_code, E0)
 print_diagnostics(multiples_code, E0_1)
 sev_code.stop()

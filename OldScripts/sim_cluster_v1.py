@@ -27,7 +27,7 @@ from collections import defaultdict
 
 # Importing cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -67,14 +67,14 @@ def print_diagnostics(grav, E0=None):
     ke = grav.kinetic_energy
     pe = grav.potential_energy
     Nmul, Nbin, Emul = grav.get_total_multiple_energy()
-    print ''
-    print 'Time =', grav.get_time().in_(units.Myr)
-    print '    top-level kinetic energy =', ke
-    print '    top-level potential energy =', pe
-    print '    total top-level energy =', ke + pe
-    print '   ', Nmul, 'multiples,', 'total energy =', Emul
+    print('')
+    print('Time =', grav.get_time().in_(units.Myr))
+    print('    top-level kinetic energy =', ke)
+    print('    top-level potential energy =', pe)
+    print('    total top-level energy =', ke + pe)
+    print('   ', Nmul, 'multiples,', 'total energy =', Emul)
     E = ke + pe + Emul
-    print '    uncorrected total energy =', E
+    print('    uncorrected total energy =', E)
     
     # Apply known corrections.
     
@@ -83,9 +83,9 @@ def print_diagnostics(grav, E0=None):
     Eerr = grav.multiples_integration_energy_error	# integration error
 
     E -= Etid + Eerr
-    print '    corrected total energy =', E
+    print('    corrected total energy =', E)
 
-    if E0 is not None: print '    relative energy error=', (E-E0)/E0
+    if E0 is not None: print('    relative energy error=', (E-E0)/E0)
     
     return E
 
@@ -148,7 +148,7 @@ if __name__=="__main__":
 # TODO FIX THIS.
     if pregen == 1:
         files = glob.glob("PregenClusters/"+".amuse")
-        print files
+        print(files)
         pregen_cluster_load = files
 
 # If Pregenerated Cluster IS NOT Wanted, Try to Import the Cluster from File or Create a New One
@@ -298,8 +298,8 @@ if __name__=="__main__":
     bridge_code.timestep = delta_t
 
 # Alerts the Terminal User that the Run has Started!
-    print '\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-    print '-------------'
+    print('\n [UPDATE] Run Started at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+    print('-------------')
     sys.stdout.flush()
     E0 = print_diagnostics(multiples_code)
 
@@ -457,9 +457,9 @@ if __name__=="__main__":
                 grav_channel = gravity.particles.new_channel_to(MasterSet)
                 reset_flag=1
             # Log that a Reset happened		
-                print '\n-------------'
-                print '[UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-                print '-------------\n'
+                print('\n-------------')
+                print('[UPDATE] Reset at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+                print('-------------\n')
             sys.stdout.flush()
 
         # Save the Encounters Dictionary Thus Far (If Not the First Reset)
@@ -481,21 +481,21 @@ if __name__=="__main__":
                 pickle.dump(encounterInformation, encounter_file)		
                 encounter_file.close()
             # Log that a the Encounters have been Saved!		
-            print '\n-------------'
-            print '[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-            print '-------------\n'
+            print('\n-------------')
+            print('[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+            print('-------------\n')
             sys.stdout.flush()
 
         step_index += 1
 
     # Log that a Step was Taken
-        print '\n-------------'
-        print '[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-        print '-------------\n'
+        print('\n-------------')
+        print('[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+        print('-------------\n')
         sys.stdout.flush()
     
 # Log that the Simulation Ended & Switch to Terminal Output
-    print '\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+    print('\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
     sys.stdout = orig_stdout
     f.close()
 
@@ -505,7 +505,7 @@ if __name__=="__main__":
     encounter_file.close()
 
 # Alerts the Terminal User that the Run has Ended!
-    print '\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+    print('\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
     sys.stdout.flush()
     print_diagnostics(multiples_code, E0)
 

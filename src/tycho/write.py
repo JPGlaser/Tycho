@@ -29,7 +29,7 @@ from amuse.ic.kroupa import new_kroupa_mass_distribution
 
 # Import cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -84,7 +84,7 @@ def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_f
     res_dir = os.getcwd()+"/Restart"
     if not os.path.exists(res_dir):
         os.makedirs(res_dir)
-    print "Writing state to write file: ", write_file,"\n\n"
+    print("Writing state to write file: ", write_file,"\n\n")
     if write_file is not None:
         particles = gravity_code.particles.copy()
         write_channel = gravity_code.particles.new_channel_to(particles)
@@ -98,7 +98,7 @@ def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_f
             'root_index': multiples.root_index
         }
         
-        for root, tree in multiples_code.root_to_tree.iteritems():
+        for root, tree in multiples_code.root_to_tree.items():
             root_in_particles = root.as_particle_in_set(particles)
             subset = tree.get_tree_subset().copy()
             if root_in_particles is not None:
@@ -116,8 +116,8 @@ def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_f
             pickle.dump(config, f)
         with open(write_file + ".bookkeeping", "wb") as f:
             pickle.dump(bookkeeping, f)
-        print "\nState successfully written to:  ", write_file
-        print time
+        print("\nState successfully written to:  ", write_file)
+        print(time)
         if backup > 0:
             io.write_set_to_file(particles,write_file+".backup.stars.hdf5",'hdf5', version='2.0', 
                                  append_to_file=False, copy_history=cp_hist, close_file=True)
@@ -135,7 +135,7 @@ def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_f
             with open(write_file + ".backup.bookkeeping", "wb") as f:
                 pickle.dump(bookkeeping, f)
                 f.close()
-            print "\nBackup write completed.\n"
+            print("\nBackup write completed.\n")
         
         if backup > 2:
             io.write_set_to_file(particles, write_file+"."+str(int(time.number))
@@ -155,7 +155,7 @@ def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_f
             with open(write_file + "."+str(int(time.number))+".bookkeeping", "wb") as f:
                 pickle.dump(bookkeeping, f)
                 f.close()
-            print "\nBackup write completed.\n"
+            print("\nBackup write completed.\n")
 
 
 # ----------------------------------------- #
@@ -167,7 +167,7 @@ def write_crash_save(time, stars_python,gravity_code, multiples_code, write_file
     if not os.path.exists(crash_dir):
         os.makedirs(crash_dir)
 
-    print "Writing state to write file: ", write_file,"\n\n"
+    print("Writing state to write file: ", write_file,"\n\n")
     if write_file is not None:
         particles = gravity_code.particles.copy()
         write_channel = gravity_code.particles.new_channel_to(particles)
@@ -188,7 +188,7 @@ def write_crash_save(time, stars_python,gravity_code, multiples_code, write_file
             bookkeeping.multiples_internal_tidal_correction = multiples_code.multiples_internal_tidal_correction
             bookkeeping.model_time = multiples_code.model_time
         '''
-        for root, tree in multiples_code.root_to_tree.iteritems():
+        for root, tree in multiples_code.root_to_tree.items():
             #multiples.print_multiple_simple(tree,kep)
             root_in_particles = root.as_particle_in_set(particles)
             subset = tree.get_tree_subset().copy()
@@ -206,8 +206,8 @@ def write_crash_save(time, stars_python,gravity_code, multiples_code, write_file
             pickle.dump(config, f)
         with open(write_file + ".bookkeeping", "wb") as f:
             pickle.dump(bookkeeping, f)
-        print "\nState successfully written to:  ", write_file
-        print time
+        print("\nState successfully written to:  ", write_file)
+        print(time)
 
         if backup > 0:
             io.write_set_to_file(particles,write_file+".backup.stars.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist, close_file=True)
@@ -224,7 +224,7 @@ def write_crash_save(time, stars_python,gravity_code, multiples_code, write_file
             with open(write_file + ".backup.bookkeeping", "wb") as f:
                 pickle.dump(bookkeeping, f)
                 f.close()
-            print "\nBackup write completed.\n"
+            print("\nBackup write completed.\n")
         
         if backup > 2:
             io.write_set_to_file(particles,write_file+"."+str(int(time.number))+".stars.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist, close_file=True)
@@ -241,7 +241,7 @@ def write_crash_save(time, stars_python,gravity_code, multiples_code, write_file
             with open(write_file + "."+str(int(time.number))+".bookkeeping", "wb") as f:
                 pickle.dump(bookkeeping, f)
                 f.close()
-            print "\nBackup write completed.\n"    
+            print("\nBackup write completed.\n")    
     
 
 

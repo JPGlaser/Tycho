@@ -17,8 +17,8 @@ class EncounterHandler(object):
         enc_list = multiples_code.expand_encounter(scattering_com, delete=False)[0]
         enc_list.position -= com_pos
         enc_list.velocity -= com_vel
-        print (scattering_com.position - com_pos).in_(units.AU)
-        print (enc_list.position).in_(units.AU)
+        print((scattering_com.position - com_pos).in_(units.AU))
+        print((enc_list.position).in_(units.AU))
         highest_mass_pair = enc_list.sorted_by_attribute('mass')[-2:]
         encounter_sep = (highest_mass_pair[0].position - highest_mass_pair[1].position).length()
         fh.write("Encounter Seperation:"+str(encounter_sep.in_(units.AU))+"\n")
@@ -58,14 +58,14 @@ def print_diagnostics(grav, E0=None):
     ke = grav.kinetic_energy
     pe = grav.potential_energy
     Nmul, Nbin, Emul = grav.get_total_multiple_energy()
-    print ''
-    print 'Time =', grav.get_time().in_(units.Myr)
-    print '    top-level kinetic energy =', ke
-    print '    top-level potential energy =', pe
-    print '    total top-level energy =', ke + pe
-    print '   ', Nmul, 'multiples,', 'total energy =', Emul
+    print('')
+    print('Time =', grav.get_time().in_(units.Myr))
+    print('    top-level kinetic energy =', ke)
+    print('    top-level potential energy =', pe)
+    print('    total top-level energy =', ke + pe)
+    print('   ', Nmul, 'multiples,', 'total energy =', Emul)
     E = ke + pe + Emul
-    print '    uncorrected total energy =', E
+    print('    uncorrected total energy =', E)
     
     # Apply known corrections.
     
@@ -74,9 +74,9 @@ def print_diagnostics(grav, E0=None):
     Eerr = grav.multiples_integration_energy_error	# integration error
 
     E -= Etid + Eerr
-    print '    corrected total energy =', E
+    print('    corrected total energy =', E)
 
-    if E0 is not None: print '    relative energy error=', (E-E0)/E0
+    if E0 is not None: print('    relative energy error=', (E-E0)/E0)
     
     return E
 
@@ -149,19 +149,19 @@ def integrate_system(N, t_end, seed=None):
 
     # Print selected multiples settings.
 
-    print ''
-    print 'multiples_code.neighbor_veto =', \
-        multiples_code.neighbor_veto
-    print 'multiples_code.neighbor_perturbation_limit =', \
-        multiples_code.neighbor_perturbation_limit
-    print 'multiples_code.retain_binary_apocenter =', \
-        multiples_code.retain_binary_apocenter
-    print 'multiples_code.wide_perturbation_limit =', \
-        multiples_code.wide_perturbation_limit
+    print('')
+    print('multiples_code.neighbor_veto =', \
+        multiples_code.neighbor_veto)
+    print('multiples_code.neighbor_perturbation_limit =', \
+        multiples_code.neighbor_perturbation_limit)
+    print('multiples_code.retain_binary_apocenter =', \
+        multiples_code.retain_binary_apocenter)
+    print('multiples_code.wide_perturbation_limit =', \
+        multiples_code.wide_perturbation_limit)
 
     # Advance the system.
     time = numpy.sqrt(length**3/(constants.G*mass))
-    print '\ntime unit =', time.in_(units.Myr)
+    print('\ntime unit =', time.in_(units.Myr))
     
     E0 = print_diagnostics(multiples_code)
     dt = 0.1 | units.Myr
@@ -170,9 +170,9 @@ def integrate_system(N, t_end, seed=None):
     while t_current <= t_end:
         t_current += dt
         multiples_code.evolve_model(t_current)
-        print gravity.particles.index_in_code #, gravity.particles[0].x
+        print(gravity.particles.index_in_code) #, gravity.particles[0].x
         #print multiples_code.particles[-1].key, multiples_code.particles[-1].x
-        print multiples_code._inmemory_particles.id, #multiples_code._inmemory_particles[-1].x
+        print(multiples_code._inmemory_particles.id, end=' ') #multiples_code._inmemory_particles[-1].x
         #print stars[0].id
         # Testing the Multiples & Gravity Particle Set Differences
         #test_psystem_id = systems_SI[0].host_star

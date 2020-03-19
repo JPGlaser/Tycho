@@ -60,7 +60,7 @@ def run_collision(bodies, t_max, dt, identifier):
         iteration = str("%06d" % int(1. / dt * time_step))
 
         # This statement will allow the user to know how much time has passed
-        if int(iteration) % 1000 == 0: print iteration, '/', len(time_steps)
+        if int(iteration) % 1000 == 0: print(iteration, '/', len(time_steps))
 
         # Now, we will evolve the system by the next time step
         gravity.evolve_model(time_step)
@@ -92,7 +92,7 @@ def run_collision(bodies, t_max, dt, identifier):
 
         if over:
 
-            print 'it\'s over!' # let the user know that we're wrapping up 
+            print('it\'s over!') # let the user know that we're wrapping up 
 
             gravity.update_particle_tree()
             gravity.update_particle_set()
@@ -135,5 +135,5 @@ for key in range(len(keys)):
         bodies = interesting_encounters[key]
         num_stars = len([i for i in range(len(bodies)) if bodies[i].radius > 10**10 | units.m])
         num_planets = len(bodies) - num_stars
-        print num_stars, ' stars | ', num_planets, ' planets'       
+        print(num_stars, ' stars | ', num_planets, ' planets')       
         run_collision(bodies, t_max, dt, identifier = str("%02d" % key))

@@ -53,7 +53,7 @@ except ImportError:
 
 # Import cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -108,7 +108,7 @@ def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, eps2 = 0.0
 
 
 # Initializing PH4 with Initial Conditions
-            print "Initializing gravity"
+            print("Initializing gravity")
             gravity.initialize_code()
             gravity.parameters.set_defaults()
             gravity.parameters.begin_time = time
@@ -120,13 +120,13 @@ def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, eps2 = 0.0
             gravity.parameters.gpu_id = gpu_ID
 
 # Initializing Kepler and SmallN
-            print "Initializing Kepler"
+            print("Initializing Kepler")
             kep = Kepler(None, redirection = "none")
             kep.initialize_code()
-            print "Initializing SmallN"
+            print("Initializing SmallN")
             util.init_smalln()
             MasterSet = []
-            print "Retrieving data"
+            print("Retrieving data")
 
             MasterSet, multiples_code = read.read_state_from_file(restart_file, gravity, kep, util.new_smalln())
 
@@ -138,16 +138,16 @@ def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, eps2 = 0.0
 # Starting the AMUSE Channel for PH4
             grav_channel = gravity.particles.new_channel_to(MasterSet)
         
-            print "Reload Successful"
+            print("Reload Successful")
         
             U = multiples_code.potential_energy
             T = multiples_code.kinetic_energy
             Etop = T + U
 
-            print "T: "
-            print T
-            print "U: "
-            print U
+            print("T: ")
+            print(T)
+            print("U: ")
+            print(U)
 
             angular_momentum = MasterSet.total_angular_momentum()
             momentum = MasterSet.total_momentum()
@@ -162,8 +162,8 @@ def GetValues(cluster_name, num_workers = 1, use_gpu = 1, gpu_ID = 0, eps2 = 0.0
                 + multiples_code.multiples_internal_tidal_correction \
                     + multiples_code.multiples_integration_energy_error
             Ecor = Etot - Edel
-            print "Ecor: "
-            print Ecor
+            print("Ecor: ")
+            print(Ecor)
 
             gravity.stop()
             kep.stop()
@@ -330,7 +330,7 @@ def run_plotting(run_dir, cluster_name, converter, dpi=150):
     This is a function created to plot a 2D projection of the Cluster for every time-step.
     The Function Returns: A bunch of plots that are either saved and/or displayed.
     """
-    print "[UPDATE] Starting Bulk Plotting (%s) ..." %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+    print("[UPDATE] Starting Bulk Plotting (%s) ..." %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
     sys.stdout.flush()
     
 # First get all of the times from the MasterParticleSet file names
@@ -346,9 +346,9 @@ def run_plotting(run_dir, cluster_name, converter, dpi=150):
     for time in current_time:
         file_name = "%s_MS_t%.3f.hdf5" %(cluster_name, time.number)
         objects = read_set_from_file(run_dir+file_name, format="hdf5", close_file = True)
-        print len(objects)
+        print(len(objects))
         plot_cluster_2D(objects, step_number, time, cluster_name, converter, dpi)
         step_number+=1
 
-    print "[UPDATE] Finished Bulk Plotting (%s)!"  %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
+    print("[UPDATE] Finished Bulk Plotting (%s)!"  %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
     sys.stdout.flush()

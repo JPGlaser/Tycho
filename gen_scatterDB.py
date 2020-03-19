@@ -26,13 +26,13 @@ def replace_planetary_system(bodies, base_planet_ID=50000, converter=None):
     enc_systems = stellar_systems.get_heirarchical_systems_from_set(bodies, converter=converter)
     sys_with_planets = []
     # Remove Any Tracer Planets in the Encounter and Adds the Key to Add in the New System
-    for sys_key in enc_systems.keys():
+    for sys_key in list(enc_systems.keys()):
         for particle in enc_systems[sys_key]:
             if particle.id >= base_planet_ID:
                 enc_systems[sys_key].remove_particle(particle)
                 sys_with_planets.append(sys_key)
     # Allows for Planets to be Added to Single Stars
-    for sys_key in enc_systems.keys():
+    for sys_key in list(enc_systems.keys()):
         if (len(enc_systems[sys_key]) == 1) and (sys_key not in sys_with_planets):
             sys_with_planets.append(sys_key)
     #print sys_with_planets
@@ -56,18 +56,18 @@ if __name__ == '__main__':
         opened_file = open(filepath, 'rb')
         cutEnc_db[cluster_names[i]] = pickle.load(opened_file)
         opened_file.close()
-    print cutEnc_db.keys()
+    print(list(cutEnc_db.keys()))
 
 old_cutEnc_db = copy.deepcopy(cutEnc_db)
 
-for clusterName in cutEnc_db.keys():
-    for primaryStar in cutEnc_db[clusterName].keys():
+for clusterName in list(cutEnc_db.keys()):
+    for primaryStar in list(cutEnc_db[clusterName].keys()):
         origionalEnc = cutEnc_db[clusterName][primaryStar][0].copy()
         newEncList = []
-        for i in xrange(100):
+        for i in range(100):
             newEncList.append(replace_planetary_system(origionalEnc))
         cutEnc_db[clusterName][primaryStar] = newEncList
 
 output_file = open(os.getcwd()+"full_scatterDB.pkl", 'rb')
 pickle.dump(cutEnc_db, output_file)
-print "Finished!"
+print("Finished!")
