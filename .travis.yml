@@ -2,7 +2,7 @@ dist: bionic
 before-install:
     - sudo apt-get update
     - sudo apt-get -y install build-essential gfortran python3-dev libopenmpi-dev openmpi-bin libgsl-dev cmake libfftw3-3 libfftw3-dev libgmp3-dev libmpfr6 libmpfr-dev libhdf5-serial-dev hdf5-tools git
-    - export PYTHONPATH=$PYTHONPATH:$(pwd)
+    - export PYTHONPATH=$PYTHONPATH:$(pwd)/src/
 language: python
 python:
     - "3.8"
