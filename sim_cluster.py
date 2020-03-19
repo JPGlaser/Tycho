@@ -605,21 +605,21 @@ if __name__=="__main__":
 #        Stopping the Integrators       #
 # ------------------------------------- #
 
-print_diagnostics(multiples_code, E0)
-print_diagnostics(multiples_code, E0_1)
-sys.stdout.flush()
+    print_diagnostics(multiples_code, E0)
+    print_diagnostics(multiples_code, E0_1)
+    sys.stdout.flush()
 
-sys.stdout = orig_stdout
-print('\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
-print_diagnostics(multiples_code, E0)
-print_diagnostics(multiples_code, E0_1)
-sev_code.stop()
-gravity_code.stop()
-kep.stop()
-util.stop_smalln()
-try:
-    bridge_code.stop()
-except:
-    pass
+    sys.stdout = orig_stdout
+    print('\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+    print_diagnostics(multiples_code, E0)
+    print_diagnostics(multiples_code, E0_1)
+    sev_code.stop()
+    gravity_code.stop()
+    kep.stop()
+    util.stop_smalln()
+    try:
+        bridge_code.stop()
+    except:
+        pass
 
-sys.stdout.flush()
+    sys.stdout.flush()
