@@ -1,3 +1,6 @@
+.. image:: http://img.shields.io/badge/arXiv-2002.12375-green.svg?style=flat
+    :target: https://arxiv.org/abs/2002.12375
+
 # Tycho
 AMUSE (Astrophysical Multipurpose Software Environment) community code for observing star-star scattering effects on exoplanets in stellar clusters.
 
@@ -12,3 +15,6 @@ We currently working on converting *TYCHO* to the latest version of Python3, whi
 - **gen_RandEncounters.py:** Used to create the starting conditions for *sim_encounters.py* by generating random orientations of the desired planetary systems for each encounter specified in the reduced encounter database.
 - **sim_encounters.py:** Used in simulating stellar close-encounters created and stored by *gen_RandEncounters.py*.
 - **gen_init-final_database.py:** A useful script which generates the initial and final conditions of planetary systems after *sim_encounters.py* has been run.
+
+## Production Walk-Through
+Before you begin using Tycho,
