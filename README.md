@@ -1,7 +1,10 @@
 # Tycho
-AMUSE community code for observing star-star scattering effects on exoplanets in stellar clusters.
+AMUSE (Astrophysical Multipurpose Software Environment) community code for observing star-star scattering effects on exoplanets in stellar clusters.
 
-TYCHO is a simulation suite used in observing the effects of star-star scattering on exoplanets within clustered natal environments. It is dependent on multiple community codes provided by the Astrophysical Multipurpose Software Environment (AMUSE; amusecode.org).
+*TYCHO* is a simulation suite used in observing the effects of star-star scattering on exoplanets within clustered natal environments. It is dependent on multiple community codes provided by the Astrophysical Multipurpose Software Environment (AMUSE; amusecode.org).
+
+## Developers' Note
+We currently working on converting *TYCHO* to the latest version of Python3, which will support AMUSE 13.1 +. The Python2 version can be accessed in the version history and works well for AMUSE 11.
 
 ## Breakdown of Included Scripts
 - **sim_cluster.py:** Used in simulating a star cluster according to user-defined initial conditions. Additionally, it records all stellar close-encounters into an easy to process pickle format. If desired, this can also include a Jovian population to track the sub-brown dwarf population in the cluster.
