@@ -1,5 +1,4 @@
-.. image:: http://img.shields.io/badge/arXiv-2002.12375-green.svg?style=flat
-    :target: https://arxiv.org/abs/2002.12375
+[![Arxiv Citation](http://img.shields.io/badge/arXiv-2002.12375-green.svg?style=flat)](https://arxiv.org/abs/2002.12375)
 
 # Tycho
 AMUSE (Astrophysical Multipurpose Software Environment) community code for observing star-star scattering effects on exoplanets in stellar clusters.
