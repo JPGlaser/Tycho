@@ -627,25 +627,3 @@ def planet(ID, host_star, planet_mass, init_a, init_e, random_orientation=False)
     p.velocity = p.velocity + host_star.velocity
 # Returns the Created AMUSE Particle
     return p
-
-class GalacticCenterGravityCode(object):
-    def __init__(self,R, M, alpha):
-        self.radius=R
-        self.mass=M
-        self.alpha=alpha
-    def get_gravity_at_point(self,eps,x,y,z):
-        r2=x**2+y**2+z**2
-        r=r2**0.5
-        m=self.mass*(r/self.radius)**self.alpha
-        fr=constants.G*m/r2
-        ax=-fr*x/r
-        ay=-fr*y/r
-        az=-fr*z/r
-        return ax,ay,az
-    def circular_velocity(self,r):
-        m=self.mass*(r/self.radius)**self.alpha
-        vc=(constants.G*m/r)**0.5
-    	return vc
-    def move_particles_into_ellipictal_orbit(self, particles, Rinit):
-        particles.x += Rinit
-        particles.vy += 0.9*self.circular_velocity(Rinit)

@@ -34,7 +34,7 @@ except:
    import pickle
 
 from tycho import util
-from tycho import multiples2 as multiples
+#from tycho import multiples2 as multiples
 
 # ------------------------------------- #
 #           Defining Functions          #
@@ -45,7 +45,7 @@ def write_initial_state(master_set, ic_array, file_prefix):
         master_set: The Master Amuse Particle Set used in Tycho
         ic_array: Predefined Numpy Array that Stores Initial Conditions in SI Units
         file_prefix: String Value for a Prefix to the Saved File
-    '''    
+    '''
 # First, Define/Make the Directory for the Initial State to be Stored
     file_dir = os.getcwd()+"/InitialState"
     if not os.path.exists(file_dir):
@@ -97,15 +97,15 @@ def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_f
             'model_time': multiples_code.model_time,
             'root_index': multiples.root_index
         }
-        
+
         for root, tree in multiples_code.root_to_tree.items():
             root_in_particles = root.as_particle_in_set(particles)
             subset = tree.get_tree_subset().copy()
             if root_in_particles is not None:
                 root_in_particles.components = subset
-        io.write_set_to_file(particles,write_file+".stars.hdf5",'hdf5',version='2.0', 
+        io.write_set_to_file(particles,write_file+".stars.hdf5",'hdf5',version='2.0',
                              append_to_file=False, copy_history=cp_hist)
-        io.write_set_to_file(stars_python,write_file+".stars_python.hdf5",'hdf5',version='2.0', 
+        io.write_set_to_file(stars_python,write_file+".stars_python.hdf5",'hdf5',version='2.0',
                              append_to_file=False, copy_history=cp_hist)
         config = {'time' : time,
                   'py_seed': pickle.dumps(random.getstate()),
@@ -119,10 +119,10 @@ def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_f
         print("\nState successfully written to:  ", write_file)
         print(time)
         if backup > 0:
-            io.write_set_to_file(particles,write_file+".backup.stars.hdf5",'hdf5', version='2.0', 
+            io.write_set_to_file(particles,write_file+".backup.stars.hdf5",'hdf5', version='2.0',
                                  append_to_file=False, copy_history=cp_hist, close_file=True)
-            io.write_set_to_file(stars_python,write_file+".backup.stars_python.hdf5",'hdf5', 
-                                 version='2.0', append_to_file=False, copy_history=cp_hist, 
+            io.write_set_to_file(stars_python,write_file+".backup.stars_python.hdf5",'hdf5',
+                                 version='2.0', append_to_file=False, copy_history=cp_hist,
                                  close_file=True)
             config2 = {'time' : time,
                        'py_seed': pickle.dumps(random.getstate()),
@@ -136,13 +136,13 @@ def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_f
                 pickle.dump(bookkeeping, f)
                 f.close()
             print("\nBackup write completed.\n")
-        
+
         if backup > 2:
             io.write_set_to_file(particles, write_file+"."+str(int(time.number))
-                                 +".stars.hdf5",'hdf5',version='2.0', append_to_file=False, 
+                                 +".stars.hdf5",'hdf5',version='2.0', append_to_file=False,
                                  copy_history=cp_hist, close_file=True)
             io.write_set_to_file(stars_python, write_file+"."+str(int(time.number))
-                                 +".stars_python.hdf5",'hdf5',version='2.0', append_to_file=False, 
+                                 +".stars_python.hdf5",'hdf5',version='2.0', append_to_file=False,
                                  copy_history=cp_hist, close_file=True)
             config2 = {'time' : time,
                        'py_seed': pickle.dumps(random.getstate()),
@@ -180,7 +180,7 @@ def write_crash_save(time, stars_python,gravity_code, multiples_code, write_file
                         'model_time': multiples_code.model_time,
                         'root_index': multiples.root_index
         }
-       
+
         '''
             bookkeeping.neighbor_veto =
             bookkeeping.multiples_external_tidal_correction = multiples_code.multiples_external_tidal_correction
@@ -225,7 +225,7 @@ def write_crash_save(time, stars_python,gravity_code, multiples_code, write_file
                 pickle.dump(bookkeeping, f)
                 f.close()
             print("\nBackup write completed.\n")
-        
+
         if backup > 2:
             io.write_set_to_file(particles,write_file+"."+str(int(time.number))+".stars.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist, close_file=True)
             io.write_set_to_file(stars_python,write_file+"."+str(int(time.number))+".stars_python.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist, close_file=True)
@@ -241,8 +241,4 @@ def write_crash_save(time, stars_python,gravity_code, multiples_code, write_file
             with open(write_file + "."+str(int(time.number))+".bookkeeping", "wb") as f:
                 pickle.dump(bookkeeping, f)
                 f.close()
-            print("\nBackup write completed.\n")    
-    
-
-
-
+            print("\nBackup write completed.\n")

@@ -41,7 +41,7 @@ def new_seed_from_string(string):
     ''' Creates a seed for Numpy.RandomState() usin a string.
         string: The provided string to use.
     '''
-    hash_md5 = hashlib.md5(str(string)).hexdigest()
+    hash_md5 = hashlib.md5(str(string).encode('utf-8')).hexdigest()
     hash_int = ""
     for c in hash_md5:
         if c.isalpha():

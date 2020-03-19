@@ -194,7 +194,7 @@ if __name__=="__main__":
                       help="Enter the Top-Level Timestep in Myr.")
     parser.add_option("-c", "--cluster-name", dest="cluster_name", default=None, type="str",
                       help="Enter the name of the cluster (Defaults to Numerical Naming Scheme).")
-    parser.add_option("-w", "--w0", dest="w0", default=2.5, type="float",
+    parser.add_option("-w", "--w0", dest="w0", default=4.5, type="float",
                       help="Enter the w0 parameter for the King's Model.")
     parser.add_option("-T", "--end-time", dest="t_end", default=1., type="float",
                       help="Enter the desired end time in Myr.")
@@ -206,6 +206,8 @@ if __name__=="__main__":
                       help = "Enables restarting every 100 top-level timesteps.")
     parser.add_option("-P", "--pregen-flag", dest="pregen", action="store_true",
 		              help = "Enables loading a pregenerated HDF5 file in the Execution Directory.")
+    parser.add_option("-N", "--grav_workers", dest="grav_workers", default=1, type="float",
+                          help="Enter the desired number of PH4 workers.")
     (options, args) = parser.parse_args()
 
     # Set Commonly Used Python Variables from Options
@@ -363,7 +365,7 @@ if __name__=="__main__":
     except:
         no_gpu = False
     if no_gpu:
-        num_workers = 7
+        num_workers = options.grav_workers
         gravity_code = ph4(number_of_workers = num_workers, redirection = "none",
                            convert_nbody = LargeScaleConverter)
     else:

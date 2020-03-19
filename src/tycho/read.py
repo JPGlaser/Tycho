@@ -36,7 +36,7 @@ except:
 
 # Tycho util import
 from tycho import util
-from tycho import multiples2 as multiples
+#from tycho import multiples2 as multiples
 
 # ------------------------------------- #
 #           Defining Functions          #
@@ -45,7 +45,7 @@ from tycho import multiples2 as multiples
 def read_initial_state(file_prefix):
     ''' Reads in an initial state for the Tycho Module.
         file_prefix: String Value for a Prefix to the Saved File
-    ''' 
+    '''
 # TODO: Also everything else in this function.
 
 # First, Define the Directory where Initial State is Stored
@@ -126,5 +126,4 @@ def recover_crash(restart_file, gravity_code, kep, SMALLN):
     multiples_code.root_to_tree = root_to_tree
     #multiples_code.set_model_time = bookkeeping['model_time']
 
-    return bookkeeping['model_time'], multiples_code    
-    
+    return bookkeeping['model_time'], multiples_code
