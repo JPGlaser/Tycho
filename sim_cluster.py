@@ -446,7 +446,7 @@ if __name__=="__main__":
 
     # Piping all Terminal Output to the Log File
     orig_stdout = sys.stdout
-    f = file("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
+    f = open("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
     sys.stdout = f
     sys.stdout.flush()
 
