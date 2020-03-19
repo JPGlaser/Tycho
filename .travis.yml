@@ -2,6 +2,7 @@ dist: bionic
 before-install:
     - sudo apt-get update
     - sudo apt-get -y install build-essential gfortran python3-dev libopenmpi-dev openmpi-bin libgsl-dev cmake libfftw3-3 libfftw3-dev libgmp3-dev libmpfr6 libmpfr-dev libhdf5-serial-dev hdf5-tools git
+    - export PYTHONPATH=$PYTHONPATH:$(pwd)
 language: python
 python:
     - "3.8"
@@ -11,6 +12,7 @@ install:
     - pip install rebound
     - pip install amuse-framework
     - pip install amuse-ph4 amuse-kepler amuse-sse amuse-seba amuse-smalln
+    - pip install time
 
 script:
     - pytest --capture=sys sim_cluster.py
