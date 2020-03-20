@@ -16,8 +16,6 @@ The current master branch of TYCHO supports Python 3.8+ and AMUSE 13.1+. Should 
 - **sim_encounters.py:** Used in simulating stellar close-encounters created and stored by *gen_RandEncounters.py*.
 - **gen_init-final_database.py:** A useful script which generates the initial and final conditions of planetary systems after *sim_encounters.py* has been run.
 
-===============================================================
-
 ## Installation on Ubuntu 18 LTS
 Before you install Tycho, you need to install the following software prerequisites:
 ```
@@ -30,9 +28,9 @@ $ sudo apt-get install build-essential gfortran python3-dev \
 ```
 Additionally, you will need an updated Python distribution, such as Anaconda3. This can be achieved by completing the following:
 ```
-cd Downloads
-wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
-bash Anaconda3-2020.02-Linux-x86_64.sh
+$ cd Downloads
+$ wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
+$ bash Anaconda3-2020.02-Linux-x86_64.sh
 ```
 You'll want to initialize *conda* when prompted. After starting a new terminal session, run the following:
 ```
@@ -48,8 +46,10 @@ $ git clone https://github.com/JPGlaser/Tycho.git
 You'll need to add the *src* folder inside of the git repository to your $PYTHONPATH:
 ```
 $ nano .profile
-## Add the following to the end of the file:
-## export PYTHONPATH="ABSOLUTE_PATH_TO_REPOSITORY/Tycho/src:$PYTHONPATH"
+```
+Add the following to the end of the file:
+```
+export PYTHONPATH="ABSOLUTE_PATH_TO_REPOSITORY/Tycho/src:$PYTHONPATH"
 ```
 
 ## Production Walk-Through
