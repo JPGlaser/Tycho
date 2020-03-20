@@ -11,7 +11,7 @@ import glob
 
 # Importing cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -42,26 +42,26 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
         converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
     systems = stellar_systems.get_heirarchical_systems_from_set(bodies, converter=converter, RelativePosition=False)
     # Deal with Possible Key Issues with Encounters with 3+ Star Particles Being Run More than Other Systems ...
-    if int(primary_sysID) not in systems.keys():
-        print "...: Error: Previously run binary system has been found! Not running this system ..."
-        print primary_sysID
-        print systems.keys()
-        print "---------------------------------"
+    if int(primary_sysID) not in list(systems.keys()):
+        print("...: Error: Previously run binary system has been found! Not running this system ...")
+        print(primary_sysID)
+        print(list(systems.keys()))
+        print("---------------------------------")
         return None
     # As this function is pulling from Multiples, there should never be more or less than 2 "Root" Particles ...
     if len(systems) != 2:
-        print "...: Error: Encounter has more roots than expected! Total Root Particles:", len(systems)
-        print bodies
-        print "---------------------------------"
+        print("...: Error: Encounter has more roots than expected! Total Root Particles:", len(systems))
+        print(bodies)
+        print("---------------------------------")
         return None
     # Assign the Primary System to #1 and Perturbing System to #2
     sys_1 = systems[int(primary_sysID)]
-    secondary_sysID = [key for key in systems.keys() if key!=int(primary_sysID)][0]
+    secondary_sysID = [key for key in list(systems.keys()) if key!=int(primary_sysID)][0]
     sys_2 = systems[secondary_sysID]
-    print 'All System Keys:', systems.keys()
-    print 'Primary System Key:', primary_sysID
-    print 'System 1 IDs:', sys_1.id
-    print 'System 2 IDs:', sys_2.id
+    print('All System Keys:', list(systems.keys()))
+    print('Primary System Key:', primary_sysID)
+    print('System 1 IDs:', sys_1.id)
+    print('System 2 IDs:', sys_2.id)
     # Calculate Useful Quantities
     mass_ratio = sys_2.mass.sum()/sys_1.mass.sum()
     total_mass = sys_1.mass.sum() + sys_2.mass.sum()
@@ -75,9 +75,9 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     p = kep.get_periastron()
     ignore_distance = mass_ratio**(1./3.) * 600 | units.AU
     if p > ignore_distance:
-        print "Encounter Ignored due to Periastron of", p.in_(units.AU), "and an IgnoreDistance of",ignore_distance
+        print("Encounter Ignored due to Periastron of", p.in_(units.AU), "and an IgnoreDistance of",ignore_distance)
         kep.stop()
-        print "---------------------------------"
+        print("---------------------------------")
         return None
     # Move the Particles to be Relative to their Respective Center of Mass
     cm_sys_1, cm_sys_2 = sys_1.center_of_mass(), sys_2.center_of_mass()
@@ -115,7 +115,7 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     final_set = Particles()
     final_set.add_particles(sys_1)
     final_set.add_particles(sys_2)
-    print "---------------------------------"
+    print("---------------------------------")
     return final_set
 
 # ------------------------------------- #
@@ -145,15 +145,15 @@ if __name__ == '__main__':
     encounter_file.close()
 
     sys.stdout.flush()
-    print util.timestamp(), "Performing First Cut on Encounter Database ..."
+    print(util.timestamp(), "Performing First Cut on Encounter Database ...")
     sys.stdout.flush()
     # Perform a Cut on the Encounter Database
-    for star_ID in encounter_db.keys():
+    for star_ID in list(encounter_db.keys()):
         # Cut Out Stars Recorded with Only Initialization Pickups
         if len(encounter_db[star_ID]) <= 1:
             del encounter_db[star_ID]
             continue
-    for star_ID in encounter_db.keys():
+    for star_ID in list(encounter_db.keys()):
         # Cut Out Stars with No Planets
         enc_id_to_cut = []
         for enc_id, encounter in enumerate(encounter_db[star_ID]):
@@ -168,18 +168,18 @@ if __name__ == '__main__':
             del encounter_db[star_ID][enc_id]
 
     sys.stdout.flush()
-    print util.timestamp(), "Performing Second Cut on Encounter Database ..."
+    print(util.timestamp(), "Performing Second Cut on Encounter Database ...")
     sys.stdout.flush()
 
     star_id_to_cut = []
-    for star_ID in encounter_db.keys():
+    for star_ID in list(encounter_db.keys()):
         if len(encounter_db[star_ID]) == 0:
             star_id_to_cut.append(star_ID)
     for star_ID in sorted(star_id_to_cut, reverse=True):
         del encounter_db[star_ID]
 
     # Perform Cut & Advancement on Systems to Lower Integration Time
-    for star_ID in encounter_db.keys():
+    for star_ID in list(encounter_db.keys()):
         enc_id_to_cut = []
         for enc_id, encounter in enumerate(encounter_db[star_ID]):
             PeriastronCut = CutOrAdvance(encounter, star_ID)
@@ -191,13 +191,13 @@ if __name__ == '__main__':
             del encounter_db[star_ID][enc_id]
 
     star_id_to_cut = []
-    for star_ID in encounter_db.keys():
+    for star_ID in list(encounter_db.keys()):
         if len(encounter_db[star_ID]) == 0:
             star_id_to_cut.append(star_ID)
     for star_ID in sorted(star_id_to_cut, reverse=True):
         del encounter_db[star_ID]
 
-    encounter_cut_file = open(os.getcwd()+"/"+cluster_name+"_encounters_cut.pkl", "w")
+    encounter_cut_file = open(os.getcwd()+"/"+cluster_name+"_encounters_cut.pkl", "wb")
     pickle.dump(encounter_db, encounter_cut_file)
     encounter_cut_file.close()
 

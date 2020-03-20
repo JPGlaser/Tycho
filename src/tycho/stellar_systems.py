@@ -18,7 +18,7 @@ from scipy import special
 
 # Importing cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -246,14 +246,14 @@ class PlanetarySystem():
         if clrbar:
             _clrbar(ax,norm,'coolwarm')
         ax.axhline(zeropoint,c='k',ls=':',zorder=0)
-        print 'For ', self.system_name, ':'
+        print('For ', self.system_name, ':')
         for i, planet in enumerate(self.planets):
             beta = self.get_AMDBeta(i)
             stest = planet.stability_type
             mass = planet.mass
             period = planet.period
             size = 200*np.log10(mass.value_in(units.MJupiter) * 1e-2/(3e-6) / (.1))
-            print 'Planet #', i, 'has a AMDBeta of', beta, 'from the', stest, 'stability test.'
+            print('Planet #', i, 'has a AMDBeta of', beta, 'from the', stest, 'stability test.')
             ax.scatter(period.value_in(units.day),zeropoint,s=size,c=beta,cmap='coolwarm',norm=norm)
         return fig,ax
 
@@ -368,7 +368,7 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
                 noStellarHeirarchy = True
             else:
                 noStellarHeirarchy = False
-                print "Binary composed of Star", star.id, "and Star", other_star.id, "has been detected!"
+                print("Binary composed of Star", star.id, "and Star", other_star.id, "has been detected!")
                 current_system.add_particle(other_star)
                 binary_ids.append(star.id)
                 binary_ids.append(other_star.id)

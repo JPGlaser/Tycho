@@ -87,7 +87,7 @@ def king_cluster(num_stars, **kwargs):
     if int(num_binaries) != 0:
     # Loop the Creation of Binary Systems
         binaries=Particles()
-        for j in xrange(0, num_binaries):
+        for j in range(0, num_binaries):
             binaries.add_particles(binary_system(stars_to_become_binaries[j]))
     # Adjust the ID for each Binary Component Particle
         binaries.id = np.arange(num_binaries*2) + num_stars + 1
@@ -126,7 +126,7 @@ def find_possible_binaries(stars_SI, num_binaries, BMasses_SI):
                     stars_to_become_binaries[-1].mass = star.mass+BMasses_SI[B_Counter]
                 # Redefines the Selected Star's Mass to Allow for Correct Scaling in Cluster Script
                     star.mass += BMasses_SI[B_Counter]
-                    print stars_to_become_binaries[-1].mass.value_in(units.MSun)
+                    print(stars_to_become_binaries[-1].mass.value_in(units.MSun))
         # Check to Break the While Loop if the Number of Binaries is Reached
             if len(stars_to_become_binaries) >= num_binaries:
                 break
@@ -447,14 +447,14 @@ def planetary_systems(stars, num_systems, filename_planets, **kwargs):
     makeNeptune = kwargs.get("Neptune", False)
 # Sets Initial Parameters
     num_stars = len(stars)
-    select_stars_indices = rp.sample(xrange(0, num_stars), num_systems)
+    select_stars_indices = rp.sample(range(0, num_stars), num_systems)
     i = 0
     ID_Earth = 30000
     ID_Jupiter = 50000
     ID_Neptune = 80000
     systems = datamodel.Particles()
 # Begins to Build Planetary Systems According to Provided Information
-    for system in xrange(num_systems):
+    for system in range(num_systems):
         planets = datamodel.Particles()
         j = select_stars_indices[system]
         if makeEarth:
@@ -500,7 +500,7 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
     num_stars = len(stars)
     if num_systems > num_stars:
         num_systems = num_stars
-    select_stars_indices = rp.sample(xrange(0, num_stars), num_systems)
+    select_stars_indices = rp.sample(range(0, num_stars), num_systems)
 
 # Sets Important Parameters
     ID_Earth = 30000
@@ -508,7 +508,7 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
     ID_Neptune = 80000
     systems = datamodel.Particles()
 # Begins to Build Planetary Systems According to Provided Information
-    for system in xrange(num_systems):
+    for system in range(num_systems):
         planets = datamodel.Particles()
         j = select_stars_indices[system]
         host_star = stars[j]
@@ -627,25 +627,3 @@ def planet(ID, host_star, planet_mass, init_a, init_e, random_orientation=False)
     p.velocity = p.velocity + host_star.velocity
 # Returns the Created AMUSE Particle
     return p
-
-class GalacticCenterGravityCode(object):
-    def __init__(self,R, M, alpha):
-        self.radius=R
-        self.mass=M
-        self.alpha=alpha
-    def get_gravity_at_point(self,eps,x,y,z):
-        r2=x**2+y**2+z**2
-        r=r2**0.5
-        m=self.mass*(r/self.radius)**self.alpha
-        fr=constants.G*m/r2
-        ax=-fr*x/r
-        ay=-fr*y/r
-        az=-fr*z/r
-        return ax,ay,az
-    def circular_velocity(self,r):
-        m=self.mass*(r/self.radius)**self.alpha
-        vc=(constants.G*m/r)**0.5
-    	return vc
-    def move_particles_into_ellipictal_orbit(self, particles, Rinit):
-        particles.x += Rinit
-        particles.vy += 0.9*self.circular_velocity(Rinit)

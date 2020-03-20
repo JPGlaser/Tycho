@@ -19,14 +19,12 @@ import copy
 import traceback
 import signal
 from time import gmtime
-from time import mktime
-from time import clock
 
 from collections import defaultdict
 
 # Importing cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -66,21 +64,21 @@ def print_diagnostics(grav, E0=None):
     ke = grav.kinetic_energy
     pe = grav.potential_energy
     Nmul, Nbin, Emul = grav.get_total_multiple_energy()
-    print ''
-    print 'Time =', grav.get_time().in_(units.Myr)
-    print '    top-level kinetic energy =', ke
-    print '    top-level potential energy =', pe
-    print '    total top-level energy =', ke + pe
-    print '   ', Nmul, 'multiples,', 'total energy =', Emul
+    print('')
+    print('Time =', grav.get_time().in_(units.Myr))
+    print('    top-level kinetic energy =', ke)
+    print('    top-level potential energy =', pe)
+    print('    total top-level energy =', ke + pe)
+    print('   ', Nmul, 'multiples,', 'total energy =', Emul)
     E = ke + pe + Emul
-    print '    uncorrected total energy =', E
+    print('    uncorrected total energy =', E)
     # Apply known corrections.
     Etid = grav.multiples_external_tidal_correction \
             + grav.multiples_internal_tidal_correction  # tidal error
     Eerr = grav.multiples_integration_energy_error	# integration error
     E -= Etid + Eerr
-    print '    corrected total energy =', E
-    if E0 is not None: print '    relative energy error=', (E-E0)/E0
+    print('    corrected total energy =', E)
+    if E0 is not None: print('    relative energy error=', (E-E0)/E0)
     return E
 
 
@@ -194,7 +192,7 @@ if __name__=="__main__":
                       help="Enter the Top-Level Timestep in Myr.")
     parser.add_option("-c", "--cluster-name", dest="cluster_name", default=None, type="str",
                       help="Enter the name of the cluster (Defaults to Numerical Naming Scheme).")
-    parser.add_option("-w", "--w0", dest="w0", default=2.5, type="float",
+    parser.add_option("-w", "--w0", dest="w0", default=4.5, type="float",
                       help="Enter the w0 parameter for the King's Model.")
     parser.add_option("-T", "--end-time", dest="t_end", default=1., type="float",
                       help="Enter the desired end time in Myr.")
@@ -206,6 +204,8 @@ if __name__=="__main__":
                       help = "Enables restarting every 100 top-level timesteps.")
     parser.add_option("-P", "--pregen-flag", dest="pregen", action="store_true",
 		              help = "Enables loading a pregenerated HDF5 file in the Execution Directory.")
+    parser.add_option("-N", "--grav_workers", dest="grav_workers", default=1, type="float",
+                          help="Enter the desired number of PH4 workers.")
     (options, args) = parser.parse_args()
 
     # Set Commonly Used Python Variables from Options
@@ -363,7 +363,7 @@ if __name__=="__main__":
     except:
         no_gpu = False
     if no_gpu:
-        num_workers = 7
+        num_workers = options.grav_workers
         gravity_code = ph4(number_of_workers = num_workers, redirection = "none",
                            convert_nbody = LargeScaleConverter)
     else:
@@ -444,7 +444,7 @@ if __name__=="__main__":
 
     # Piping all Terminal Output to the Log File
     orig_stdout = sys.stdout
-    f = file("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
+    f = open("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
     sys.stdout = f
     sys.stdout.flush()
 
@@ -582,9 +582,9 @@ if __name__=="__main__":
             pickle.dump(encounterInformation, encounter_file)
             encounter_file.close()
             # Log that a the Encounters have been Saved!
-            print '\n-------------'
-            print '[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-            print '-------------\n'
+            print('\n-------------')
+            print('[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+            print('-------------\n')
             sys.stdout.flush()
 
         # Increase the Step Index
@@ -592,9 +592,9 @@ if __name__=="__main__":
         step_index += 1
 
         # Log that a Step was Taken
-        print '\n-------------'
-        print '[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-        print '-------------\n'
+        print('\n-------------')
+        print('[UPDATE] Step Taken at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+        print('-------------\n')
 
         # Flush Terminal Output to Log File
         sys.stdout.flush()
@@ -603,21 +603,21 @@ if __name__=="__main__":
 #        Stopping the Integrators       #
 # ------------------------------------- #
 
-print_diagnostics(multiples_code, E0)
-print_diagnostics(multiples_code, E0_1)
-sys.stdout.flush()
+    print_diagnostics(multiples_code, E0)
+    print_diagnostics(multiples_code, E0_1)
+    sys.stdout.flush()
 
-sys.stdout = orig_stdout
-print '\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime()))
-print_diagnostics(multiples_code, E0)
-print_diagnostics(multiples_code, E0_1)
-sev_code.stop()
-gravity_code.stop()
-kep.stop()
-util.stop_smalln()
-try:
-    bridge_code.stop()
-except:
-    pass
+    sys.stdout = orig_stdout
+    print('\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
+    print_diagnostics(multiples_code, E0)
+    print_diagnostics(multiples_code, E0_1)
+    sev_code.stop()
+    gravity_code.stop()
+    kep.stop()
+    util.stop_smalln()
+    try:
+        bridge_code.stop()
+    except:
+        pass
 
-sys.stdout.flush()
+    sys.stdout.flush()

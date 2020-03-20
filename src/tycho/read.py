@@ -30,13 +30,13 @@ from amuse.ic.kroupa import new_kroupa_mass_distribution
 
 # Import cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
 # Tycho util import
 from tycho import util
-from tycho import multiples2 as multiples
+#from tycho import multiples2 as multiples
 
 # ------------------------------------- #
 #           Defining Functions          #
@@ -45,7 +45,7 @@ from tycho import multiples2 as multiples
 def read_initial_state(file_prefix):
     ''' Reads in an initial state for the Tycho Module.
         file_prefix: String Value for a Prefix to the Saved File
-    ''' 
+    '''
 # TODO: Also everything else in this function.
 
 # First, Define the Directory where Initial State is Stored
@@ -77,7 +77,7 @@ def read_state_from_file(restart_file, gravity_code, kep, SMALLN):
     with open(restart_file + ".bookkeeping", "rb") as f:
         bookkeeping = pickle.load(f)
         f.close()
-    print bookkeeping
+    print(bookkeeping)
     root_to_tree = {}
     for root in stars:
         if hasattr(root, 'components') and not root.components is None:
@@ -108,7 +108,7 @@ def recover_crash(restart_file, gravity_code, kep, SMALLN):
     with open(restart_file + ".bookkeeping", "rb") as f:
         bookkeeping = pickle.load(f)
         f.close()
-    print bookkeeping
+    print(bookkeeping)
     root_to_tree = {}
     for root in stars:
         if hasattr(root, 'components') and not root.components is None:
@@ -126,5 +126,4 @@ def recover_crash(restart_file, gravity_code, kep, SMALLN):
     multiples_code.root_to_tree = root_to_tree
     #multiples_code.set_model_time = bookkeeping['model_time']
 
-    return bookkeeping['model_time'], multiples_code    
-    
+    return bookkeeping['model_time'], multiples_code

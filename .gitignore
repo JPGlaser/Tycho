@@ -9,5 +9,10 @@ Testing/
 TestData*
 TestData*/
 TestData*/*
+OldScripts/
+TestScripts/
+Archive/
 *.gif
 *.pyc
+*.bak
+.gitignore

@@ -11,7 +11,7 @@ import glob
 
 # Importing cPickle/Pickle
 try:
-   import cPickle as pickle
+   import pickle as pickle
 except:
    import pickle
 
@@ -49,7 +49,7 @@ def gen_scatteringIC(encounter_db):
     for kw in kepler_workers:
         kw.initialize_code()
     # Loop Through the Star_IDs
-    for star_ID in encounter_db.keys():
+    for star_ID in list(encounter_db.keys()):
         output_KeyDirectory = output_ICDirectory+str(star_ID)
         if not os.path.exists(output_KeyDirectory): os.mkdir(output_KeyDirectory)
         encounter_ID = 0
@@ -73,7 +73,7 @@ def gen_scatteringIC(encounter_db):
                 enc_bodies = replace_planetary_system(encounter.copy(), kepler_workers=kepler_workers)
                 write_set_to_file(enc_bodies.savepoint(0 | units.Myr), output_HDF5File, 'hdf5', version='2.0')
                 printID = str(star_ID)+"-"+str(encounter_ID)+"-"+str(rotation_ID)
-                print util.timestamp(), "Finished Generating Random Encounter ID:", printID, "..."
+                print(util.timestamp(), "Finished Generating Random Encounter ID:", printID, "...")
                 rotation_ID += 1
             encounter_ID += 1
     # Stop the Kepler Workers
@@ -88,13 +88,13 @@ def replace_planetary_system(bodies, kepler_workers=None, base_planet_ID=50000, 
     enc_systems = stellar_systems.get_heirarchical_systems_from_set(bodies, kepler_workers=kepler_workers, converter=converter)
     sys_with_planets = []
     # Remove Any Tracer Planets in the Encounter and Adds the Key to Add in the New System
-    for sys_key in enc_systems.keys():
+    for sys_key in list(enc_systems.keys()):
         for particle in enc_systems[sys_key]:
             if particle.id >= base_planet_ID:
                 enc_systems[sys_key].remove_particle(particle)
                 sys_with_planets.append(sys_key)
     # Allows for Planets to be Added to Single Stars
-    for sys_key in enc_systems.keys():
+    for sys_key in list(enc_systems.keys()):
         if (len(enc_systems[sys_key]) == 1) and (sys_key not in sys_with_planets):
             sys_with_planets.append(sys_key)
     # Add in a New Planetary System
@@ -125,9 +125,9 @@ if __name__ == '__main__':
     #sys.stdout = log_file
 
     paths_of_enc_files = glob.glob(rootDir+'*/*_encounters_cut.pkl')
-    print paths_of_enc_files
+    print(paths_of_enc_files)
     cluster_names = [path.split("/")[-2] for path in paths_of_enc_files]
-    print cluster_names
+    print(cluster_names)
 
     for i, path in enumerate(paths_of_enc_files):
         # Read in Encounter Directory
@@ -135,7 +135,7 @@ if __name__ == '__main__':
         cluster_name = cluster_names[i]
         # Report Start of Generating IC for Cut Encounter Directory
         sys.stdout.flush()
-        print util.timestamp(), "Generating initial conditions for", cluster_name,"..."
+        print(util.timestamp(), "Generating initial conditions for", cluster_name,"...")
         sys.stdout.flush()
         # Generate IC for Scattering Experiments
         gen_scatteringIC(encounter_db)
