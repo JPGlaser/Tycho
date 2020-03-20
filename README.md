@@ -1,6 +1,7 @@
-[![Arxiv Citation](http://img.shields.io/badge/arXiv-2002.12375-green.svg?style=flat)](https://arxiv.org/abs/2002.12375)
-
 # Tycho
+[![Arxiv Citation](http://img.shields.io/badge/arXiv-2002.12375-green.svg?style=flat)](https://arxiv.org/abs/2002.12375)
+[![TRAVIS Status](https://travis-ci.org/JPGlaser/Tycho.svg?branch=Py3_version)](https://travis-ci.org/github/JPGlaser/Tycho)
+
 AMUSE (Astrophysical Multipurpose Software Environment) community code for observing star-star scattering effects on exoplanets in stellar clusters.
 
 *TYCHO* is a simulation suite used in observing the effects of star-star scattering on exoplanets within clustered natal environments. It is dependent on multiple community codes provided by the Astrophysical Multipurpose Software Environment (AMUSE; amusecode.org).
