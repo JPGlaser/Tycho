@@ -197,7 +197,7 @@ if __name__ == '__main__':
     for star_ID in sorted(star_id_to_cut, reverse=True):
         del encounter_db[star_ID]
 
-    encounter_cut_file = open(os.getcwd()+"/"+cluster_name+"_encounters_cut.pkl", "w")
+    encounter_cut_file = open(os.getcwd()+"/"+cluster_name+"_encounters_cut.pkl", "wb")
     pickle.dump(encounter_db, encounter_cut_file)
     encounter_cut_file.close()
 
