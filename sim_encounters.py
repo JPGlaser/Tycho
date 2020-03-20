@@ -287,6 +287,6 @@ if __name__=="__main__":
 
     # Announce to Terminal that the Runs have Finished
     sys.stdout.flush()
-    print(util.timestamp(), "Cluster", cluster_name, "is finished processing!")
-    print(util.timestamp(), "The Cluster was processed in", (e_time - s_time), "seconds!")
+    print(util.timestamp(), "All clusters have finished processing.")
+    print(util.timestamp(), len(all_clusterDirs), "clusters were processed in", (e_time - s_time), "seconds!")
     sys.stdout.flush()
