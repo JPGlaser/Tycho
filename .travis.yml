@@ -14,4 +14,4 @@ install:
     - pip install amuse-ph4 amuse-kepler amuse-sse amuse-seba amuse-smalln
 
 script:
-    - pytest --capture=sys sim_cluster.py
+    - python sim_cluster.py -g -p 25 -s 50 -c Leonis -w 4.5 -T 2000 -S Leonis -b
