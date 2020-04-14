@@ -120,12 +120,12 @@ if __name__ == '__main__':
 
     if options.doMultipleClusters:
         if options.rootDir != None:
-            rootDir = options.rootDir+'*/'
+            rootDir = options.rootDir+'/*/'
         else:
             print(util.timestamp(), "Please provide the path to your root directory which contains all cluster folders!", cluster_name,"...")
     else:
         if options.rootDir != None:
-            rootDir = options.rootDir
+            rootDir = options.rootDir+'/'
         else:
             rootDir = os.getcwd()
 
