@@ -129,9 +129,9 @@ if __name__ == '__main__':
         else:
             rootDir = os.getcwd()
 
-    #orig_stdout = sys.stdout
-    #log_file = open(rootDir+"rand_encounters.log","w")
-    #sys.stdout = log_file
+    orig_stdout = sys.stdout
+    log_file = open(rootDir+"rand_encounters.log","w")
+    sys.stdout = log_file
 
     paths_of_enc_files = glob.glob(rootDir+'*_encounters_cut.pkl')
     print(paths_of_enc_files)
@@ -149,5 +149,5 @@ if __name__ == '__main__':
         # Generate IC for Scattering Experiments
         gen_scatteringIC(encounter_db)
 
-    #sys.stdout = orig_stdout
-    #log_file.close()
+    sys.stdout = orig_stdout
+    log_file.close()
