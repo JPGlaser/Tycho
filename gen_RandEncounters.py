@@ -118,7 +118,7 @@ if __name__ == '__main__':
                       help="Flag to turn on for running the script over a series of multiple clusters.")
     (options, args) = parser.parse_args()
 
-    if doMultipleClusters:
+    if options.doMultipleClusters:
         if options.rootDir != None:
             rootDir = options.rootDir+'*/'
         else:
