@@ -276,7 +276,7 @@ if __name__=="__main__":
     if options.doMultipleClusters:
         all_clusterDirs = glob.glob(rootDir+"/*/")
     else:
-        all_clusterDirs = [rootDir]+"/"
+        all_clusterDirs = [rootDir+"/"]
 
     # ------------------------------------- #
     #     Perform All Req. Simulations      #
