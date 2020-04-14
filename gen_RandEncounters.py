@@ -36,11 +36,14 @@ from tycho import create, util, read, write, stellar_systems
 #           Defining Functions          #
 # ------------------------------------- #
 
-def gen_scatteringIC(encounter_db):
+def gen_scatteringIC(encounter_db, doMultipleClusters=False):
     global rootDir
     global cluster_name
     max_number_of_rotations = 100
-    output_ICDirectory = rootDir+cluster_name+"/Scatter_IC/"
+    if doMultipleClusters:
+        output_ICDirectory = rootDir+'/'+cluster_name+'/Scatter_IC/'
+    else:
+        output_ICDirectory = rootDir+'/Scatter_IC/'
     if not os.path.exists(output_ICDirectory): os.mkdir(output_ICDirectory)
     # Set up the Kepler Workers for Subroutines Now
     converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
