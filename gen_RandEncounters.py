@@ -113,18 +113,27 @@ def replace_planetary_system(bodies, kepler_workers=None, base_planet_ID=50000, 
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-d", "--rootdirectory", dest="rootDir", default=None, type="str",
-                      help="Enter the full directory of the Root Folder.")
+                      help="Enter the full directory of the Root Folder. Defaults to your CWD unless -M is on.")
+    parser.add_option("-M", "--doMultipleClusters", dest="doMultipleClusters", action="store_true",
+                      help="Flag to turn on for running the script over a series of multiple clusters.")
     (options, args) = parser.parse_args()
-    if options.rootDir != None:
-        rootDir = options.rootDir
+
+    if doMultipleClusters:
+        if options.rootDir != None:
+            rootDir = options.rootDir+'*/'
+        else:
+            print(util.timestamp(), "Please provide the path to your root directory which contains all cluster folders!", cluster_name,"...")
     else:
-        rootDir = '/home/draco/jglaser/Public/Tycho_Runs/MarkG/'
+        if options.rootDir != None:
+            rootDir = options.rootDir
+        else:
+            rootDir = os.getcwd()
 
     #orig_stdout = sys.stdout
     #log_file = open(rootDir+"rand_encounters.log","w")
     #sys.stdout = log_file
 
-    paths_of_enc_files = glob.glob(rootDir+'*/*_encounters_cut.pkl')
+    paths_of_enc_files = glob.glob(rootDir+'*_encounters_cut.pkl')
     print(paths_of_enc_files)
     cluster_names = [path.split("/")[-2] for path in paths_of_enc_files]
     print(cluster_names)

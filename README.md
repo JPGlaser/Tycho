@@ -17,8 +17,8 @@ We currently working on converting *TYCHO* to the latest version of Python3, whi
 - **gen_init-final_database.py:** A useful script which generates the initial and final conditions of planetary systems after *sim_encounters.py* has been run.
 
 ===============================================================
-
 ## Installation on Ubuntu 18 LTS
+
 Before you install Tycho, you need to install the following software prerequisites:
 ```
 $ sudo apt-get install build-essential gfortran python3-dev \
@@ -53,4 +53,23 @@ $ nano .profile
 ```
 
 ## Production Walk-Through
-Before you begin using Tycho,
+Before you begin using Tycho, you'll need to assemble the following initial conditions for your cluster. Tycho handles its large-scale *N*-Body dynamics within the *sim_cluster.py* script. These are as follows:
+* The number of primordial stellar systems, which is set with the *-s* / *--num-stars* tags.
+    * If you would like primordial stellar binary systems to be generated, which can be enabled by the *-b* / *--doBinaries* tags.
+* The number of primordial planetary systems (marked by Jovians), which is set with the *-p* / *--num-psys* tags.
+    * Note: Should you wish to not follow the statistics of rogue planets in the greater cluster dynamics and the effects of their capture on other systems, you do not need to include this tag.
+* The King Density parameter ![w_0](https://render.githubusercontent.com/render/math?math=w_0), which is set by the *-w* / *--w0* tags.
+* The timestep of the Bridge in Myr, which is set by the *-t* / *--timestep* tags. This defaults to 0.002 Myr.
+* The desired time at which to end the simulation in Myr, which is set by the *-T* / *--end-time* tags. This defaults to 1 Myr.
+
+Once you have these core parameters addressed, additional tags are need to be set depending on your situation:
+* The name of the cluster for file management purposes, which is set by the *-c* / *--cluster-name* tags.
+* The random seed used in several random number generators, which is set by the *-S* / *--seed* tags. It defaults to 42.
+* If you would like **NOT** to use GPU-acceleration, you can disable this feature by passing the *-g* / *--no-gpu** tags.
+* Should you want to use GPU-acceleration and wish to use a single GPU worker card, you may address it specifically by giving the *-i* / *--gpu-id* with the integer value of the card's ID value (for example 0, 1, etc).
+* Should you wish to use multiple GPU cards for large systems, you may do so by indicating the number of *ph4-gpu-workers* you wish to have running with the *-N* / *--grav_workers* tags.
+* Should you have a cluster coming from another project, you may use the *-P* / *--pregen-flag* tag which will load the HDF5 located in the execution directory.
+    * Note: This feature was originally intended for use with the output coming from TORCH simulations and is still undergoing generalization modifications.
+
+
+Once your cluster simulation has finished, you 
