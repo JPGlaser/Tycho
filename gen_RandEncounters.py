@@ -120,20 +120,23 @@ if __name__ == '__main__':
 
     if options.doMultipleClusters:
         if options.rootDir != None:
-            rootDir = options.rootDir+'/*/'
+            rootDir = options.rootDir+'/*'
         else:
             print(util.timestamp(), "Please provide the path to your root directory which contains all cluster folders!", cluster_name,"...")
     else:
         if options.rootDir != None:
             rootDir = options.rootDir
         else:
-            rootDir = os.getcwd()+'/'
+            rootDir = os.getcwd()
+    # Bring Root Directory Path Inline with os.cwd()
+    if rootDir.endswith("/"):
+        rootDir = rootDir[:-1]
 
     orig_stdout = sys.stdout
-    log_file = open(rootDir+"rand_encounters.log","w")
+    log_file = open(rootDir+"/rand_encounters.log","w")
     sys.stdout = log_file
 
-    paths_of_enc_files = glob.glob(rootDir+'*_encounters_cut.pkl')
+    paths_of_enc_files = glob.glob(rootDir+'/*_encounters_cut.pkl')
     print(paths_of_enc_files)
     cluster_names = [path.split("/")[-2] for path in paths_of_enc_files]
     print(cluster_names)
