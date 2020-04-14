@@ -245,15 +245,23 @@ if __name__=="__main__":
     # ------------------------------------- #
     parser = OptionParser()
     parser.add_option("-d", "--rootdirectory", dest="rootDir", default=None, type="str",
-                      help="Enter the full directory of the Cluster's Folder.")
+                      help="Enter the full directory of the Root Folder. Defaults to your CWD unless -M is on.")
+    parser.add_option("-M", "--doMultipleClusters", dest="doMultipleClusters", action="store_true",
+                      help="Flag to turn on for running the script over a series of multiple clusters.")
     parser.add_option("-S", "--serial", dest="doSerial", action="store_true",
                       help="Run the program in serial?.")
     (options, args) = parser.parse_args()
 
-    if options.rootDir != None:
-        rootDir = options.rootDir
+    if options.doMultipleClusters:
+        if options.rootDir != None:
+            rootDir = options.rootDir+'/*'
+        else:
+            print(util.timestamp(), "Please provide the path to your root directory which contains all cluster folders!", cluster_name,"...")
     else:
-        rootDir = '/home/draco/jglaser/Public/Tycho_Runs/MarkG'
+        if options.rootDir != None:
+            rootDir = options.rootDir
+        else:
+            rootDir = os.getcwd()
     # Bring Root Directory Path Inline with os.cwd()
     if rootDir.endswith("/"):
         rootDir = rootDir[:-1]
@@ -265,8 +273,10 @@ if __name__=="__main__":
     # ------------------------------------- #
     #   Defining File/Directory Structure   #
     # ------------------------------------- #
-
-    all_clusterDirs = glob.glob(rootDir+"/*/")
+    if options.doMultipleClusters:
+        all_clusterDirs = glob.glob(rootDir+"/*/")
+    else:
+        all_clusterDirs = [rootDir]+"/"
 
     # ------------------------------------- #
     #     Perform All Req. Simulations      #

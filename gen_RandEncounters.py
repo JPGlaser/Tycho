@@ -153,7 +153,7 @@ if __name__ == '__main__':
         print(util.timestamp(), "Generating initial conditions for", cluster_name,"...")
         sys.stdout.flush()
         # Generate IC for Scattering Experiments
-        gen_scatteringIC(encounter_db)
+        gen_scatteringIC(encounter_db, doMultipleClusters=options.doMultipleClusters)
 
     sys.stdout = orig_stdout
     log_file.close()
