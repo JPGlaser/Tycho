@@ -71,5 +71,10 @@ Once you have these core parameters addressed, additional tags are need to be se
 * Should you have a cluster coming from another project, you may use the *-P* / *--pregen-flag* tag which will load the HDF5 located in the execution directory.
     * Note: This feature was originally intended for use with the output coming from TORCH simulations and is still undergoing generalization modifications.
 
+Once your cluster simulation has finished, you'll be left with a good amount of data that can be used for various deep-drills into the evolution of the cluster's properties. However, we're specifically interested in the encounter states located within *CLUSTERNAME_encounters.pkl*.
 
-Once your cluster simulation has finished, you 
+To proceed forward with TYCHO, you'll need to first run *cut_encounters.py*, which will reduce the encounters database through several physical cuts (as detailed in Glaser et al, 2020). Next, you'll need to run *gen_RandEncounters.py*, which will create the initial conditions for encounters in the manner explained Glaser et al (2020), saving them into a pickled dictionary.
+
+Finally, you'll want to run *sim_encounters.py* which will actually simulate all of the encounters to completion generated in the previous step. Afterwards, all of the data will be stored as temporarily AMUSE particle sets stored in *CLUSTERNAME/Encounters/STARID/Enc-X_Rot_Y.hdf5*. If you have multiple clusters that you would like to run at the same time, you can use the *-M* tag while within a root folder containing all cluster directories.
+
+Should you wish to catalog all of your encounters in an easier to digest manner, you can use the *get_init-final_database.py*. This will produce a Pickled database of the initial and final conditions of your planetary systems. Again, you may run this on multiple clusters via the same method as described for *sim_encounters.py*.
