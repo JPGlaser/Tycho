@@ -7,7 +7,7 @@ AMUSE (Astrophysical Multipurpose Software Environment) community code for obser
 *TYCHO* is a simulation suite used in observing the effects of star-star scattering on exoplanets within clustered natal environments. It is dependent on multiple community codes provided by the Astrophysical Multipurpose Software Environment (AMUSE; amusecode.org).
 
 ## Developers' Note
-We currently working on converting *TYCHO* to the latest version of Python3, which will support AMUSE 13.1 +. The Python2 version can be accessed in the version history and works well for AMUSE 11.
+The current master branch of TYCHO supports Python 3.8+ and AMUSE 13.1+. Should the need arrise, a version validated against the last release of Python 2.7 has been tagged as release v0.8.
 
 ## Breakdown of Included Scripts
 - **sim_cluster.py:** Used in simulating a star cluster according to user-defined initial conditions. Additionally, it records all stellar close-encounters into an easy to process pickle format. If desired, this can also include a Jovian population to track the sub-brown dwarf population in the cluster.
@@ -16,7 +16,6 @@ We currently working on converting *TYCHO* to the latest version of Python3, whi
 - **sim_encounters.py:** Used in simulating stellar close-encounters created and stored by *gen_RandEncounters.py*.
 - **gen_init-final_database.py:** A useful script which generates the initial and final conditions of planetary systems after *sim_encounters.py* has been run.
 
-===============================================================
 ## Installation on Ubuntu 18 LTS
 
 Before you install Tycho, you need to install the following software prerequisites:
@@ -30,9 +29,9 @@ $ sudo apt-get install build-essential gfortran python3-dev \
 ```
 Additionally, you will need an updated Python distribution, such as Anaconda3. This can be achieved by completing the following:
 ```
-cd Downloads
-wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
-bash Anaconda3-2020.02-Linux-x86_64.sh
+$ cd Downloads
+$ wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
+$ bash Anaconda3-2020.02-Linux-x86_64.sh
 ```
 You'll want to initialize *conda* when prompted. After starting a new terminal session, run the following:
 ```
@@ -48,8 +47,10 @@ $ git clone https://github.com/JPGlaser/Tycho.git
 You'll need to add the *src* folder inside of the git repository to your $PYTHONPATH:
 ```
 $ nano .profile
-## Add the following to the end of the file:
-## export PYTHONPATH="ABSOLUTE_PATH_TO_REPOSITORY/Tycho/src:$PYTHONPATH"
+```
+Add the following to the end of the file:
+```
+export PYTHONPATH="ABSOLUTE_PATH_TO_REPOSITORY/Tycho/src:$PYTHONPATH"
 ```
 
 ## Production Walk-Through
