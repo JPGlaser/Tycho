@@ -36,11 +36,14 @@ from tycho import create, util, read, write, stellar_systems
 #           Defining Functions          #
 # ------------------------------------- #
 
-def gen_scatteringIC(encounter_db):
+def gen_scatteringIC(encounter_db, doMultipleClusters=False):
     global rootDir
     global cluster_name
     max_number_of_rotations = 100
-    output_ICDirectory = rootDir+cluster_name+"/Scatter_IC/"
+    if doMultipleClusters:
+        output_ICDirectory = rootDir+'/'+cluster_name+'/Scatter_IC/'
+    else:
+        output_ICDirectory = rootDir+'/Scatter_IC/'
     if not os.path.exists(output_ICDirectory): os.mkdir(output_ICDirectory)
     # Set up the Kepler Workers for Subroutines Now
     converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
@@ -113,18 +116,30 @@ def replace_planetary_system(bodies, kepler_workers=None, base_planet_ID=50000, 
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-d", "--rootdirectory", dest="rootDir", default=None, type="str",
-                      help="Enter the full directory of the Root Folder.")
+                      help="Enter the full directory of the Root Folder. Defaults to your CWD unless -M is on.")
+    parser.add_option("-M", "--doMultipleClusters", dest="doMultipleClusters", action="store_true",
+                      help="Flag to turn on for running the script over a series of multiple clusters.")
     (options, args) = parser.parse_args()
-    if options.rootDir != None:
-        rootDir = options.rootDir
+
+    if options.doMultipleClusters:
+        if options.rootDir != None:
+            rootDir = options.rootDir+'/*'
+        else:
+            print(util.timestamp(), "Please provide the path to your root directory which contains all cluster folders!", cluster_name,"...")
     else:
-        rootDir = '/home/draco/jglaser/Public/Tycho_Runs/MarkG/'
+        if options.rootDir != None:
+            rootDir = options.rootDir
+        else:
+            rootDir = os.getcwd()
+    # Bring Root Directory Path Inline with os.cwd()
+    if rootDir.endswith("/"):
+        rootDir = rootDir[:-1]
 
-    #orig_stdout = sys.stdout
-    #log_file = open(rootDir+"rand_encounters.log","w")
-    #sys.stdout = log_file
+    orig_stdout = sys.stdout
+    log_file = open(rootDir+"/rand_encounters.log","w")
+    sys.stdout = log_file
 
-    paths_of_enc_files = glob.glob(rootDir+'*/*_encounters_cut.pkl')
+    paths_of_enc_files = glob.glob(rootDir+'/*_encounters_cut.pkl')
     print(paths_of_enc_files)
     cluster_names = [path.split("/")[-2] for path in paths_of_enc_files]
     print(cluster_names)
@@ -138,7 +153,7 @@ if __name__ == '__main__':
         print(util.timestamp(), "Generating initial conditions for", cluster_name,"...")
         sys.stdout.flush()
         # Generate IC for Scattering Experiments
-        gen_scatteringIC(encounter_db)
+        gen_scatteringIC(encounter_db, doMultipleClusters=options.doMultipleClusters)
 
-    #sys.stdout = orig_stdout
-    #log_file.close()
+    sys.stdout = orig_stdout
+    log_file.close()
