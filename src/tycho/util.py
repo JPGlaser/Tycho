@@ -10,7 +10,6 @@ import sys, os, math
 import numpy as np
 import matplotlib as plt
 import time as tp
-import random as rp
 import hashlib
 
 import time
