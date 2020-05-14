@@ -152,7 +152,7 @@ def find_possible_binaries_v2(com_mass_array, **kwargs):
         current_com_id = 0
         for com_mass in com_mass_array:
             assigned_probability = rp.uniform(0, 1)
-            print(assigned_probability)
+            #print(assigned_probability)
             if not current_com_id in ids_to_become_binaries:
                 fb = 0.2 * np.log10(com_mass.value_in(units.MSun)) + 0.5
                 if assigned_probability <= fb:
@@ -164,7 +164,7 @@ def find_possible_binaries_v2(com_mass_array, **kwargs):
                 # Randomly Select one of the Above Masses
                     selected_index = int(np.floor(100*rp.uniform(0, 1)))
                     selected_extra_mass = possible_extra_mass[selected_index]
-                    print(selected_extra_mass)
+                    #print(selected_extra_mass)
                 # Add the Selected Mass to the Current CoM Mass
                     com_mass_array[current_com_id] += selected_extra_mass
             current_com_id += 1
