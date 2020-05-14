@@ -237,7 +237,7 @@ if __name__=="__main__":
 #         Setting up the Cluster        #
 # ------------------------------------- #
     if crash:
-        # Should a Crash Be Found, Load it Instead.
+        # Should a Crash is Found, Do Not Generate a Cluster.
         pass
     else:
         # Check if a Pregenerated Cluster is Desired
@@ -258,13 +258,12 @@ if __name__=="__main__":
             Starting_Planets = create.planetary_systems_v2(Starting_Stars, num_psys, Jupiter=False, TestP=True)
         else:
             # Attempt to Load Matching Initial Conditions
-            try:
-                # TODO: Load Matching Initial Conditions & Inital Cluster State
-                # What Happens if I.C. Exist
+            if os.path.exists(os.getcwd()+"/InitialState"):
                 # Reload the Matching Cluster Here
                 Starting_Stars, ic_array, LargeScaleConverter = read.read_initial_state(cluster_name)
+
             # Should Matching I.C. Not Exist, Generate a New Cluster ...
-            except:
+            else:
                 # Generate a New Cluster Matching Desired Initial Conditions & the Large-Scale Converter
                 if doBinaries:
                     Starting_Stars, LargeScaleConverter, Binary_CoMs, Binary_Singles = \

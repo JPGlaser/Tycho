@@ -9,6 +9,7 @@ import math
 import numpy as np
 import matplotlib as plt
 import numpy.random as rp
+import random
 
 # Import the Amuse Base Packages
 from amuse import datamodel
@@ -59,6 +60,7 @@ def king_cluster_v2(num_stars, **kwargs):
 # Apply the Seed for the Cluster
     rs = RandomState(MT19937(SeedSequence(rand_seed)))
     np.random.seed(rand_seed)
+    random.seed(rand_seed)
 
     min_stellar_mass = 100 | units.MJupiter
     max_stellar_mass = 10 | units.MSun
@@ -276,7 +278,7 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
     num_stars = len(stars)
     if num_systems > num_stars:
         num_systems = num_stars
-    select_stars_indices = rp.sample(range(0, num_stars), num_systems)
+    select_stars_indices = random.sample(range(0, num_stars), num_systems)
 
 # Sets Important Parameters
     ID_Earth = 30000
