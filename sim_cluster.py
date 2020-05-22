@@ -483,17 +483,17 @@ if __name__=="__main__":
     channel_from_gravitating_to_multi.copy_attributes(["mass"])
 
     # Ensuring that Multiples Picks up All Desired Systems
+    gravity_code.parameters.begin_time = t_start
     gravity_code.parameters.zero_step_mode = 1
     multiples_code.evolve_model(gravity_code.model_time)
     gravity_code.parameters.zero_step_mode = 0
 
     # Ensuring the Gravity Code Starts at the Right Time
-    gravity_code.parameters.begin_time = t_start
     t_current = t_start
     bridge_code.evolve_model(t_current, timestep = t_start/4.)
 
     min_r = LargeScaleConverter.to_nbody(1000 | units.AU)
-    
+
     print([r for r in gravity_code.particles.radius if r.number <= min_r.number])
 
 
