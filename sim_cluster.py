@@ -492,6 +492,10 @@ if __name__=="__main__":
     t_current = t_start
     bridge_code.evolve_model(t_current, timestep = t_start/4.)
 
+    min_r = LargeScaleConverter.to_nbody(1000 | units.AU)
+    
+    print([r for r in gravity_code.particles.radius if r.number <= min_r.number])
+
 
 # ------------------------------------- #
 #          Evolving the Cluster         #
