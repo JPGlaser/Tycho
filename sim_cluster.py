@@ -52,7 +52,8 @@ from amuse.ext.galactic_potentials import MWpotentialBovy2015
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
-from tycho import multiples3 as multiples
+#from tycho import multiples3 as multiples
+from amuse.couple.multiples import Multiples
 
 
 # ------------------------------------- #
@@ -538,8 +539,8 @@ if __name__=="__main__":
 
         # (On a Copy) Recursively Expand All Top-Level Parent Particles & Update Subsets
         # Note: This Updates the Children's Positions Relative to their Top-Level Parent's Position
-        subset_sync = ChildUpdater()
-        subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
+        #subset_sync = ChildUpdater()
+        #subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
 
         # Evolve the Stellar Codes (via SEV Code with Channels)
         # TODO: Ensure Binaries are Evolved Correctly (See Section 3.2.8)
