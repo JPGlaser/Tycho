@@ -216,3 +216,47 @@ def check_isOver(bodies, smallN_worker=None):
 def timestamp():
     st = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
     return '['+st+']'
+
+def fix_kepler_vector(x, y, z):
+    return [x.number, y.number, z.number] | x.unit
+
+def ensure_approaching_binary(primary, secondary, kepler_worker=None):
+    # Create Binary System for Kepler to Initialize
+    system = Particles()
+    system.add_particle(primary)
+    system.add_particle(secondary)
+    if kepler_worker == None:
+        SmallScaleConverter = nbody_system.nbody_to_si(2*np.mean(system.mass),
+                                                       2*np.mean(system.radius))
+        kep = Kepler(unit_converter = SmallScaleConverter, redirection = 'none')
+    else:
+        kep = kepler_worker
+    # Set the Binary System to Center of Mass
+    rCM = system.center_of_mass()
+    vCM = system.center_of_mass_velocity()
+    mT = system.total_mass()
+    # Initialize Kepler with Binary System
+    kep.initialize_from_particles(system)
+    #print(kep.get_angles())
+    # Move System to Periastron, Then to Apastron
+    kep.advance_to_periastron()
+    #print(kep.get_angles())
+    kep.advance_to_apastron()
+    #print(kep.get_angles())
+    # Move System to Approaching Position
+    a, e = kep.get_elements()
+    kep.advance_to_radius(a)
+    #print(kep.get_angles())
+    # Get the Seperation Vectors at Approaching Position
+    rx_sep, ry_sep, rz_sep = kep.get_separation_vector()
+    vx_sep, vy_sep, vz_sep = kep.get_velocity_vector()
+    r_sep = fix_kepler_vector(rx_sep, ry_sep, rz_sep)
+    v_sep = fix_kepler_vector(vx_sep, vy_sep, vz_sep)
+    # Set the Primary & Secondary to be in the Correct Positions
+    primary.position = rCM + secondary.mass/mT*r_sep
+    primary.velocity = vCM + secondary.mass/mT*v_sep
+    secondary.position = rCM - primary.mass/mT*r_sep
+    secondary.velocity = vCM - primary.mass/mT*v_sep
+    if kepler_worker == None:
+        kep.stop()
+    return primary, secondary

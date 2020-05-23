@@ -273,6 +273,14 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
     makeJupiter = kwargs.get("Jupiter", True)
     makeNeptune = kwargs.get("Neptune", False)
     makeTestPlanet = kwargs.get("TestP", False)
+    kepler_worker = kwargs.get("kepler_worker", None)
+
+    if kepler_worker == None:
+        SmallScaleConverter = nbody_system.nbody_to_si(2*np.mean(stars.mass),
+                                                       2*np.mean(stars.radius))
+        kep = Kepler(unit_converter = SmallScaleConverter, redirection = 'none')
+    else:
+        kep = kepler_worker
 
 # Selects the Stars to Become Planetary Systems
     num_stars = len(stars)
@@ -308,7 +316,7 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
             planets.add_particle(Jupiter)
         if makeTestPlanet:
             init_a = util.calc_JovianPlacement(host_star)
-            init_e = 0.048
+            init_e = 0.3
             mass_J = 20 | units.MJupiter
             TestP = planet_v2(ID_Jupiter+host_star.id, host_star, mass_J, init_a, init_e)
             TestP.stellar_type = 1
@@ -329,6 +337,11 @@ def planetary_systems_v2(stars, num_systems, **kwargs):
         for p in planets:
             p.position = p.position + host_star.position
             p.velocity = p.velocity + host_star.velocity
+    # Ensures The Planets are Approaching
+        for p in planets:
+            host_star, p = util.ensure_approaching_binary(host_star, p, kepler_worker=kep)
+        if kepler_worker == None:
+            kep.stop()
     # Adds the System to the Provided AMUSE Particle Set
         systems.add_particles(planets)
     return systems
