@@ -110,10 +110,14 @@ def king_cluster_v2(num_stars, **kwargs):
         singles_in_binaries = Particles()
         com_to_remove = Particles()
 
+        # Create a Kepler Worker to Ensure the Binaries are Approaching
+        BinaryConverter = nbody_system.nbody_to_si(2*np.mean(stars_SI.mass),
+                                                       2*np.mean(stars_SI.radius))
+        kep = Kepler(unit_converter = BinaryConverter, redirection = 'none')
         # Split the Binary into its Companions & Store in Seperate Sets
         for com_index in ids_to_become_binaries:
             stars_SI[com_index].id = com_index
-            binary_particle, singles_in_binary = binary_system_v2(stars_SI[com_index])
+            binary_particle, singles_in_binary = binary_system_v2(stars_SI[com_index], kepler_worker=kep)
             binaries.add_particle(binary_particle)
             singles_in_binaries.add_particle(singles_in_binary)
             com_to_remove.add_particle(stars_SI[com_index])
@@ -136,6 +140,7 @@ def king_cluster_v2(num_stars, **kwargs):
 
 # Return the Desired Particle Sets and Required Converter
     if do_binaries:
+        kep.stop()
         return stars_SI, converter, binaries, singles_in_binaries
     else:
         return stars_SI, converter
@@ -180,6 +185,7 @@ def binary_system_v2(star_to_become_binary, **kwargs):
     Pcirc = kwargs.get("Pcirc", 6 | units.day ) # Circularization Period
     Pmin = kwargs.get("Pmin", 10.**-1. | units.day ) # Min Orbital Period Allowed
     Pmax = kwargs.get("Pmax", 10.**10. | units.day ) # Max Orbital Period Allowed
+    kepler_worker = kwargs.get("kepler_worker", None)
 
 # Define Original Star's Information
     rCM = star_to_become_binary.position
@@ -249,6 +255,9 @@ def binary_system_v2(star_to_become_binary, **kwargs):
 
 # Apply a Fitting Dynamical Radius
     singles_in_binary.radius = 2*semi_major_axis
+
+# Ensure Binary Components are Approaching Each Other
+    star1, star2 = util.ensure_approaching_binary(star1, star2, kepler_worker=kep)
 
 # Create the Binary System Particle (For Stellar Evolution Code)
     star_to_become_binary.radius = 5*semi_major_axis
