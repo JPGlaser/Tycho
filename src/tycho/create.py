@@ -257,6 +257,13 @@ def binary_system_v2(star_to_become_binary, **kwargs):
     singles_in_binary.radius = 2*semi_major_axis
 
 # Ensure Binary Components are Approaching Each Other
+
+    if kepler_worker == None:
+        BinaryConverter = nbody_system.nbody_to_si(2*np.mean(singles_in_binary.mass),
+                                                       2*np.mean(singles_in_binary.radius))
+        kep = Kepler(unit_converter = BinaryConverter, redirection = 'none')
+    else:
+        kep = kepler_worker
     star1, star2 = util.ensure_approaching_binary(star1, star2, kepler_worker=kep)
 
 # Create the Binary System Particle (For Stellar Evolution Code)
