@@ -53,7 +53,7 @@ from amuse.ext.galactic_potentials import MWpotentialBovy2015
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
 #from tycho import multiples3 as multiples
-from amuse.couple.multiples import Multiples
+import amuse.couple.multiples as multiples
 
 
 # ------------------------------------- #
@@ -153,13 +153,13 @@ class ChildUpdater(object):
         s_children = children[children.mass > limiting_mass_for_planets]
         p_children = children[children.mass <= limiting_mass_for_planets]
         # TODO: For some reason nearest_neighbour isn't working well with reshapes?
-        #p_children.host_star = p_children.nearest_neighbour(s_children).id
-        #print "Stellar Children: ", s_children.id
-        #print "Plenatary Children: ", p_children.id
-        #print "IStars Position Before Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec)
+        p_children.host_star = p_children.nearest_neighbour(s_children).id
+        print("Stellar Children: ", s_children.id)
+        print("Plenatary Children: ", p_children.id)
+        print("IStars Position Before Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec))
         # Update Positions of Children in Subsets
         (s_children.new_channel_to(Individual_Stars)).copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz'])
-        #print "IStars Position After Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec)
+        print("IStars Position After Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec))
         (p_children.new_channel_to(Planets)).copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz', 'host_star'])
 
 
@@ -539,8 +539,8 @@ if __name__=="__main__":
 
         # (On a Copy) Recursively Expand All Top-Level Parent Particles & Update Subsets
         # Note: This Updates the Children's Positions Relative to their Top-Level Parent's Position
-        #subset_sync = ChildUpdater()
-        #subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
+        subset_sync = ChildUpdater()
+        subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
 
         # Evolve the Stellar Codes (via SEV Code with Channels)
         # TODO: Ensure Binaries are Evolved Correctly (See Section 3.2.8)
