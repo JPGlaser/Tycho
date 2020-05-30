@@ -354,6 +354,8 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
         current_system = systems.setdefault(system_id, Particles())
         current_system.add_particle(star)
         noStellarHeirarchy = False
+        if len(stars) == 1:
+            noStellarHeirarchy = True
         for other_star in (stars-star):
             if other_star.id in binary_ids:
                 continue
