@@ -52,7 +52,8 @@ from amuse.ext.galactic_potentials import MWpotentialBovy2015
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
-from tycho import multiples3 as multiples
+#from tycho import multiples3 as multiples
+import amuse.couple.multiples as multiples
 
 
 # ------------------------------------- #
@@ -152,13 +153,13 @@ class ChildUpdater(object):
         s_children = children[children.mass > limiting_mass_for_planets]
         p_children = children[children.mass <= limiting_mass_for_planets]
         # TODO: For some reason nearest_neighbour isn't working well with reshapes?
-        #p_children.host_star = p_children.nearest_neighbour(s_children).id
-        #print "Stellar Children: ", s_children.id
-        #print "Plenatary Children: ", p_children.id
-        #print "IStars Position Before Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec)
+        p_children.host_star = p_children.nearest_neighbour(s_children).id
+        print("Stellar Children: ", s_children.id)
+        print("Plenatary Children: ", p_children.id)
+        print("IStars Position Before Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec))
         # Update Positions of Children in Subsets
         (s_children.new_channel_to(Individual_Stars)).copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz'])
-        #print "IStars Position After Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec)
+        print("IStars Position After Update: ", Individual_Stars[Individual_Stars.id == s_children.id[0]].x.in_(units.parsec))
         (p_children.new_channel_to(Planets)).copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz', 'host_star'])
 
 
@@ -237,7 +238,7 @@ if __name__=="__main__":
 #         Setting up the Cluster        #
 # ------------------------------------- #
     if crash:
-        # Should a Crash Be Found, Load it Instead.
+        # Should a Crash is Found, Do Not Generate a Cluster.
         pass
     else:
         # Check if a Pregenerated Cluster is Desired
@@ -258,13 +259,12 @@ if __name__=="__main__":
             Starting_Planets = create.planetary_systems_v2(Starting_Stars, num_psys, Jupiter=False, TestP=True)
         else:
             # Attempt to Load Matching Initial Conditions
-            try:
-                # TODO: Load Matching Initial Conditions & Inital Cluster State
-                # What Happens if I.C. Exist
+            if os.path.exists(os.getcwd()+"/InitialState"):
                 # Reload the Matching Cluster Here
                 Starting_Stars, ic_array, LargeScaleConverter = read.read_initial_state(cluster_name)
+
             # Should Matching I.C. Not Exist, Generate a New Cluster ...
-            except:
+            else:
                 # Generate a New Cluster Matching Desired Initial Conditions & the Large-Scale Converter
                 if doBinaries:
                     Starting_Stars, LargeScaleConverter, Binary_CoMs, Binary_Singles = \
@@ -290,8 +290,11 @@ if __name__=="__main__":
                         PossibleHostStars.remove_particle(star)
 
                 # Create the Planetary Systems in SU Units
-                Starting_Planets = create.planetary_systems_v2(PossibleHostStars, num_psys, Earth=False, Jupiter=False, TestP=True)
-
+                PSysConverter = nbody_system.nbody_to_si(2*np.mean(PossibleHostStars.mass),
+                                                               2*np.mean(PossibleHostStars.radius))
+                kep_p = Kepler(unit_converter = PSysConverter, redirection = 'none')
+                Starting_Planets = create.planetary_systems_v2(PossibleHostStars, num_psys, Earth=False, Jupiter=True, TestP=False, kepler_worker = kep_p)
+                kep_p.stop()
     # Set up the Small Scale Converter for Kepler/SmallN
     SmallScaleConverter = nbody_system.nbody_to_si(2*np.mean(Starting_Stars.mass),
                                                    2*np.mean(Starting_Stars.radius))
@@ -367,7 +370,7 @@ if __name__=="__main__":
         gravity_code = ph4(number_of_workers = num_workers, redirection = "none",
                            convert_nbody = LargeScaleConverter)
     else:
-        num_workers = 4
+        num_workers = options.grav_workers
         gravity_code = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu",
                            convert_nbody = LargeScaleConverter)
     gravity_code.initialize_code()
@@ -484,14 +487,18 @@ if __name__=="__main__":
     channel_from_gravitating_to_multi.copy_attributes(["mass"])
 
     # Ensuring that Multiples Picks up All Desired Systems
+    gravity_code.parameters.begin_time = t_start
     gravity_code.parameters.zero_step_mode = 1
     multiples_code.evolve_model(gravity_code.model_time)
     gravity_code.parameters.zero_step_mode = 0
 
     # Ensuring the Gravity Code Starts at the Right Time
-    gravity_code.parameters.begin_time = t_start
     t_current = t_start
     bridge_code.evolve_model(t_current, timestep = t_start/4.)
+
+    min_r = LargeScaleConverter.to_nbody(1000 | units.AU)
+
+    print([r for r in gravity_code.particles.radius if r.number <= min_r.number])
 
 
 # ------------------------------------- #

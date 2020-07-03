@@ -49,7 +49,7 @@ def get_system_id(planet):
 def get_periods(host_star, planets):
     for planet in planets:
         mu = constants.G*(planet.mass+host_star.mass)
-        a = planet.semi_major_axis
+        a = planet.semimajor_axis
         planet.period = 2.0*np.pi/np.sqrt(mu)*a**(3./2.)
 
 def update_orb_elem(host_star, planets, converter=None, kepler_worker=None):
@@ -66,7 +66,7 @@ def update_orb_elem(host_star, planets, converter=None, kepler_worker=None):
         kep_pos = host_star.position - planet.position
         kep_vel = host_star.velocity - planet.velocity
         kep_p.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
-        planet.semi_major_axis, planet.eccentricity = kep_p.get_elements()
+        planet.semimajor_axis, planet.eccentricity = kep_p.get_elements()
         planet.period = kep_p.get_period()
         planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
     if kepler_worker == None:
@@ -105,7 +105,11 @@ def get_zaxis_inclination(host_star, planets):
         rel_vel = planet.velocity - host_star.velocity
         mom_vec = np.cross(rel_pos.number, rel_vel.number)
         mom_norm = np.sqrt(mom_vec[0]**2 + mom_vec[1]**2 + mom_vec[2]**2)
-        planet.z_inc = to_quantity(np.arccos(mom_vec[2]/mom_norm)*180.0/np.pi) | units.deg
+        planet.z_inc = np.arccos(mom_vec[2]/mom_norm)*180.0/np.pi | units.deg
+
+def calc_zaxis_inclination(host_star, planet):
+    get_zaxis_inclination(host_star, [planet])
+    return planet.z_inc
 
 def get_rel_inclination(planets, method='Jovian'):
     if method == 'Jovian':
@@ -121,11 +125,18 @@ def equation_99(one_minus_alpha, r, epsilon):
 
 class PlanetarySystem():
     def __init__(self, host_star, planets, system_name='', uncertainties=None):
-        self.planets = (planets.copy()).sorted_by_attribute('semi_major_axis')
+        try:
+            self.planets = (planets.copy()).sorted_by_attribute('semimajor_axis')
+        except:
+            print('Error: Planets do Not have Semimajor Axis Attribute.')
         self.host_star = host_star.copy()
         self.number_of_planets = len(planets)
         self.system_name = system_name
         self.r = (sp.special.kv(1, 2.0/3.0) + 2*sp.special.kv(0, 2.0/3.0))/np.pi
+        try:
+            self.planets.period.sorted_by_attribute('period')
+        except:
+            get_periods(self.host_star, self.planets)
 
     def get_RelAMD(self, p_index):
         """C/Lam_i for Planet p_index"""
@@ -277,7 +288,7 @@ def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=Fals
     # Start Looping Through Stars to Find Bound Planets
     for star in stars:
         system_id = star.id
-        #star.semi_major_axis, star.eccentricity, star.period, star.true_anomaly, star.mean_anomaly, star.kep_energy, star.angular_momentum = \
+        #star.semimajor_axis, star.eccentricity, star.period, star.true_anomaly, star.mean_anomaly, star.kep_energy, star.angular_momentum = \
         #    None, None, None, None, None, None, None
         current_system = systems.setdefault(system_id, Particles())
         current_system.add_particle(star)
@@ -303,7 +314,7 @@ def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=Fals
                         noStellarHeirarchy = False
                 if noStellarHeirarchy:
                     # Get Additional Information on Orbit
-                    planet.semi_major_axis = a_p
+                    planet.semimajor_axis = a_p
                     planet.eccentricity = e_p
                     planet.period = kep_p.get_period()
                     planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
@@ -349,11 +360,13 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
         if star.id in binary_ids:
             continue
         system_id = star.id
-        #star.semi_major_axis, star.eccentricity, star.period, star.true_anomaly, star.mean_anomaly, star.kep_energy, star.angular_momentum = \
+        #star.semimajor_axis, star.eccentricity, star.period, star.true_anomaly, star.mean_anomaly, star.kep_energy, star.angular_momentum = \
         #    None, None, None, None, None, None, None
         current_system = systems.setdefault(system_id, Particles())
         current_system.add_particle(star)
         noStellarHeirarchy = False
+        if len(stars) == 1:
+            noStellarHeirarchy = True
         for other_star in (stars-star):
             if other_star.id in binary_ids:
                 continue
@@ -384,7 +397,7 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
                 # Note: Things get complicated if it is ...
                 if noStellarHeirarchy:
                     # Get Additional Information on Orbit
-                    planet.semi_major_axis = a_p
+                    planet.semimajor_axis = a_p
                     planet.eccentricity = e_p
                     planet.period = kep_p.get_period()
                     planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
