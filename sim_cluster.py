@@ -370,7 +370,7 @@ if __name__=="__main__":
         gravity_code = ph4(number_of_workers = num_workers, redirection = "none",
                            convert_nbody = LargeScaleConverter)
     else:
-        num_workers = 4
+        num_workers = options.grav_workers
         gravity_code = ph4(number_of_workers = num_workers, redirection = "none", mode = "gpu",
                            convert_nbody = LargeScaleConverter)
     gravity_code.initialize_code()

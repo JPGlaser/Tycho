@@ -201,7 +201,7 @@ def binary_system_v2(star_to_become_binary, **kwargs):
 
 # If Desired, Apply a Basic Binary Distribution
     if (doBasic):
-        semi_major_axis = 500. | units.AU
+        semimajor_axis = 500. | units.AU
         e = 0.
         star1.mass = 0.5*star_to_become_binary.mass
         star2.mass = 0.5*star_to_become_binary.mass
@@ -223,7 +223,7 @@ def binary_system_v2(star_to_become_binary, **kwargs):
             #logP = sigma * np.random.randn() + mu
             logP = np.random.normal(loc=mu, scale=sigma)
             period = 10.**logP | units.day
-            semi_major_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
+            semimajor_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
 
 
 # If Desired & Applicable, Apply Sana et al. (2012) Period Distribution
@@ -234,7 +234,7 @@ def binary_system_v2(star_to_become_binary, **kwargs):
         x1 = np.random.random()
         logP = ((maxLogP**pMod-minLogP**pMod)*x1 + minLogP**pMod)**(1./pMod)
         period = 10.**logP | units.day
-        semi_major_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
+        semimajor_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
 
 # If Desired, Apply Uniform Eccentricity Distribution
     if (doFlatEcc):
@@ -243,7 +243,7 @@ def binary_system_v2(star_to_become_binary, **kwargs):
         e = 0.0
 
 # Get the Companion's Positions from Kepler Relative to the Origin
-    newBinary = new_binary_from_orbital_elements(star1.mass, star2.mass, semi_major_axis,
+    newBinary = new_binary_from_orbital_elements(star1.mass, star2.mass, semimajor_axis,
                                                  eccentricity = e, G = constants.G)
 
 # Rotate the Binary System & Move to the CoM's Position
@@ -254,7 +254,7 @@ def binary_system_v2(star_to_become_binary, **kwargs):
     star2.velocity = vCM + newBinary[1].velocity
 
 # Apply a Fitting Dynamical Radius
-    singles_in_binary.radius = 2*semi_major_axis
+    singles_in_binary.radius = 2*semimajor_axis
 
 # Ensure Binary Components are Approaching Each Other
 
@@ -267,11 +267,11 @@ def binary_system_v2(star_to_become_binary, **kwargs):
     star1, star2 = util.ensure_approaching_binary(star1, star2, kepler_worker=kep)
 
 # Create the Binary System Particle (For Stellar Evolution Code)
-    star_to_become_binary.radius = 5*semi_major_axis
+    star_to_become_binary.radius = 5*semimajor_axis
     binary_particle = star_to_become_binary.copy()
     binary_particle.child1 = star1
     binary_particle.child2 = star2
-    binary_particle.semi_major_axis = semi_major_axis
+    binary_particle.semimajor_axis = semimajor_axis
     binary_particle.eccentricity = e
     binary_particle.id = star_to_become_binary.id
 
