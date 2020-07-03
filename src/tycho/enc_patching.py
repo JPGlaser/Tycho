@@ -148,7 +148,7 @@ def map_node_oe_to_lilsis(hierarchical_set):
         lilsis.longitude_of_ascending_node = node.longitude_of_ascending_node
         lilsis.period = node.period
 
-def run_secularmultiple(particle_set, end_time, N_output=100, debug_mode=True, genT4System=True, exportData=True):
+def run_secularmultiple(particle_set, end_time, N_output=100, debug_mode=False, genT4System=False, exportData=False):
     py_particles = get_full_hierarchical_structure(particle_set)
     nodes = py_particles.select(lambda x : x == True, ["is_binary"])
     Num_nodes = len(nodes)
