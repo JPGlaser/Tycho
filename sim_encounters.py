@@ -39,7 +39,7 @@ from amuse.community.kepler.interface import Kepler
 from amuse.community.ph4.interface import ph4
 
 # Import the Tycho Packages
-from tycho import create, util, read, write, stellar_systems
+from tycho import create, util, read, write, stellar_systems, enc_patching
 
 # Set Backend (For DRACO Only)
 import matplotlib; matplotlib.use('agg')
@@ -225,6 +225,24 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
     # Seperate out the Systems to Prepare for Encounter Patching
     if doEncPatching:
         ResultingPSystems = stellar_systems.get_heirarchical_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=True)
+        # Grab the System Around the Encounter Key's Star
+        KeySystem =
+
+        # Set Simulation Conditions for Secular Multiple
+        shortest_orbit_period = np.min(KeySystem.period)
+        maximum_AMDBeta = np.max(KeyStsem.AMDBeta)
+        time_till_next_encounter =
+
+        if maximum_AMDBeta < 1.0:
+            t_end = 10*shortest_orbital_period
+        elif time_till_next_encounter == 0.0 | units.Myr:
+            t_end = # Time to 2 Gyr
+        else:
+            t_end = time_till_next_encounter
+
+        # Run Secular Multiple
+        enc_patching.run_secularmultiple(KeySystem, t_end, )
+
     else:
         ResultingPSystems = GravitatingBodies
     return ResultingPSystems

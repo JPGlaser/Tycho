@@ -9,6 +9,7 @@ import hashlib
 
 from amuse.community.secularmultiple.interface import SecularMultiple
 from amuse.datamodel.trees import BinaryTreesOnAParticleSet
+from amuse.ext.orbital_elements import get_orbital_elements_from_binary
 
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.day, units.deg], precision = 6, prefix = "", separator = "[", suffix = "]")
 
@@ -35,7 +36,7 @@ def get_root_of_leaf(particle_set, chosen_id):
         if chosen_id in leaves_id:
             return root.particle
 
-            from amuse.ext.orbital_elements import get_orbital_elements_from_binary
+
 
 def get_physical_radius(particle):
     try:
@@ -98,6 +99,9 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                     temp.is_binary = False
                     temp.mass = bigbro.mass
                     temp.radius = get_physical_radius(bigbro)
+                    temp.position = bigbro.position
+                    temp.velocity = bigbro.velocity
+                    print(bigbro.velocity)
                     hierarchical_set.add_particle(temp) # Child1 is at -2
                 #elif bigbro in hierarchical_set:
                 #    hierarchical_set[]
@@ -109,6 +113,9 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                     temp.is_binary = False
                     temp.mass = lilsis.mass
                     temp.radius = get_physical_radius(lilsis)
+                    temp.position = lilsis.position
+                    temp.velocity = lilsis.velocity
+                    print(lilsis.velocity)
                     hierarchical_set.add_particle(temp) # Child2 is at -1
                 # Reset bigbro and lilsis to the copies in the set
                 i1 = np.where(hierarchical_set.id==bigbro.id)[0][0]
@@ -127,6 +134,8 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                 root_particle.period = 2.0*np.pi/np.sqrt(constants.G*(bigbro.mass))*semimajor_axis**(3./2.)
                 root_particle.child1 = bigbro
                 root_particle.child2 = lilsis
+                root_particle.position = (hierarchical_set.select(lambda x : x == False, ["is_binary"])).center_of_mass()
+                root_particle.velocity = (hierarchical_set.select(lambda x : x == False, ["is_binary"])).center_of_mass_velocity()
                 root_particle.id = root_particle.child1.id+root_particle.child2.id
                 hierarchical_set.add_particle(root_particle)
                 break
@@ -149,7 +158,14 @@ def map_node_oe_to_lilsis(hierarchical_set):
         lilsis.period = node.period
 
 def run_secularmultiple(particle_set, end_time, N_output=100, debug_mode=False, genT4System=False, exportData=False):
-    py_particles = get_full_hierarchical_structure(particle_set)
+    try:
+        hierarchical_test = [x for x in particle_set if x.is_binary == True]
+        print("The supplied set has", len(hierarchical_test), "node particles and is a tree.")
+        py_particles = particle_set.copy()
+    except:
+        print("The supplied set is NOT a tree set! Building tree ...")
+        py_particles = get_full_hierarchical_structure(particle_set)
+        print("Tree has been built with", len(hierarchical_test), "node particles.")
     nodes = py_particles.select(lambda x : x == True, ["is_binary"])
     Num_nodes = len(nodes)
 
