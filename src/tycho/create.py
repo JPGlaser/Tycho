@@ -184,7 +184,7 @@ def binary_system_v2(star_to_become_binary, **kwargs):
     doSana_P = kwargs.get("SanaP", False) # Apply Sana et al. (2012) Period Distribution
     Pcirc = kwargs.get("Pcirc", 6 | units.day ) # Circularization Period
     Pmin = kwargs.get("Pmin", 10.**-1. | units.day ) # Min Orbital Period Allowed
-    Pmax = kwargs.get("Pmax", 10.**10. | units.day ) # Max Orbital Period Allowed
+    Pmax = kwargs.get("Pmax", 10.**7. | units.day ) # Max Orbital Period Allowed
     kepler_worker = kwargs.get("kepler_worker", None)
 
 # Define Original Star's Information
