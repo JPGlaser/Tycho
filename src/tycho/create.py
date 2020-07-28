@@ -260,7 +260,7 @@ def binary_system_v2(star_to_become_binary, set_of_stars, **kwargs):
     star2.velocity = vCM + newBinary[1].velocity
 
 # Apply a Fitting Dynamical Radius
-    singles_in_binary.radius = 2*semimajor_axis
+    singles_in_binary.radius = semimajor_axis*(1+e)
 
 # Ensure Binary Components are Approaching Each Other
 
