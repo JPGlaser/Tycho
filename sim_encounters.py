@@ -224,24 +224,8 @@ def run_collision(bodies, end_time, delta_time, save_file, **kwargs):
         over_grav.reset()
     # Seperate out the Systems to Prepare for Encounter Patching
     if doEncPatching:
-        ResultingPSystems = stellar_systems.get_heirarchical_systems_from_set(GravitatingBodies, converter=converter, RelativePosition=True)
-        # Grab the System Around the Encounter Key's Star
-        KeySystem =
 
-        # Set Simulation Conditions for Secular Multiple
-        shortest_orbit_period = np.min(KeySystem.period)
-        maximum_AMDBeta = np.max(KeyStsem.AMDBeta)
-        time_till_next_encounter =
-
-        if maximum_AMDBeta < 1.0:
-            t_end = 10*shortest_orbital_period
-        elif time_till_next_encounter == 0.0 | units.Myr:
-            t_end = # Time to 2 Gyr
-        else:
-            t_end = time_till_next_encounter
-
-        # Run Secular Multiple
-        enc_patching.run_secularmultiple(KeySystem, t_end, )
+        enc_patching.doEncPatching(GravitatingBodies)
 
     else:
         ResultingPSystems = GravitatingBodies

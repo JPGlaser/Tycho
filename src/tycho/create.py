@@ -117,7 +117,7 @@ def king_cluster_v2(num_stars, **kwargs):
         # Split the Binary into its Companions & Store in Seperate Sets
         for com_index in ids_to_become_binaries:
             stars_SI[com_index].id = com_index
-            binary_particle, singles_in_binary = binary_system_v2(stars_SI[com_index], kepler_worker=kep)
+            binary_particle, singles_in_binary = binary_system_v2(stars_SI[com_index], stars_SI, kepler_worker=kep)
             binaries.add_particle(binary_particle)
             singles_in_binaries.add_particle(singles_in_binary)
             com_to_remove.add_particle(stars_SI[com_index])
@@ -175,7 +175,7 @@ def find_possible_binaries_v2(com_mass_array, **kwargs):
             current_com_id += 1
     return com_mass_array, ids_to_become_binaries
 
-def binary_system_v2(star_to_become_binary, **kwargs):
+def binary_system_v2(star_to_become_binary, set_of_stars, **kwargs):
 # Check Keyword Arguments
     doFlatEcc = kwargs.get("FlatEcc",True) # Apply Uniform Eccentricity Distribution
     doBasic = kwargs.get("Basic", False) # Apply a Basic Binary Distribution
@@ -214,6 +214,15 @@ def binary_system_v2(star_to_become_binary, **kwargs):
             star1.mass = star_to_become_binary.mass / (1. + q)
             star2.mass =  q * star1.mass
 
+# If Desired, Apply Uniform Eccentricity Distribution
+    if (doFlatEcc):
+        e = rp.uniform(0.0,1.0)
+
+# Set the Maximum Period Allowed by Perturbers
+    Pmax_by_perturber = set_max_period_from_perturber(star_to_become_binary, set_of_stars, eccentricity= e)
+    if Pmax_by_perturber < Pmax:
+        Pmax = Pmax_by_perturber
+
 # If Desired, Apply Raghavan et al. (2010) Period Distribution
     if (doRag_P):
         sigma = 2.28
@@ -225,7 +234,6 @@ def binary_system_v2(star_to_become_binary, **kwargs):
             period = 10.**logP | units.day
             semimajor_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
 
-
 # If Desired & Applicable, Apply Sana et al. (2012) Period Distribution
     if (doSana_P and star1.mass > 15 | units.MSun):
         maxLogP = np.log10(Pmax.value_in(units.day))
@@ -236,9 +244,7 @@ def binary_system_v2(star_to_become_binary, **kwargs):
         period = 10.**logP | units.day
         semimajor_axis = ((period**2.)/(4.*np.pi**2.)*constants.G*(star1.mass+star2.mass))**(1./3.)
 
-# If Desired, Apply Uniform Eccentricity Distribution
-    if (doFlatEcc):
-        e = rp.uniform(0.0,1.0)
+# Always circularize low period Binaries
     if (period < Pcirc):
         e = 0.0
 
@@ -399,3 +405,29 @@ def planet_v2(ID, host_star, planet_mass, init_a, init_e, random_orientation=Fal
     p.velocity = vCM + newPSystem[1].velocity
 # Returns the Created AMUSE Particle
     return p
+
+def set_max_period_from_perturber(center_of_mass, particle_set, **kwargs):
+    perturb_limit = kwargs.get("perturbation_limit", 0.02)
+    e = kwargs.get("eccentricity", 0.0)
+    verbose = kwargs.get("verbose", False)
+
+    # Calculate Nearest Neighbors
+    other_stars = particle_set - center_of_mass
+    dist_vect = other_stars.position - center_of_mass.position
+    distances = dist_vect.lengths()
+
+    # Calculate Perterbation of Nearest Neighbors on System
+    pert = other_stars.mass / distances**3
+    primary_pert_index = np.where(pert == max(pert))[0]
+    primary_perturber = other_stars[primary_pert_index][0]
+    perturb_distance = distances[primary_pert_index][0]
+    perturb_mass = primary_perturber.mass
+
+    # Calculate Maximum Period
+    P_max_Squared = (4*np.power(np.pi, 2)*(perturb_distance**3)*perturb_limit)/(units.constants.G*((1+e)**3)*perturb_mass)
+    P_max = np.sqrt(P_max_Squared)[0]
+
+    if verbose:
+        print("Limiting Maximum Period to", P_max, "in accordance to the largest perturber at index", primary_pert_index)
+        print("Distance to Perturber:", perturb_distance, "  |  Mass of Perturber:", perturb_mass)
+    return P_max
