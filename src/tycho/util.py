@@ -270,4 +270,4 @@ def get_stellar_radius(star):
     sev_code.particles.add_particle(temp_star)
     sev_code.model_time = star.time
     sev_code.evolve_model(star.time)
-    return sev_code.particles.star.radius
+    return sev_code.particles.radius[0]
