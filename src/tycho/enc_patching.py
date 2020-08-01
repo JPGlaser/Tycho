@@ -168,7 +168,7 @@ def map_node_oe_to_lilsis(hierarchical_set):
         lilsis.longitude_of_ascending_node = node.longitude_of_ascending_node
         lilsis.period = node.period
 
-def run_secularmultiple(particle_set, end_time, N_output=100, debug_mode=False, genT4System=False, exportData=False):
+def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), N_output=100, debug_mode=False, genT4System=False, exportData=False):
     try:
         hierarchical_test = [x for x in particle_set if x.is_binary == True]
         print("The supplied set has", len(hierarchical_test), "node particles and is a tree.")
@@ -209,12 +209,13 @@ def run_secularmultiple(particle_set, end_time, N_output=100, debug_mode=False, 
 
     code = SecularMultiple()
     code.particles.add_particles(py_particles)
+    code.model_time(start_time)
 
     channel_from_particles_to_code = py_particles.new_channel_to(code.particles)
     channel_from_code_to_particles = code.particles.new_channel_to(py_particles)
     channel_from_particles_to_code.copy()
 
-    time = 0.0|units.yr
+    time = start_time
     output_time_step = end_time/float(N_output)
 
     if exportData:
