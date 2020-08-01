@@ -176,6 +176,7 @@ def run_secularmultiple(particle_set, end_time, N_output=100, debug_mode=False, 
     except:
         print("The supplied set is NOT a tree set! Building tree ...")
         py_particles = get_full_hierarchical_structure(particle_set)
+        hierarchical_test =  [x for x in particle_set if x.is_binary == True]
         print("Tree has been built with", len(hierarchical_test), "node particles.")
     nodes = py_particles.select(lambda x : x == True, ["is_binary"])
     Num_nodes = len(nodes)
