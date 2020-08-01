@@ -46,8 +46,10 @@ def get_physical_radius(particle):
         print('No physical Radius Given, Applying Estimate!')
         if particle.type == 'planet':
             return 1 | units.RJupiter
-        if particle.type == 'star':
+        elif particle.type == 'star':
             return 1 | units.RSun
+        elif particle.is_binary == True:
+            return 0 | units.RSun
 
 
 def get_full_hierarchical_structure(bodies, RelativePosition=False):
