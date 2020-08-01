@@ -59,7 +59,9 @@ def get_physical_radius(particle):
 def get_full_hierarchical_structure(bodies, RelativePosition=False):
     hierarchical_set = Particles()
     for body in bodies:
+        print(body.id)
         body.radius = get_physical_radius(body)
+        print(body.radius)
     # Calculate Distances to All Bodies for Each Body
     for index, body in enumerate(bodies):
         try:
