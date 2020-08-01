@@ -260,3 +260,12 @@ def ensure_approaching_binary(primary, secondary, kepler_worker=None):
     if kepler_worker == None:
         kep.stop()
     return primary, secondary
+
+
+def get_stellar_radius(star):
+    sev_code = SSE()
+    sev_code.particles.add_particle(star)
+    channel_from_sev_to_code = sev_code.particles.new_channel_to(star)
+    sev_code.model_time = host_star.time
+    sev_code.evolve_model(host_star.time)
+    return sev_code.particles.star.radius

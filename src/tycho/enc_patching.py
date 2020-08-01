@@ -44,10 +44,15 @@ def get_physical_radius(particle):
         return radius
     except:
         print('No physical Radius Given, Applying Estimate!')
-        if particle.type == 'planet':
-            return 1 | units.RJupiter
-        elif particle.type == 'star':
-            return 1 | units.RSun
+        if particle.mass <= 13 | units.MJupiter:
+            if particle.mass == 0.003 | units.MJupiter:
+                return 1 | units.REarth
+            elif particle.mass == 1 | units.MJupiter:
+                return 1 | units.RJupiter
+            elif particle.mass == 0.054 | units.MJupiter:
+                return 4 | units.REarth
+        else:
+            return util.get_stellar_radius(particle)
         elif particle.is_binary == True:
             return 0 | units.RSun
 
