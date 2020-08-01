@@ -53,8 +53,7 @@ def get_physical_radius(particle):
                 return 4 | units.REarth
         else:
             return util.get_stellar_radius(particle)
-        elif particle.is_binary == True:
-            return 0 | units.RSun
+
 
 
 def get_full_hierarchical_structure(bodies, RelativePosition=False):
