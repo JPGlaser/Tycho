@@ -58,6 +58,8 @@ def get_physical_radius(particle):
 
 def get_full_hierarchical_structure(bodies, RelativePosition=False):
     hierarchical_set = Particles()
+    for body in bodies:
+        body.radius = get_physical_radius(body)
     # Calculate Distances to All Bodies for Each Body
     for index, body in enumerate(bodies):
         try:
@@ -104,7 +106,7 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                     temp.child2 = None
                     temp.is_binary = False
                     temp.mass = bigbro.mass
-                    temp.radius = get_physical_radius(bigbro)
+                    temp.radius = bigbro.radius
                     temp.position = bigbro.position
                     temp.velocity = bigbro.velocity
                     print(bigbro.velocity)
@@ -118,7 +120,7 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                     temp.child2 = None
                     temp.is_binary = False
                     temp.mass = lilsis.mass
-                    temp.radius = get_physical_radius(lilsis)
+                    temp.radius = lilsis.radius
                     temp.position = lilsis.position
                     temp.velocity = lilsis.velocity
                     print(lilsis.velocity)
@@ -133,6 +135,7 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                 root_particle.mass = bigbro.mass+lilsis.mass
                 root_particle.is_binary = True
                 root_particle.semimajor_axis = semimajor_axis
+                root_particle.radius = 0 | units.RSun
                 root_particle.eccentricity = eccentricity
                 root_particle.inclination = inclination
                 root_particle.argument_of_pericenter = arg_per
