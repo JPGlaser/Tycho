@@ -209,7 +209,7 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), N_out
 
     code = SecularMultiple()
     code.particles.add_particles(py_particles)
-    code.model_time(start_time)
+    code.model_time = start_time
 
     channel_from_particles_to_code = py_particles.new_channel_to(code.particles)
     channel_from_code_to_particles = code.particles.new_channel_to(py_particles)
