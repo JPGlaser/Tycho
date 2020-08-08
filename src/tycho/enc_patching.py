@@ -168,7 +168,20 @@ def map_node_oe_to_lilsis(hierarchical_set):
         lilsis.longitude_of_ascending_node = node.longitude_of_ascending_node
         lilsis.period = node.period
 
-def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), N_output=100, debug_mode=False, genT4System=False, exportData=False):
+def reset_secularmultiples(code):
+    unit_e = unit_m*unit_l**2/(unit_t**2)
+    code.particles = Particles()
+    code.model_time = 0.0 | units.Myr
+    code.particles_committed = False
+    code.initial_hamiltonian = 0.0 | unit_e
+    code.hamiltonian = 0.0 | unit_e
+    code.flag = 0
+    code.error_code = 0
+    return code
+
+def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
+                        N_output=100, debug_mode=False, genT4System=False, \
+                        exportData=False, GCode = None):
     try:
         hierarchical_test = [x for x in particle_set if x.is_binary == True]
         print("The supplied set has", len(hierarchical_test), "node particles and is a tree.")
@@ -180,6 +193,11 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), N_out
         print("Tree has been built with", len(hierarchical_test), "node particles.")
     nodes = py_particles.select(lambda x : x == True, ["is_binary"])
     Num_nodes = len(nodes)
+
+    if GCode == None:
+        code = SecularMultiple()
+    else:
+        code = GCode
 
     if exportData:
         plot_a_AU = [[] for x in range(Num_nodes)]
@@ -207,8 +225,8 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), N_out
         print('LAN/deg', \
             nodes.longitude_of_ascending_node)
 
-    code = SecularMultiple()
     code.particles.add_particles(py_particles)
+    code.commit_particles()
     code.model_time = start_time
 
     channel_from_particles_to_code = py_particles.new_channel_to(code.particles)
@@ -255,7 +273,10 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), N_out
                     nodes.argument_of_pericenter)
                 print('LAN/deg', \
                     nodes.longitude_of_ascending_node)
-    code.stop()
+    if GCode == None:
+        code.stop()
+    else:
+        code = reset_secularmultiples(code)
     if exportData:
         data = plot_times_Myr,plot_a_AU, plot_e, plot_peri_AU, plot_stellar_inc_deg
         return py_particles, data
