@@ -170,7 +170,10 @@ def map_node_oe_to_lilsis(hierarchical_set):
         lilsis.period = node.period
 
 def reset_secularmultiples(code):
-    unit_e = unit_m*unit_l**2/(unit_t**2)
+    unit_l = units.AU
+    unit_m = units.MSun
+    unit_t = 1.0e6*units.yr
+    unit_e = unit_m*unit_l**2/(unit_t**2) ### energy
     code.particles = Particles()
     code.model_time = 0.0 | units.Myr
     code.particles_committed = False
