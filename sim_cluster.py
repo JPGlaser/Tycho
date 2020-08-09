@@ -92,7 +92,7 @@ class EncounterHandler(object):
 
         # Expand enconter returns a particle set with all of the children
         # when given a particle set of two objects involved in an encounter
-        enc_particles = multiples_code.expand_encounter(scattering_com.copy(), delete=False)[0]
+        enc_particles = multiples_code.expand_encounter(scattering_com, delete=False)[0]
 
         # Assign the time of the encounter to the Encounter Particle Set.
         enc_particles.time = time

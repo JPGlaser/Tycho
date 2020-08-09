@@ -49,7 +49,7 @@ def get_physical_radius(particle):
                 return 1 | units.REarth
             elif particle.mass <= 0.1 | units.MJupiter:
                 return 4 | units.REarth
-            elif particle.mass <= 1 | units.MJupiter:
+            elif particle.mass <= 0.8 | units.MJupiter:
                 return 1 | units.RJupiter
         else:
             return util.get_stellar_radius(particle)
