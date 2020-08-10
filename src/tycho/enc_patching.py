@@ -7,6 +7,8 @@ from amuse.units import units
 
 import hashlib
 
+from collections import defaultdict
+
 from amuse.community.secularmultiple.interface import SecularMultiple
 from amuse.datamodel.trees import BinaryTreesOnAParticleSet
 from amuse.ext.orbital_elements import get_orbital_elements_from_binary
