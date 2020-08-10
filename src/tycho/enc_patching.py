@@ -275,8 +275,8 @@ def update_oe_for_PlanetarySystem(PS, hierarchical_set):
     return PS
 
 def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
-                        N_output=100, debug_mode=False, genT4System=True, \
-                        exportData=True, useAMD=True, fullCopy=False, GCode = None):
+                        N_output=100, debug_mode=False, genT4System=False, \
+                        exportData=True, useAMD=True, GCode = None):
     '''Does what it says on the tin.'''
     try:
         hierarchical_test = [x for x in particle_set if x.is_binary == True]
@@ -330,10 +330,8 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
     channel_from_particles_to_code = py_particles.new_channel_to(code.particles)
     channel_from_code_to_particles = code.particles.new_channel_to(py_particles)
     #print(py_particles.id, py_particles.semimajor_axis)
-    if fullCopy:
-        channel_from_code_to_particles.copy()
-    else:
-        channel_from_particles_to_code.copy() #copy_attributes(['semimajor_axis', 'eccentricity', \
+
+    channel_from_particles_to_code.copy() #copy_attributes(['semimajor_axis', 'eccentricity', \
             #'longitude_of_ascending_node', 'argument_of_pericenter', 'inclination'])
     #print('This is After the First Channel Copy:', code.particles.semimajor_axis)
     time = start_time
