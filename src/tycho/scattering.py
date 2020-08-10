@@ -15,7 +15,13 @@ import pickle
 from collections import defaultdict
 
 from amuse.community.secularmultiple.interface import SecularMultiple
+
 from amuse.datamodel.trees import BinaryTreesOnAParticleSet
+from amuse.ext.orbital_elements import new_binary_from_orbital_elements
+
+from amuse.community.smalln.interface import SmallN
+from amuse.community.kepler.interface import Kepler
+from amuse.community.ph4.interface import ph4
 
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.day, units.deg], precision = 6, prefix = "", separator = "[", suffix = "]")
 
@@ -40,9 +46,34 @@ def build_ClusterEncounterHistory(rootExecDir):
                 EncounterHistory[star_ID][RotationKey].append(str(rootExecDir+'/Scatter_IC/'+str(star_ID)+'/'+EncounterKey+'_'+RotationKey+'.hdf5'))
     return EncounterHistory
 
+from amuse.community.secularmultiple.interface import SecularMultiple
+
+def initialize_GravCode(desiredCode, **kwargs):
+    converter = kwargs.get("converter", None)
+    n_workers = kwargs.get("number_of_workers", 1)
+    if converter == None:
+        converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
+    GCode = desiredCode(number_of_workers = n_workers, redirection = "none", convert_nbody = converter)
+    GCode.initialize_code()
+    GCode.parameters.set_defaults()
+    if desiredCode == ph4:
+        GCode.parameters.timestep_parameter = 2.0**(-4.0)
+    if desiredCode == SmallN:
+        GCode.parameters.timestep_parameter = 0.05
+    return GCode
+
+def initialize_isOverCode(**kwargs):
+    converter = kwargs.get("converter", None)
+    if converter == None:
+        converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
+    isOverCode = SmallN(redirection = "none", convert_nbody = converter)
+    isOverCode.initialize_code()
+    isOverCode.parameters.set_defaults()
+    isOverCode.parameters.allow_full_unperturbed = 0
+    return isOverCode
 
 class CloseEncounters():
-    def __init__(self, Star_EncounterHistory, KeplerWorkerList = None):
+    def __init__(self, Star_EncounterHistory, KeplerWorkerList = None, NBodyWorkerList = None, SecularWorker = None):
         '''EncounterHistory should be a List of the Format {RotationKey: [Encounter0_FilePath, ...]}'''
         # Find the Main System's Host Star's ID and Assign it to 'KeySystemID'
         self.doEncounterPatching = True
@@ -52,6 +83,8 @@ class CloseEncounters():
         self.desired_endtime = 2.0 | units.Gyr
         self.max_end_time =  0.1 | units.Myr
         self.kep = KeplerWorkerList
+        self.NBodyCodes = NBodyWorkerList
+        self.SecularCode = SecularWorker
         # Create a List of StartingTimes and Encounter Initial Conditions (ICs) for all Orientations
         for RotationKey in Star_EncounterHistory.keys():
             for i, Encounter in enumerate(Star_EncounterHistory[RotationKey]):
@@ -71,6 +104,13 @@ class CloseEncounters():
             self.kep.append(Kepler(unit_converter = converter, redirection = 'none'))
             self.kep[0].initialize_code()
             self.kep[1].initialize_code()
+        # Start up NBodyCodes if Needed
+        if self.NBodyCodes == None:
+            self.NBodyCodes = [initialize_GravCode(ph4), initialize_isOverCode()]
+        # Start up SecularCode if Needed
+        if self.SecularCode == None:
+            self.SecularCode = SecularMultiple()
+
         # Begin Looping over Rotation Keys ...
         for RotationKey in self.ICs.keys():
             for i in range(len(self.ICs[RotationKey])):
@@ -89,7 +129,8 @@ class CloseEncounters():
                 else:
                     current_max_endtime = self.StartTimes[RotationKey][i+1]
                 EndingState = Encounter_Inst.SimSingleEncounter(current_max_endtime, \
-                                                                start_time = self.StartTimes[RotationKey][i])
+                                                                start_time = self.StartTimes[RotationKey][i], \
+                                                                GCodes = self.NBodyCodes)
                 EndingStateTime = np.max(np.unique(EndingState.time))
 
                 print(Encounter_Inst.particles[0].position)
@@ -116,8 +157,9 @@ class CloseEncounters():
 
                     # Simulate System till the Next Encounter's Start Time
                     Encounter_Inst = self.SingleEncounter(EndingState)
-                    FinalState = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1],
-                                                                 start_time = EndingStateTime)
+                    FinalState = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1], \
+                                                                 start_time = EndingStateTime, \
+                                                                 GCode = self.SecularCode)
 
                     # Begin Patching of the End State to the Next Encounter
                     self.ICs[RotationKey][i+1] = self.PatchedEncounter(FinalState, NextEncounter)
@@ -126,7 +168,9 @@ class CloseEncounters():
                     #print(CurrentEncounter[0].time.value_in(units.Myr))
                     #print(EndingState[0].time.value_in(units.Myr))
                     Encounter_Inst = self.SingleEncounter(EndingState)
-                    FinalState = Encounter_Inst.SimSecularSystem(self.desired_endtime, start_time = EndingStateTime)
+                    FinalState = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
+                                                                 start_time = EndingStateTime, \
+                                                                 GCode=self.SecularCode)
                     #print(FinalState[0].position)
 
                 # Append the FinalState of Each Encounter to its Dictionary
@@ -196,8 +240,10 @@ class CloseEncounters():
 
         def SimSecularSystem(self, desired_end_time, **kwargs):
             start_time = kwargs.get("start_time", 0 | units.Myr)
+            GCode = kwargs.get("GCode", None)
             self.particles = enc_patching.run_secularmultiple(self.particles, desired_end_time, \
-                                                              start_time = start_time, N_output=5)
+                                                              start_time = start_time, N_output=5, \
+                                                              GCode=GCode)
             return self.particles
 
         def SimSingleEncounter(self, max_end_time, **kwargs):
@@ -215,8 +261,8 @@ class CloseEncounters():
                 if converter == None:
                     converter = nbody_system.nbody_to_si(GravitatingBodies.mass.sum(), \
                                                          2 * np.max(GravitatingBodies.radius.number) | GravitatingBodies.radius.unit)
-                gravity = self.initialize_GravCode(ph4, converter=converter)
-                over_grav = self.initialize_isOverCode(converter=converter)
+                gravity = initialize_GravCode(ph4, converter=converter)
+                over_grav = initialize_isOverCode(converter=converter)
             else:
                 gravity = GCodes[0]
                 over_grav = GCodes[1]
@@ -295,6 +341,7 @@ class CloseEncounters():
                 gravity.stop()
                 over_grav.stop()
             else:
+                # Reset the Gravity Codes Once Encounter Finishes
                 gravity.reset()
                 over_grav.reset()
 

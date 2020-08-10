@@ -39,6 +39,10 @@ def get_root_of_leaf(particle_set, chosen_id):
 
 
 def get_physical_radius(particle):
+    '''
+    This is a very basic function which pulls an estimate for the radius of
+    a planet for use in Secular integrators.
+    '''
     try:
         radius = particle.physical_radius
         return radius
@@ -58,6 +62,10 @@ def get_physical_radius(particle):
 
 
 def get_full_hierarchical_structure(bodies, RelativePosition=False):
+    '''
+    This function creates a tree-based particle set for use in hierarchical
+    particle integrators (like SecularMultiple).
+    '''
     hierarchical_set = Particles()
     for body in bodies:
         print(body.id)
@@ -80,7 +88,6 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
             print("Closest Neighbor is:", closest_partner.id)
 
             # Check if closest_partner is in a binary already
-            #print(index)
             if index != 0:
                 node = get_root_of_leaf(hierarchical_set, closest_partner.id)
                 if node != None:
@@ -114,8 +121,6 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                     temp.velocity = bigbro.velocity
                     print(bigbro.velocity)
                     hierarchical_set.add_particle(temp) # Child1 is at -2
-                #elif bigbro in hierarchical_set:
-                #    hierarchical_set[]
                 if lilsis not in hierarchical_set:
                     temp = Particle()
                     temp.id = lilsis.id
@@ -152,14 +157,66 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                 hierarchical_set.add_particle(root_particle)
                 break
             continue
-    #for particle in hierarchical_set:
-    #    if particle.is_binary == True:
-    #        print(particle.child1.id, particle.child2.id)
-    #    else:
-    #        print(particle.id)
     return hierarchical_set.copy()
 
+def check_for_stellar_collision(hierarchical_set):
+    '''
+    This function checks for a planet entering into the Roche Limit
+    of its parent star. This is meant to be used as a check for Secular
+    orbit integrators.
+    '''
+    map_node_oe_to_lilsis(hierarchical_set)
+    children_particles = hierarchical_set.select(lambda x : x == False, ["is_binary"])
+    host_star = util.get_stars(children_particles)[0]
+    #print(host_star)
+    planets = util.get_planets(children_particles)
+    for planet in planets:
+        perihelion = planet.semimajor_axis*(1.0-planet.eccentricity)
+        roche_limit = 2.46*planet.radius*(host_star.mass/planet.mass)**(1/3.0)
+        #print("Perihelion:", perihelion, "| Roche Limit:", roche_limit)
+        if perihelion <= roche_limit:
+            # Host Star Gains Mass of Planet
+            host_star.mass += planet.mass
+            # Planet is removed from the set
+            planets.remove_particle(planet)
+            # Temporary Particle Set is Created with just Star and Planets
+            temp = Particles()
+            temp.add_particle(host_star)
+            temp.add_particles(planets)
+            # Update Position and Velocity Vectors
+            temp = update_posvel_from_oe(temp)
+            # Hierarchy is Rebuilt and Returned
+            return get_full_hierarchical_structure(temp)
+    return None
+
+def update_posvel_from_oe(particle_set):
+    '''
+    This function generates position and velocity Vector
+    quantities for particles given their orbital elements.
+    This is meant to be used with SecularMultiple.
+    '''
+    host_star = util.get_stars(particle_set)
+    planets = util.get_planets(particle_set)
+    host_star.position = [0.0, 0.0, 0.0] | units.AU
+    host_star.velocity = [0.0, 0.0, 0.0] | units.kms
+    temp = Particles()
+    temp.add_particle(host_star)
+    for planet in planets:
+        nbody_PlanetStarPair = \
+        new_binary_from_orbital_elements(host_star.mass, planet.mass, planet.semimajor_axis, G=units.constants.G, \
+                                         eccentricity = planet.eccentricity, inclination=planet.inclination, \
+                                         longitude_of_the_ascending_node=planet.longitude_of_ascending_node, \
+                                         argument_of_periapsis=planet.argument_of_pericenter, \
+                                         true_anomaly = 360*rp.uniform(0.0,1.0) | units.deg) # random point in the orbit
+        planet.position = nbody_PlanetStarPair[1].position
+        planet.velocity = nbody_PlanetStarPair[1].velocity
+        temp.add_particle(planet)
+    temp[0].position += particle_set.center_of_mass()
+    temp[0].velocity += particle_set.center_of_mass_velocity()
+    return temp
+
 def map_node_oe_to_lilsis(hierarchical_set):
+    ''' Maps Nodes' orbital elements to their child2 (lilsis) particle. '''
     for node in hierarchical_set.select(lambda x : x == True, ["is_binary"]):
         lilsis = node.child2
         lilsis.semimajor_axis = node.semimajor_axis
@@ -170,6 +227,8 @@ def map_node_oe_to_lilsis(hierarchical_set):
         lilsis.period = node.period
 
 def reset_secularmultiples(code):
+    '''Useful function to reset the SecularMultiple integrator.
+       Saves on CPU overhead.'''
     unit_l = units.AU
     unit_m = units.MSun
     unit_t = 1.0e6*units.yr
@@ -183,9 +242,42 @@ def reset_secularmultiples(code):
     code.error_code = 0
     return code
 
+def get_jovian_parent(hierarchical_set):
+    '''Gets the Node which contains the Jovian'''
+    nodes = hierarchical_set.select(lambda x : x == True, ["is_binary"])
+    return [x for x in nodes if np.floor(x.child2.id/10000) == 5][0]
+
+def initialize_PlanetarySystem_from_HierarchicalSet(hierarchical_set):
+    '''Initializes a PlanetarySystem class for AMD calculations.'''
+    map_node_oe_to_lilsis(hierarchical_set)
+    children_particles = hierarchical_set.select(lambda x : x == False, ["is_binary"])
+    host_star = util.get_stars(children_particles)[0]
+    #print(host_star)
+    planets = util.get_planets(children_particles)
+    PS = stellar_systems.PlanetarySystem(host_star, planets, system_name=str(host_star.id))
+    PS.get_SystemBetaValues()
+    return PS
+
+def update_oe_for_PlanetarySystem(PS, hierarchical_set):
+    '''Updates the orbital elements from a hierarchical set to
+       an existant PlanetarySystem class.'''
+    map_node_oe_to_lilsis(hierarchical_set)
+    for planet in PS.planets:
+        matched_planet = hierarchical_set.select(lambda x : x == planet.id, ["id"])
+        #print(planet.id)
+        #print(matched_planet.mass)
+        planet.semimajor_axis = matched_planet.semimajor_axis
+        planet.eccentricity = matched_planet.eccentricity
+        planet.period = matched_planet.period
+        planet.z_inc = matched_planet.inclination
+    PS.planets = PS.planets.sorted_by_attribute('semimajor_axis')
+    stellar_systems.get_rel_inclination(PS.planets)
+    return PS
+
 def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
-                        N_output=100, debug_mode=False, genT4System=False, \
-                        exportData=False, GCode = None):
+                        N_output=100, debug_mode=False, genT4System=True, \
+                        exportData=True, useAMD=True, fullCopy=False, GCode = None):
+    '''Does what it says on the tin.'''
     try:
         hierarchical_test = [x for x in particle_set if x.is_binary == True]
         print("The supplied set has", len(hierarchical_test), "node particles and is a tree.")
@@ -204,20 +296,20 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
         code = GCode
 
     if exportData:
-        plot_a_AU = [[] for x in range(Num_nodes)]
-        plot_e = [[] for x in range(Num_nodes)]
-        plot_peri_AU = [[] for x in range(Num_nodes)]
-        plot_stellar_inc_deg = [[] for x in range(Num_nodes)]
+        plot_a_AU = defaultdict(list)
+        plot_e = defaultdict(list)
+        plot_peri_AU = defaultdict(list)
+        plot_stellar_inc_deg = defaultdict(list)
+        if useAMD:
+            plot_AMDBeta = defaultdict(list)
         plot_times_Myr = []
 
     if genT4System:
-        nodes = py_particles.select(lambda x : x == True, ["is_binary"])
         print(nodes.inclination)
         nodes.inclination = [-18.137, 0.0, 23.570] | units.deg
         print(nodes.inclination)
 
     if debug_mode:
-        nodes = py_particles.select(lambda x : x == True, ["is_binary"])
         print('='*50)
         print('t/kyr',0.00)
         print('a/AU', nodes.semimajor_axis)
@@ -228,39 +320,65 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
             nodes.argument_of_pericenter)
         print('LAN/deg', \
             nodes.longitude_of_ascending_node)
-
+    #print(py_particles)
     code.particles.add_particles(py_particles)
-    code.commit_particles()
-    code.model_time = start_time
+    #code.commit_particles()
+    #print(code.particles.semimajor_axis)
 
+    code.model_time = start_time
+    #print(py_particles.id, py_particles.semimajor_axis)
     channel_from_particles_to_code = py_particles.new_channel_to(code.particles)
     channel_from_code_to_particles = code.particles.new_channel_to(py_particles)
-    channel_from_particles_to_code.copy()
-
+    #print(py_particles.id, py_particles.semimajor_axis)
+    if fullCopy:
+        channel_from_code_to_particles.copy()
+    else:
+        channel_from_particles_to_code.copy() #copy_attributes(['semimajor_axis', 'eccentricity', \
+            #'longitude_of_ascending_node', 'argument_of_pericenter', 'inclination'])
+    #print('This is After the First Channel Copy:', code.particles.semimajor_axis)
     time = start_time
-    output_time_step = end_time/float(N_output)
+    if useAMD:
+        #print(py_particles.id, py_particles.mass)
+        jovianParent = get_jovian_parent(py_particles)
+        output_time_step = 1000*jovianParent.period.value_in(units.Myr) | units.Myr
+        PS = initialize_PlanetarySystem_from_HierarchicalSet(py_particles)
+        PS.get_SystemBetaValues()
+        if exportData:
+            for planet in PS.planets:
+                plot_AMDBeta[planet.id].append(planet.AMDBeta)
+    else:
+        output_time_step = end_time/float(N_output)
 
     if exportData:
         plot_times_Myr.append(time.value_in(units.Myr))
         for i, node in enumerate(nodes):
-            plot_a_AU[i].append(node.semimajor_axis.value_in(units.AU))
-            plot_e[i].append(node.eccentricity)
-            plot_peri_AU[i].append(node.semimajor_axis.value_in(units.AU)*(1.0-node.eccentricity))
-            plot_stellar_inc_deg[i].append(node.inclination.value_in(units.deg))
+            plot_a_AU[node.child2.id].append(node.semimajor_axis.value_in(units.AU))
+            plot_e[node.child2.id].append(node.eccentricity)
+            plot_peri_AU[node.child2.id].append(node.semimajor_axis.value_in(units.AU)*(1.0-node.eccentricity))
+            plot_stellar_inc_deg[node.child2.id].append(node.inclination.value_in(units.deg))
 
     while time <= end_time:
+        #print('Start of Time Loop')
+        #print(output_time_step)
         time += output_time_step
+        #print(time)
+        #print(code.model_time)
+        #print(code.particles.semimajor_axis)
         code.evolve_model(time)
-        print('Evolved model to:', time.value_in(units.Myr), "Myr")
+        #print('Evolved model to:', time.value_in(units.Myr), "Myr")
+        #print(code.particles.semimajor_axis)
         channel_from_code_to_particles.copy()
-
+        #channel_from_code_to_particles.copy_attributes(['semimajor_axis', 'eccentricity', \
+            #'longitude_of_ascending_node', 'argument_of_pericenter', 'inclination'])
+        #print('Hello')
+        py_particles.time = time
         if exportData:
             plot_times_Myr.append(time.value_in(units.Myr))
             for i, node in enumerate(nodes):
-                plot_a_AU[i].append(node.semimajor_axis.value_in(units.AU))
-                plot_e[i].append(node.eccentricity)
-                plot_peri_AU[i].append(node.semimajor_axis.value_in(units.AU)*(1.0-node.eccentricity))
-                plot_stellar_inc_deg[i].append(node.inclination.value_in(units.deg))
+                plot_a_AU[node.child2.id].append(node.semimajor_axis.value_in(units.AU))
+                plot_e[node.child2.id].append(node.eccentricity)
+                plot_peri_AU[node.child2.id].append(node.semimajor_axis.value_in(units.AU)*(1.0-node.eccentricity))
+                plot_stellar_inc_deg[node.child2.id].append(node.inclination.value_in(units.deg))
 
         if time == end_time+output_time_step:
             map_node_oe_to_lilsis(py_particles)
@@ -277,12 +395,47 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
                     nodes.argument_of_pericenter)
                 print('LAN/deg', \
                     nodes.longitude_of_ascending_node)
+        # Check for Planet Destruction from Star
+        #print(py_particles.id, py_particles.semimajor_axis)
+        temp = check_for_stellar_collision(py_particles)
+        #print(temp)
+        # Returns 'None' if No Destruction!
+        if temp != None:
+            code.stop()
+            code = SecularMultiple()
+            code.model_time = time
+            py_particles = Particles()
+            py_particles.add_particles(temp)
+            code.particles.add_particles(py_particles)
+            #code.commit_particles()
+            channel_from_particles_to_code = py_particles.new_channel_to(code.particles)
+            channel_from_code_to_particles = code.particles.new_channel_to(py_particles)
+            channel_from_particles_to_code.copy()
+            nodes = py_particles.select(lambda x : x == True, ["is_binary"])
+            if useAMD:
+                PS = initialize_PlanetarySystem_from_HierarchicalSet(py_particles)
+            #channel_from_code_to_particles.copy_attributes(['semimajor_axis', 'eccentricity', \
+            #'longitude_of_ascending_node', 'argument_of_pericenter', 'inclination'])
+        #print(code.particles.semimajor_axis)
+        # AMD Checking
+        if useAMD:
+            PS = update_oe_for_PlanetarySystem(PS, py_particles)
+            PS.get_SystemBetaValues()
+            if exportData:
+                for planet in PS.planets:
+                    plot_AMDBeta[planet.id].append(planet.AMDBeta)
+            if len(PS.planets.select(lambda x : x < 1.0, ["AMDBeta"])) > 1:
+                break
+
     if GCode == None:
         code.stop()
     else:
         code = reset_secularmultiples(code)
     if exportData:
-        data = plot_times_Myr,plot_a_AU, plot_e, plot_peri_AU, plot_stellar_inc_deg
+        if useAMD:
+            data = plot_times_Myr,plot_a_AU, plot_e, plot_peri_AU, plot_stellar_inc_deg, plot_AMDBeta
+        else:
+            data = plot_times_Myr,plot_a_AU, plot_e, plot_peri_AU, plot_stellar_inc_deg
         return py_particles, data
     else:
         return py_particles

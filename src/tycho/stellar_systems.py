@@ -50,6 +50,7 @@ def get_periods(host_star, planets):
     for planet in planets:
         mu = constants.G*(planet.mass+host_star.mass)
         a = planet.semimajor_axis
+        print(mu, a, 2.0*np.pi/np.sqrt(mu)*a**(3./2.))
         planet.period = 2.0*np.pi/np.sqrt(mu)*a**(3./2.)
 
 def update_orb_elem(host_star, planets, converter=None, kepler_worker=None):
