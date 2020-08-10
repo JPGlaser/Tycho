@@ -356,11 +356,12 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
             plot_e[node.child2.id].append(node.eccentricity)
             plot_peri_AU[node.child2.id].append(node.semimajor_axis.value_in(units.AU)*(1.0-node.eccentricity))
             plot_stellar_inc_deg[node.child2.id].append(node.inclination.value_in(units.deg))
-
+    counter = 0
     while time <= end_time:
         #print('Start of Time Loop')
         #print(output_time_step)
         time += output_time_step
+        counter += 1
         #print(time)
         #print(code.model_time)
         #print(code.particles.semimajor_axis)
@@ -424,7 +425,7 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
             if exportData:
                 for planet in PS.planets:
                     plot_AMDBeta[planet.id].append(planet.AMDBeta)
-            if len(PS.planets.select(lambda x : x < 1.0, ["AMDBeta"])) > 1:
+            if counter%100==0 and len(PS.planets.select(lambda x : x < 1.0, ["AMDBeta"])) > 1:
                 break
 
     if GCode == None:
