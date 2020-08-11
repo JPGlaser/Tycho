@@ -176,7 +176,7 @@ if __name__ == '__main__':
                     enc_id_to_cut.append(enc_id)
         for enc_id in sorted(enc_id_to_cut, reverse=True):
             del encounter_db[star_ID][enc_id]
-    print(encounter_db.keys())
+    print("After no planet encounters are removed," len(encounter_db.keys()))
     sys.stdout.flush()
     print(util.timestamp(), "Performing Second Cut on Encounter Database ...")
     sys.stdout.flush()
@@ -185,6 +185,7 @@ if __name__ == '__main__':
     for star_ID in list(encounter_db.keys()):
         if len(encounter_db[star_ID]) == 0:
             star_id_to_cut.append(star_ID)
+    print(len(star_id_to_cut))
     for star_ID in sorted(star_id_to_cut, reverse=True):
         del encounter_db[star_ID]
 
