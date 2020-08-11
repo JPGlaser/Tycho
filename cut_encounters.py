@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
     sys.stdout.flush()
     print(util.timestamp(), "Performing First Cut on Encounter Database ...")
-    print(encounter_db.keys())
+    print(len(encounter_db.keys()))
     sys.stdout.flush()
     # Perform a Cut on the Encounter Database
     for star_ID in list(encounter_db.keys()):
@@ -155,10 +155,12 @@ if __name__ == '__main__':
             del encounter_db[star_ID]
         if len(encounter_db[star_ID]) == 1:
             # Check to Ensure it is an Actual Multiples Initialization (AKA: 1 System)
-            if len(stellar_systems.get_heirarchical_systems_from_set(encounter_db[star_ID][0])) <= 1:
+            temp = stellar_systems.get_heirarchical_systems_from_set(encounter_db[star_ID][0])
+            print(temp)
+            if len(temp.keys()) <= 1:
                 print(encounter_db[starID][0].id)
                 del encounter_db[star_ID]
-    print("After Removal of Just Initializations", encounter_db.keys())
+    print("After Removal of Just Initializations", len(encounter_db.keys()))
     for star_ID in list(encounter_db.keys()):
         # Cut Out Stars with No Planets
         enc_id_to_cut = []
