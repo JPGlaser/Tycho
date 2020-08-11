@@ -168,6 +168,7 @@ if __name__ == '__main__':
             # Refine "No Planet" Cut to Deal with Hierarchical Stellar Systems
             # We are Looping Through Encounters to Deal with Rogue Jupiter Captures
             print(star_ID, encounter.id)
+            sys.stdout.flush()
             if len([ID for ID in encounter.id if ID >= base_planet_ID]) == 0:
                 enc_id_to_cut.append(enc_id)
             elif len([ID for ID in encounter.id if ID >= base_planet_ID]) > 0:
