@@ -84,6 +84,9 @@ def print_diagnostics(grav, E0=None):
 
 
 class EncounterHandler(object):
+    def __init__(self):
+        self.encounterInformation = defaultdict(list)
+
     def handle_encounter_v5(self, time, star1, star2):
         # Create the Scattering CoM Particle Set
         scattering_com = Particles(particles = (star1, star2))
@@ -108,7 +111,7 @@ class EncounterHandler(object):
         # Retrieve Star IDs to Use as Dictionary Keys, and Loop Over Those IDs
         # to Add Encounter Information to Each Star's Dictionary Entry.
         for s_id in [str(dict_key) for dict_key in enc_particles.id if dict_key<=len(Gravitating_Bodies)]:
-            encounterInformation[s_id].append(enc_particles)
+            self.encounterInformation[s_id].append(enc_particles)
 
        # Return True is Necessary for the Multiples Code
         return True
@@ -405,8 +408,7 @@ if __name__=="__main__":
                                          gravity_constant=units.constants.G)
     multiples_code.neighbor_perturbation_limit = 0.05
     multiples_code.neighbor_veto = True
-    multiples_code.callback = EncounterHandler().handle_encounter_v5
-    multiples_code.global_debug = 1
+    multiples_code.global_debug = 2
     # ----------------------------------------------------------------------------------------------------
 
     # Setting up Stellar Evolution Code (SeBa)
@@ -463,6 +465,9 @@ if __name__=="__main__":
     for star in Individual_Stars:
         dict_key = str(star.id)
         encounterInformation[dict_key] = []
+    EH = EncounterHandler()
+    EH.encounterInformation = encounterInformation
+    multiples_code.callback = EH.handle_encounter_v5
 
     snapshots_dir = os.getcwd()+"/Snapshots"
     snapshots_s_dir = os.getcwd()+"/Snapshots/Stars"
