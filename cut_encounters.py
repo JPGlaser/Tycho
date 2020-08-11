@@ -151,7 +151,9 @@ if __name__ == '__main__':
     # Perform a Cut on the Encounter Database
     for star_ID in list(encounter_db.keys()):
         # Cut Out Stars Recorded with Only Initialization Pickups
-        if len(encounter_db[star_ID]) <= 1:
+        if len(encounter_dB[star_ID]) == 0:
+            del encounter_db[star_ID]
+        if len(encounter_db[star_ID]) == 1:
             # Check to Ensure it is an Actual Multiples Initialization (AKA: 1 System)
             if len(stellar_systems.get_heirarchical_systems_from_set(encounter_db[star_ID][0])) <= 1:
                 print(encounter_db[starID][0].id)
