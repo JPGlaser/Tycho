@@ -89,9 +89,9 @@ class EncounterHandler(object):
 
     def handle_encounter_v5(self, time, star1, star2):
         # Create the Scattering CoM Particle Set
-        scattering_com = Particles()
-        scattering_com.add_particle(star1)
-        scattering_com.add_particle(star2)
+        scattering_com = self.before
+        #scattering_com.add_particle(star1)
+        #scattering_com.add_particle(star2)
         com_pos = scattering_com.center_of_mass()
         com_vel = scattering_com.center_of_mass_velocity()
 
