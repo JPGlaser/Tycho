@@ -105,7 +105,7 @@ class EncounterHandler(object):
         IDs_of_StarsInEncounter = [star.id for star in enc_stars if star.id < 1000000]
         for star_ID in IDs_of_StarsInEncounter:
             self.encounterDict[star_ID].append(_temp)
-        if debug_mode > 0:
+        if self.debug_mode > 0:
                 enc_planets = _temp[_temp.mass <= limiting_mass_for_planets]
                 print("Stars:", enc_stars.id)
                 print("Planets:", enc_planets.id)
