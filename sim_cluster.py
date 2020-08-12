@@ -89,13 +89,23 @@ class EncounterHandler(object):
 
     def handle_encounter_v5(self, time, star1, star2):
         # Create the Scattering CoM Particle Set
-        scattering_com = Particles(particles = (star1, star2))
+        scattering_com = Particles()
+        scattering_com.add_particle(star1)
+        scattering_com.add_particle(star2)
         com_pos = scattering_com.center_of_mass()
         com_vel = scattering_com.center_of_mass_velocity()
 
         # Expand enconter returns a particle set with all of the children
         # when given a particle set of two objects involved in an encounter
         enc_particles = multiples_code.expand_encounter(scattering_com, delete=False)[0]
+        try:
+            print("Scattering:", scattering_com.id, scattering_com.child1.id, scattering_com.child2.id)
+        except:
+            print("Scattering:", scattering_com.id, scattering_com.child1, scattering_com.child2)
+        try:
+            print("EncPart:", enc_particles.id, enc_particles.child1.id, enc_particles.child2.id)
+        except:
+            print("EncPart:", enc_particles.id, enc_particles.child1, enc_particles.child2)
 
         # Assign the time of the encounter to the Encounter Particle Set.
         enc_particles.time = time
