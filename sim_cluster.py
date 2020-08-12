@@ -106,7 +106,7 @@ class EncounterHandler(object):
         for star_ID in IDs_of_StarsInEncounter:
             self.encounterDict[star_ID].append(_temp)
         if self.debug_mode > 0:
-                enc_planets = _temp[_temp.mass <= limiting_mass_for_planets]
+                enc_planets = _temp[_temp.mass <= self.limiting_mass_for_planets]
                 print("Stars:", enc_stars.id)
                 print("Planets:", enc_planets.id)
                 print("Keys Set for EncounterDictionary:", IDs_of_StarsInEncounter)
