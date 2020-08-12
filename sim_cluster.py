@@ -101,7 +101,7 @@ class EncounterHandler(object):
         _temp.time = time
 
         # Seperate out Stars to Nab Keys for EncounterDictionary Logging
-        enc_stars = _temp[_temp > self.limiting_mass_for_planets]
+        enc_stars = _temp[_temp.mass > self.limiting_mass_for_planets]
         IDs_of_StarsInEncounter = [star.id for star in enc_stars if star.id < 1000000]
         for star_ID in IDs_of_StarsInEncounter:
             self.encounterDict[star_ID].append(_temp)
