@@ -52,8 +52,8 @@ from amuse.ext.galactic_potentials import MWpotentialBovy2015
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
-#from tycho import multiples3 as multiples
-import amuse.couple.multiples as multiples
+from tycho import multiples as multiples
+#import amuse.couple.multiples as multiples
 
 
 # ------------------------------------- #
@@ -86,57 +86,32 @@ def print_diagnostics(grav, E0=None):
 class EncounterHandler(object):
     def __init__(self):
         self.encounterDict = defaultdict(list)
+        self.debug_mode = 0
+        self.limiting_mass_for_planets = 13 | units.MJupiter
 
-    def handle_encounter_v5(self, time, star1, star2):
-        # Create the Scattering CoM Particle Set
-        #print("Star 1", star1.child1.id, star2.child2.id)
-        print("!-----------------------------")
-        print(star1)
-        print(star2)
-        print("!-----------------------------")
-        scattering_com = Particles()
-        scattering_com.add_particle(star1)
-        scattering_com.add_particle(star2)
-        com_pos = scattering_com.center_of_mass()
-        com_vel = scattering_com.center_of_mass_velocity()
-
-        # Expand enconter returns a particle set with all of the children
-        # when given a particle set of two objects involved in an encounter
-        enc_particles = multiples_code.expand_encounter(scattering_com, delete=False)[0]
-        try:
-            print("Scattering:", scattering_com.id, scattering_com.child1.id, scattering_com.child2.id)
-        except:
-            print("Scattering:", scattering_com.id, scattering_com.child1, scattering_com.child2)
-        try:
-            print("EncPart:", enc_particles.id, enc_particles.child1.id, enc_particles.child2.id)
-        except:
-            print("EncPart:", enc_particles.id, enc_particles.child1, enc_particles.child2)
-
-        # Assign the time of the encounter to the Encounter Particle Set.
-        enc_particles.time = time
+    def log_encounter(self, time, particles_in_encounter):
+        # Initialize the Temporary Particle Set to Ensure Nothing
+        #    Changes inside "particles_in_encounter"
+        _temp = Particles()
+        _temp.add_particles(particles_in_encounter)
 
         # Set the Origin to be the Center of Mass for the Encounter Particle Set.
-        enc_particles.position -= com_pos
-        enc_particles.velocity -= com_vel
+        _temp.position -= particles_in_encounter.center_of_mass()
+        _temp.velocity -= particles_in_encounter.center_of_mass_velocity()
+        _temp.time = time
 
-        limiting_mass_for_planets = 13 | units.MJupiter
-        enc_stars = enc_particles[enc_particles.mass > limiting_mass_for_planets]
-        enc_planets = enc_particles[enc_particles.mass <= limiting_mass_for_planets]
-        print("Stars:", enc_stars.id)
-        print("Planets:", enc_planets.id)
-
+        # Seperate out Stars to Nab Keys for EncounterDictionary Logging
+        enc_stars = _temp[_temp > self.limiting_mass_for_planets]
         IDs_of_StarsInEncounter = [star.id for star in enc_stars if star.id < 1000000]
-        print(IDs_of_StarsInEncounter)
         for star_ID in IDs_of_StarsInEncounter:
-            self.encounterDict[star_ID].append(enc_particles)
-
-        # Retrieve Star IDs to Use as Dictionary Keys, and Loop Over Those IDs
-        # to Add Encounter Information to Each Star's Dictionary Entry.
-        #for s_id in [str(dict_key) for dict_key in enc_particles.id if dict_key<=len(Gravitating_Bodies)]:
-        #    print(s_id)
-        #    self.encounterDict[s_id].append(enc_particles)
-
-       # Return True is Necessary for the Multiples Code
+            self.encounterDict[star_ID].append(_temp)
+        if debug_mode > 0:
+                enc_planets = _temp[_temp.mass <= limiting_mass_for_planets]
+                print("Stars:", enc_stars.id)
+                print("Planets:", enc_planets.id)
+                print("Keys Set for EncounterDictionary:", IDs_of_StarsInEncounter)
+        # Delete the Temporary Particle Set
+        del _temp
         return True
 
 class ChildUpdater(object):
@@ -484,12 +459,9 @@ if __name__=="__main__":
     # Each Key (Star's ID) will Associate with a List of Encounter Particle
     # Sets as Encounters are Detected
     encounter_file = None
-    #encounterInformation = defaultdict(list)
-    #for star in Individual_Stars:
-    #    dict_key = str(star.id)
-    #    encounterInformation[dict_key] = []
     EH = EncounterHandler()
-    multiples_code.callback = EH.handle_encounter_v5
+    EH.debug_mode = 1
+    multiples_code.encounterLogger = EH.log_encounter
 
     snapshots_dir = os.getcwd()+"/Snapshots"
     snapshots_s_dir = os.getcwd()+"/Snapshots/Stars"
@@ -573,7 +545,7 @@ if __name__=="__main__":
         #subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
 
         # Evolve the Stellar Codes (via SEV Code with Channels)
-        # TODO: Ensure Binaries are Evolved Correctly (See Section 3.2.8)
+        # TODO: Ensure Tight Binaries are Evolved Correctly (See Section 3.2.8)
         sev_code.evolve_model(t_current)
 
         # Sync the Stellar Code w/ the "Stellar_Bodies" Superset
@@ -581,7 +553,6 @@ if __name__=="__main__":
                                                     "temperature", "age"])
 
         # Sync the Multiples Particle Set's Masses to the Stellar_Bodies' Masses
-        # TODO: Ensure that the
         channel_from_gravitating_to_multi.copy_attributes(["mass"])
         # Note: The "mass" Attribute in "Gravitating_Bodies" is synced when "Stellar_Bodies" is.
 
