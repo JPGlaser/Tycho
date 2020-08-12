@@ -89,6 +89,7 @@ class EncounterHandler(object):
 
     def handle_encounter_v5(self, time, star1, star2):
         # Create the Scattering CoM Particle Set
+        print("Star 1", star1.child1.id, star2.child2.id)
         scattering_com = multiples_code.before
         #scattering_com.add_particle(star1)
         #scattering_com.add_particle(star2)
