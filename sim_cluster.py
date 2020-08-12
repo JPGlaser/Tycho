@@ -85,7 +85,7 @@ def print_diagnostics(grav, E0=None):
 
 class EncounterHandler(object):
     def __init__(self):
-        self.encounterInformation = defaultdict(list)
+        self.encounterDict = defaultdict(list)
 
     def handle_encounter_v5(self, time, star1, star2):
         # Create the Scattering CoM Particle Set
@@ -110,11 +110,16 @@ class EncounterHandler(object):
         print("Stars:", enc_stars.id)
         print("Planets:", enc_planets.id)
 
+        IDs_of_StarsInEncounter = [star.id for star in enc_stars if star.id < 1000000]
+        print(IDs_of_StarsInEncounter)
+        for star_ID in IDs_of_StarsInEncounter:
+            self.encounterDict[star_ID].append(enc_particles)
+
         # Retrieve Star IDs to Use as Dictionary Keys, and Loop Over Those IDs
         # to Add Encounter Information to Each Star's Dictionary Entry.
-        for s_id in [str(dict_key) for dict_key in enc_particles.id if dict_key<=len(Gravitating_Bodies)]:
-            print(s_id)
-            self.encounterInformation[s_id].append(enc_particles)
+        #for s_id in [str(dict_key) for dict_key in enc_particles.id if dict_key<=len(Gravitating_Bodies)]:
+        #    print(s_id)
+        #    self.encounterDict[s_id].append(enc_particles)
 
        # Return True is Necessary for the Multiples Code
         return True
@@ -464,12 +469,11 @@ if __name__=="__main__":
     # Each Key (Star's ID) will Associate with a List of Encounter Particle
     # Sets as Encounters are Detected
     encounter_file = None
-    encounterInformation = defaultdict(list)
-    for star in Individual_Stars:
-        dict_key = str(star.id)
-        encounterInformation[dict_key] = []
+    #encounterInformation = defaultdict(list)
+    #for star in Individual_Stars:
+    #    dict_key = str(star.id)
+    #    encounterInformation[dict_key] = []
     EH = EncounterHandler()
-    EH.encounterInformation = encounterInformation
     multiples_code.callback = EH.handle_encounter_v5
 
     snapshots_dir = os.getcwd()+"/Snapshots"
