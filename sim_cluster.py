@@ -601,6 +601,8 @@ if __name__=="__main__":
             if step_index%500 == 0 and step_index != 0:
                 after = hp.heap()
                 leftover = after - before
+                sys.stdout = orig_stdout
+                sys.stdout.flush()
                 import pdb; pdb.set_trace()
 
         # Increase the Step Index
