@@ -13,6 +13,8 @@ import random as rp
 from optparse import OptionParser
 import glob
 
+from guppy import hpy
+
 # Tyler's imports
 import hashlib
 import copy
@@ -406,7 +408,7 @@ if __name__=="__main__":
                                          gravity_constant=units.constants.G)
     multiples_code.neighbor_perturbation_limit = 0.05
     multiples_code.neighbor_veto = True
-    multiples_code.global_debug = 2
+    multiples_code.global_debug = 0
     # ----------------------------------------------------------------------------------------------------
 
     # Setting up Stellar Evolution Code (SeBa)
@@ -460,7 +462,7 @@ if __name__=="__main__":
     # Sets as Encounters are Detected
     encounter_file = None
     EH = EncounterHandler()
-    EH.debug_mode = 1
+    EH.debug_mode = 0
     multiples_code.encounterLogger = EH.log_encounter
 
     snapshots_dir = os.getcwd()+"/Snapshots"
@@ -513,6 +515,8 @@ if __name__=="__main__":
     #increase_index = False
     #timestep_reset = False
 
+    hp = hpy()
+    before = hp.heap()
     while t_current <= t_end:
         ## Artificially Evolve the Cluster to Get Multiples to Pickup Planetary Systems & Binaries
         #if t_current >= t_start and t_current <= t_catch:
@@ -529,7 +533,7 @@ if __name__=="__main__":
         #    #gravity_code.parameters.timestep_parameter = 2**(-5)
         #    gravity_code.parameters.force_sync = False
         #    timestep_reset = True
-
+        hp.heap()
         # Evolve the Gravitational Codes ( via Bridge Code)
         bridge_code.evolve_model(t_current)
 
@@ -594,6 +598,11 @@ if __name__=="__main__":
             print('[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
             print('-------------\n')
             sys.stdout.flush()
+
+            if step_index == 1000:
+                after = hp.heap()
+                leftover = after - before
+                import pdb; pdb.set_trace()
 
         # Increase the Step Index
         #if increase_index:
