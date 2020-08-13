@@ -195,7 +195,7 @@ if __name__=="__main__":
                       help="Enter the number of planetary systems desired.")
     parser.add_option("-s", "--num-stars", dest="num_stars", default=64, type="int",
                       help="Enter the number of stars desired.")
-    parser.add_option("-t", "--timestep", dest="dt", default=0.002, type="float",
+    parser.add_option("-t", "--timestep", dest="dt", default=0.2, type="float",
                       help="Enter the Top-Level Timestep in Myr.")
     parser.add_option("-c", "--cluster-name", dest="cluster_name", default=None, type="str",
                       help="Enter the name of the cluster (Defaults to Numerical Naming Scheme).")
@@ -417,6 +417,8 @@ if __name__=="__main__":
     # Setting up Stellar Evolution Code (SeBa)
     sev_code = SeBa()
     sev_code.particles.add_particles(Stellar_Bodies)
+    supernova_detection = sev_code.stopping_conditions.supernova_detection
+    supernova_detection.enable()
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -486,9 +488,11 @@ if __name__=="__main__":
     elif not crash:
         t_start = 10 | units.Myr # Average for Age of After Gas Ejection
         sev_code.evolve_model(t_start)
+        util.resolve_supernova(supernova_detection, Stellar_Bodies, t_start)
+
     channel_from_sev_to_stellar.copy_attributes(["mass", "luminosity", "stellar_type",
                                                  "temperature", "age"])
-    channel_from_gravitating_to_multi.copy_attributes(["mass"])
+    channel_from_gravitating_to_multi.copy_attributes(["mass", "vx", "vy", "vz"])
 
     # Ensuring that Multiples Picks up All Desired Systems
     gravity_code.parameters.begin_time = t_start
@@ -553,13 +557,14 @@ if __name__=="__main__":
         # Evolve the Stellar Codes (via SEV Code with Channels)
         # TODO: Ensure Tight Binaries are Evolved Correctly (See Section 3.2.8)
         sev_code.evolve_model(t_current)
+        util.resolve_supernova(supernova_detection, Stellar_Bodies, t_current)
 
         # Sync the Stellar Code w/ the "Stellar_Bodies" Superset
         channel_from_sev_to_stellar.copy_attributes(["mass", "luminosity", "stellar_type",
                                                     "temperature", "age"])
 
         # Sync the Multiples Particle Set's Masses to the Stellar_Bodies' Masses
-        channel_from_gravitating_to_multi.copy_attributes(["mass"])
+        channel_from_gravitating_to_multi.copy_attributes(["mass", "vx", "vy", "vz"])
         # Note: The "mass" Attribute in "Gravitating_Bodies" is synced when "Stellar_Bodies" is.
 
         if step_index == 5:

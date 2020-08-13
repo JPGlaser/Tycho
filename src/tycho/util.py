@@ -274,3 +274,27 @@ def get_stellar_radius(star):
     print(sev_code.particles[0].radius)
     sev_code.stop()
     return radius
+
+def resolve_supernova(supernova_detection, bodies, time):
+    # Drawn from gravity_stellar_eventdriven.py in AMUSE Textbook
+    if supernova_detection.is_set():
+        print("At time=", time.in_(units.Myr), \
+              len(supernova_detection.particles(0)), 'supernova(e) detected')
+
+        Nsn = 0
+        for ci in range(len(supernova_detection.particles(0))):
+            print(supernova_detection.particles(0))
+            particles_in_supernova \
+                = Particles(particles=supernova_detection.particles(0))
+            natal_kick_x = particles_in_supernova.natal_kick_x
+            natal_kick_y = particles_in_supernova.natal_kick_y
+            natal_kick_z = particles_in_supernova.natal_kick_z
+
+            particles_in_supernova \
+                = particles_in_supernova.get_intersecting_subset_in(bodies)
+            particles_in_supernova.vx += natal_kick_x
+            particles_in_supernova.vy += natal_kick_y
+            particles_in_supernova.vz += natal_kick_z
+            Nsn += 1
+
+        print('Resolved', Nsn, 'supernova(e)')
