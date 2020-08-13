@@ -93,7 +93,8 @@ class EncounterHandler(object):
         self.encounterDict = defaultdict(list)
         self.debug_mode = 0
         self.limiting_mass_for_planets = 13 | units.MJupiter
-
+        
+    @profile
     def log_encounter(self, time, particles_in_encounter):
         # Initialize the Temporary Particle Set to Ensure Nothing
         #    Changes inside "particles_in_encounter"
