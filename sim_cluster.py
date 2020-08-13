@@ -449,8 +449,8 @@ if __name__=="__main__":
 
     # Piping all Terminal Output to the Log File
     orig_stdout = sys.stdout
-    f = open("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
-    sys.stdout = f
+    #f = open("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
+    #sys.stdout = f
     sys.stdout.flush()
 
     # Writing the Initial Conditions & Particle Sets
@@ -601,7 +601,7 @@ if __name__=="__main__":
             if step_index%500 == 0 and step_index != 0:
                 after = hp.heap()
                 leftover = after - before
-                sys.stdout = orig_stdout
+                #sys.stdout = orig_stdout
                 sys.stdout.flush()
                 import pdb; pdb.set_trace()
 
