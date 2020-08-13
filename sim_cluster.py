@@ -533,7 +533,6 @@ if __name__=="__main__":
         #    #gravity_code.parameters.timestep_parameter = 2**(-5)
         #    gravity_code.parameters.force_sync = False
         #    timestep_reset = True
-        hp.heap()
         # Evolve the Gravitational Codes ( via Bridge Code)
         bridge_code.evolve_model(t_current)
 
@@ -599,7 +598,7 @@ if __name__=="__main__":
             print('-------------\n')
             sys.stdout.flush()
 
-            if step_index == 1000:
+            if step_index%500 == 0 and step_index != 0:
                 after = hp.heap()
                 leftover = after - before
                 import pdb; pdb.set_trace()
