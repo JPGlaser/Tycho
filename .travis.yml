@@ -12,6 +12,7 @@ install:
     - pip install rebound
     - pip install amuse-framework
     - pip install amuse-ph4 amuse-kepler amuse-sse amuse-seba amuse-smalln
+    - pip install guppy3
 
 script:
     - python sim_cluster.py -g -p 5 -s 10 -c Leonis -w 4.5 -T 11 -S Leonis -b
