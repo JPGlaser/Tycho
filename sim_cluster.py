@@ -57,6 +57,9 @@ from tycho import create, util, read, write, encounter_db
 from tycho import multiples as multiples
 #import amuse.couple.multiples as multiples
 
+set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.day, units.deg], \
+                       precision = 6, prefix = "", separator = "[", suffix = "]")
+
 
 # ------------------------------------- #
 #   Required Non-Seperable Functions    #
