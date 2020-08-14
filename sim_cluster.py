@@ -529,7 +529,7 @@ if __name__=="__main__":
     #increase_index = False
     #timestep_reset = False
 
-    write_out_step = np.floor(5 | units.Myr)/delta_t)
+    write_out_step = np.floor((5 | units.Myr)/delta_t)
 
     if doDebug:
         hp = hpy()
