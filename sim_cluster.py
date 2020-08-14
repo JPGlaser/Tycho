@@ -94,7 +94,6 @@ class EncounterHandler(object):
         self.debug_mode = 0
         self.limiting_mass_for_planets = 13 | units.MJupiter
 
-    @profile
     def log_encounter(self, time, particles_in_encounter):
         # Initialize the Temporary Particle Set to Ensure Nothing
         #    Changes inside "particles_in_encounter"
@@ -196,7 +195,7 @@ if __name__=="__main__":
                       help="Enter the number of planetary systems desired.")
     parser.add_option("-s", "--num-stars", dest="num_stars", default=64, type="int",
                       help="Enter the number of stars desired.")
-    parser.add_option("-t", "--timestep", dest="dt", default=0.2, type="float",
+    parser.add_option("-t", "--timestep", dest="dt", default=2**-3, type="float",
                       help="Enter the Top-Level Timestep in Myr.")
     parser.add_option("-c", "--cluster-name", dest="cluster_name", default=None, type="str",
                       help="Enter the name of the cluster (Defaults to Numerical Naming Scheme).")
@@ -216,11 +215,14 @@ if __name__=="__main__":
                           help="Enter the desired number of PH4 workers.")
     parser.add_option("-r", "--virial_radius", dest="vrad", default=2, type="float")
     parser.add_options("-D", "--galactic_dist", dest="galactic_dist" default = 9, type="float")
+    parser.add_option("-i", "--interactive_debug", dest="debug", action="store_true",
+       		          help = "Enables interactive debugging.")
     (options, args) = parser.parse_args()
 
     # Set Commonly Used Python Variables from Options
     num_stars = options.num_stars
     num_psys = options.num_psys
+    doDebug = options.debug
     w0 = options.w0
     vrad = options.vrad | units.pc
     t_start = 0.0 | units.Myr
@@ -458,8 +460,9 @@ if __name__=="__main__":
 
     # Piping all Terminal Output to the Log File
     orig_stdout = sys.stdout
-    #f = open("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
-    #sys.stdout = f
+    if not doDebug:
+        f = open("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
+        sys.stdout = f
     sys.stdout.flush()
 
     # Writing the Initial Conditions & Particle Sets
@@ -526,24 +529,13 @@ if __name__=="__main__":
     #increase_index = False
     #timestep_reset = False
 
-    hp = hpy()
-    before = hp.heap()
+    write_out_step = np.floor(5 | units.Myr)/delta_t)
+
+    if doDebug:
+        hp = hpy()
+        before = hp.heap()
     while t_current <= t_end:
-        ## Artificially Evolve the Cluster to Get Multiples to Pickup Planetary Systems & Binaries
-        #if t_current >= t_start and t_current <= t_catch:
-        #    bridge_code.timestep = dt_small
-        #    t_current += dt_small
-        #    #gravity_code.parameters.timestep_parameter = 2**(-5)
-        #    gravity_code.parameters.force_sync = True
-        ## Increase the Current Time by the Normal Time-Step
-        #else:
         t_current += delta_t
-        #    increase_index = True
-        #if increase_index and not timestep_reset:
-        #    bridge_code.timestep = delta_t
-        #    #gravity_code.parameters.timestep_parameter = 2**(-5)
-        #    gravity_code.parameters.force_sync = False
-        #    timestep_reset = True
         # Evolve the Gravitational Codes ( via Bridge Code)
         bridge_code.evolve_model(t_current)
 
@@ -575,7 +567,7 @@ if __name__=="__main__":
             E0_1 = print_diagnostics(multiples_code)
 
         # Write out the "Gravitating_Bodies" Superset Every 5 Time-Steps
-        if step_index%5 == 0:
+        if step_index%write_out_step == 0:
             snapshot_s_filename = snapshots_s_dir+"/"+cluster_name+"_stars_t%.3f.hdf5" %(t_current.number)
             write_set_to_file(Individual_Stars, snapshot_s_filename, format="hdf5", close_file=True, version=2)
             snapshot_p_filename = snapshots_p_dir+"/"+cluster_name+"_planets_t%.3f.hdf5" %(t_current.number)
@@ -610,7 +602,7 @@ if __name__=="__main__":
             print('-------------\n')
             sys.stdout.flush()
 
-            if step_index%500 == 0 and step_index != 0:
+            if step_index%500 == 0 and step_index != 0 and doDebug:
                 after = hp.heap()
                 leftover = after - before
                 #sys.stdout = orig_stdout
@@ -637,7 +629,8 @@ if __name__=="__main__":
     print_diagnostics(multiples_code, E0_1)
     sys.stdout.flush()
 
-    sys.stdout = orig_stdout
+    if not doDebug:
+        sys.stdout = orig_stdout
     print('\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
     print_diagnostics(multiples_code, E0)
     print_diagnostics(multiples_code, E0_1)
