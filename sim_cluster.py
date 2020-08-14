@@ -57,7 +57,7 @@ from tycho import create, util, read, write, encounter_db
 from tycho import multiples as multiples
 #import amuse.couple.multiples as multiples
 
-set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.day, units.deg], \
+set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.Myr, units.deg], \
                        precision = 6, prefix = "", separator = "[", suffix = "]")
 
 
@@ -93,7 +93,7 @@ class EncounterHandler(object):
         self.encounterDict = defaultdict(list)
         self.debug_mode = 0
         self.limiting_mass_for_planets = 13 | units.MJupiter
-        
+
     @profile
     def log_encounter(self, time, particles_in_encounter):
         # Initialize the Temporary Particle Set to Ensure Nothing
@@ -214,12 +214,15 @@ if __name__=="__main__":
 		              help = "Enables loading a pregenerated HDF5 file in the Execution Directory.")
     parser.add_option("-N", "--grav_workers", dest="grav_workers", default=1, type="float",
                           help="Enter the desired number of PH4 workers.")
+    parser.add_option("-r", "--virial_radius", dest="vrad", default=2, type="float")
+    parser.add_options("-D", "--galactic_dist", dest="galactic_dist" default = 9, type="float")
     (options, args) = parser.parse_args()
 
     # Set Commonly Used Python Variables from Options
     num_stars = options.num_stars
     num_psys = options.num_psys
     w0 = options.w0
+    vrad = options.vrad | units.pc
     t_start = 0.0 | units.Myr
     t_end = options.t_end | units.Myr
     delta_t = options.dt | units.Myr
@@ -275,11 +278,11 @@ if __name__=="__main__":
                 # Generate a New Cluster Matching Desired Initial Conditions & the Large-Scale Converter
                 if doBinaries:
                     Starting_Stars, LargeScaleConverter, Binary_CoMs, Binary_Singles = \
-                        create.king_cluster_v2(num_stars, w0 = w0, do_binaries = True,
+                        create.king_cluster_v2(num_stars, vradius = vrad, w0 = w0, do_binaries = True,
                                                 split_binaries = True, seed = options.seed)
                 else:
                     Starting_Stars, LargeScaleConverter = \
-                        create.king_cluster_v2(num_stars, w0 = w0, do_binaries = False, seed = options.seed)
+                        create.king_cluster_v2(num_stars, vradius = vrad, w0 = w0, do_binaries = False, seed = options.seed)
 
                 # Create Initial Conditions Array
                 initial_conditions = util.store_ic(LargeScaleConverter, options)
@@ -350,7 +353,7 @@ if __name__=="__main__":
     # Setting up Galactic Potential Code (MGalaxy)
     galactic_code = MWpotentialBovy2015()
     # Moving Gravitating_Bodies into a Circular Orbit Around Galactic Core
-    rinit_from_galactic_core = 9.0 | units.kpc
+    rinit_from_galactic_core = options.galactic_dist | units.kpc
     vcircular = galactic_code.circular_velocity(rinit_from_galactic_core)
     Gravitating_Bodies.x += rinit_from_galactic_core
     Gravitating_Bodies.vy += vcircular
