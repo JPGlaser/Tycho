@@ -215,7 +215,7 @@ if __name__=="__main__":
                           help="Enter the desired number of PH4 workers.")
     parser.add_option("-r", "--virial_radius", dest="vrad", default=2, type="float")
     parser.add_option("-D", "--galactic_dist", dest="galactic_dist", default = 9, type="float")
-    parser.add_option("-i", "--interactive_debug", dest="debug", action="store_true",
+    parser.add_option("-I", "--interactive_debug", dest="debug", action="store_true",
        		          help = "Enables interactive debugging.")
     (options, args) = parser.parse_args()
 
