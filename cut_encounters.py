@@ -158,7 +158,7 @@ if __name__ == '__main__':
             temp = stellar_systems.get_heirarchical_systems_from_set(encounter_db[star_ID][0])
             print(temp)
             if len(temp.keys()) <= 1:
-                print(encounter_db[starID][0].id)
+                print(encounter_db[star_ID][0].id)
                 del encounter_db[star_ID]
     print("After Removal of Just Initializations", len(encounter_db.keys()))
     for star_ID in list(encounter_db.keys()):
