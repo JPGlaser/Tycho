@@ -80,11 +80,13 @@ class CloseEncounters():
         self.KeySystemID = int(Star_EncounterHistory[list(Star_EncounterHistory)[0]][0].split("/")[-2])
         self.ICs = defaultdict(list)
         self.StartTimes = defaultdict(list)
-        self.desired_endtime = 2.0 | units.Gyr
+        self.desired_endtime = 1.0 | units.Gyr
         self.max_end_time =  0.1 | units.Myr
         self.kep = KeplerWorkerList
         self.NBodyCodes = NBodyWorkerList
         self.SecularCode = SecularWorker
+        self.getOEData = True
+        self.OEData = defaultdict(list)
         # Create a List of StartingTimes and Encounter Initial Conditions (ICs) for all Orientations
         for RotationKey in Star_EncounterHistory.keys():
             for i, Encounter in enumerate(Star_EncounterHistory[RotationKey]):
@@ -157,9 +159,9 @@ class CloseEncounters():
 
                     # Simulate System till the Next Encounter's Start Time
                     Encounter_Inst = self.SingleEncounter(EndingState)
-                    FinalState = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1], \
+                    FinalState, data = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1], \
                                                                  start_time = EndingStateTime, \
-                                                                 GCode = self.SecularCode)
+                                                                 GCode = self.SecularCode, getOEData=self.getOEData)
 
                     # Begin Patching of the End State to the Next Encounter
                     self.ICs[RotationKey][i+1] = self.PatchedEncounter(FinalState, NextEncounter)
@@ -168,13 +170,27 @@ class CloseEncounters():
                     #print(CurrentEncounter[0].time.value_in(units.Myr))
                     #print(EndingState[0].time.value_in(units.Myr))
                     Encounter_Inst = self.SingleEncounter(EndingState)
-                    FinalState = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
+                    FinalState, data = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
                                                                  start_time = EndingStateTime, \
-                                                                 GCode=self.SecularCode)
+                                                                 GCode = self.SecularCode, getOEData=self.getOEData)
                     #print(FinalState[0].position)
 
                 # Append the FinalState of Each Encounter to its Dictionary
                 self.FinalStates[RotationKey].append(FinalState)
+                if self.getOEData and data != None:
+                    self.OEData[RotationKey].append(data)
+
+        # Stop the NBody Codes if not Provided
+        if self.kep == None:
+            self.kep[0].stop()
+            self.kep[1].stop()
+        # Start up NBodyCodes if Needed
+        if self.NBodyCodes == None:
+            self.NBodyCodes[0].stop()
+            self.NBodyCodes[1].stop()
+        # Start up SecularCode if Needed
+        if self.SecularCode == None:
+            self.SecularCode.stop()
         return None
 
     def PatchedEncounter(self, EndingState, NextEncounter, final_time):
@@ -240,11 +256,18 @@ class CloseEncounters():
 
         def SimSecularSystem(self, desired_end_time, **kwargs):
             start_time = kwargs.get("start_time", 0 | units.Myr)
+            getOEData = kwargs.get("getOEData", False)
             GCode = kwargs.get("GCode", None)
-            self.particles = enc_patching.run_secularmultiple(self.particles, desired_end_time, \
-                                                              start_time = start_time, N_output=5, \
-                                                              GCode=GCode)
-            return self.particles
+            if getOEData:
+                self.particles, data = enc_patching.run_secularmultiple(self.particles, desired_end_time, \
+                                                                  start_time = start_time, N_output=1, \
+                                                                  GCode=GCode, exportData=getOEData)
+                return self.particles, data
+            else:
+                self.particles = enc_patching.run_secularmultiple(self.particles, desired_end_time, \
+                                                                  start_time = start_time, N_output=1, \
+                                                                  GCode=GCode, exportData=getOEData)
+                return self.particles, None
 
         def SimSingleEncounter(self, max_end_time, **kwargs):
             delta_time = kwargs.get("delta_time", 100 | units.yr)
