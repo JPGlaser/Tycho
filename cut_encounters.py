@@ -149,8 +149,9 @@ if __name__ == '__main__':
     log_file = open(os.getcwd()+"/cut_encounters.log","w")
     sys.stdout = log_file
 
-    # Create teh
+    # Create the Kepler Workers
     KeplerWorkerList = []
+    converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
     for i in range(3):
         KeplerWorkerList.append(Kepler(unit_converter = converter, redirection = 'none'))
         KeplerWorkerList[i].initialize_code()
