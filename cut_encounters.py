@@ -46,7 +46,7 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None, **kwargs):
         KeplerWorkerList = []
         for i in range(3):
             KeplerWorkerList.append(Kepler(unit_converter = converter, redirection = 'none'))
-            KeplerWorkerList[i].initialize_code()
+            KeplerWorkerList[-1].initialize_code()
     systems = stellar_systems.get_heirarchical_systems_from_set(bodies, \
                                     kepler_workers=KeplerWorkerList[:2], \
                                     RelativePosition=False)
@@ -84,7 +84,9 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None, **kwargs):
     ignore_distance = mass_ratio**(1./3.) * 600 | units.AU
     if p > ignore_distance:
         print("Encounter Ignored due to Periastron of", p.in_(units.AU), "and an IgnoreDistance of",ignore_distance)
-        kep.stop()
+        if KeplerWorkerList == None:
+            for K in KeplerWorkerList:
+                K.stop()
         print("---------------------------------")
         return None
     # Move the Particles to be Relative to their Respective Center of Mass
@@ -154,7 +156,7 @@ if __name__ == '__main__':
     converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
     for i in range(3):
         KeplerWorkerList.append(Kepler(unit_converter = converter, redirection = 'none'))
-        KeplerWorkerList[i].initialize_code()
+        KeplerWorkerList[-1].initialize_code()
 
     # Read in Encounter Directory
     encounter_file = open(os.getcwd()+"/"+cluster_name+"_encounters.pkl", "rb")
