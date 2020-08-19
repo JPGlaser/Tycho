@@ -83,7 +83,6 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
     max_number_of_rotations = kwargs.get("maxRotations", 100)
     max_runtime = kwargs.get("maxRunTime", 10**5) # Units Years
     delta_time = kwargs.get("dt", 10) # Units Years
-    GCodes = [initialize_GravCode(ph4), initialize_isOverCode()]
     # Strip off Extra '/' if added by user to bring inline with os.cwd()
     if rootExecDir.endswith("/"):
         rootExecDir = rootExecDir[:-1]
@@ -103,7 +102,7 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
     for i in range(2):
         KepW.append(Kepler(unit_converter = converter, redirection = 'none'))
         KepW[-1].initialize_code()
-    NBodyW = [initialize_GravCode(ph4), initialize_isOverCode()]
+    NBodyW = [scattering.initialize_GravCode(ph4), scattering.initialize_isOverCode()]
     SecW = SecularMultiple()
 
     # Loop Over the Stars
