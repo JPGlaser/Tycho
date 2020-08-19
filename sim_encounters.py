@@ -110,30 +110,26 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
 
     # Loop Over the Stars
     for star_ID in star_IDs:
-        try:
-            # Load the Close Encounter class for the Star
-            EncounterHandler = CloseEncounters(enc_dict[star_ID], KeplerWorkerList = KepW, \
-                                               NBodyWorkerList = NBodyW, SecularWorker = SecW)
-            # Simulate Encounter
-            EncounterHandler.SimAllEncounters()
-            # Prepare Data for Pickling
-            file_name = output_MainDirectory+"/"+str(star_ID)+"_EncounterHandler.pk"
-            p_file = open(file_name, "wb")
-            # Remove Worker Lists from Class for Storage
-            EncounterHandler.kep = None
-            EncounterHandler.NBodyCodes = None
-            EncounterHandler.SecularCode = None
-            # Pickle EncounterHandler Class
-            # Note: This allows for ease-of-use when you want to revisit
-            #       a specific star's simulation set in detail.
-            pickle.dump(EncounterHandler, p_file)
-            p_file.close()
-            # Note: Ensure the EncounterHandler class is deleted incase
-            #       of a memory leak is possible in future updates.
-            del EncounterHandler
-        except:
-            print("Skipping StarID,", star_ID, "due to unforseen issues!")
-            pass
+        # Load the Close Encounter class for the Star
+        EncounterHandler = CloseEncounters(enc_dict[star_ID], KeplerWorkerList = KepW, \
+                                           NBodyWorkerList = NBodyW, SecularWorker = SecW)
+        # Simulate Encounter
+        EncounterHandler.SimAllEncounters()
+        # Prepare Data for Pickling
+        file_name = output_MainDirectory+"/"+str(star_ID)+"_EncounterHandler.pk"
+        p_file = open(file_name, "wb")
+        # Remove Worker Lists from Class for Storage
+        EncounterHandler.kep = None
+        EncounterHandler.NBodyCodes = None
+        EncounterHandler.SecularCode = None
+        # Pickle EncounterHandler Class
+        # Note: This allows for ease-of-use when you want to revisit
+        #       a specific star's simulation set in detail.
+        pickle.dump(EncounterHandler, p_file)
+        p_file.close()
+        # Note: Ensure the EncounterHandler class is deleted incase
+        #       of a memory leak is possible in future updates.
+        del EncounterHandler
     # Stop all Workers
     for Worker in KepW+NBodyW+[SecW]:
         Worker.stop()
