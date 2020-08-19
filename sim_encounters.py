@@ -37,6 +37,9 @@ from tycho import util, scattering
 from amuse.community.smalln.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 from amuse.community.ph4.interface import ph4
+from amuse.community.secularmultiple.interface import SecularMultiple
+from amuse.datamodel.trees import BinaryTreesOnAParticleSet
+from amuse.ext.orbital_elements import new_binary_from_orbital_elements
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, stellar_systems, enc_patching
