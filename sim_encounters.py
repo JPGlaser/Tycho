@@ -111,7 +111,7 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
     # Loop Over the Stars
     for star_ID in star_IDs:
         # Load the Close Encounter class for the Star
-        EncounterHandler = CloseEncounters(enc_dict[star_ID], KeplerWorkerList = KepW, \
+        EncounterHandler = scattering.CloseEncounters(enc_dict[star_ID], KeplerWorkerList = KepW, \
                                            NBodyWorkerList = NBodyW, SecularWorker = SecW)
         # Simulate Encounter
         EncounterHandler.SimAllEncounters()
