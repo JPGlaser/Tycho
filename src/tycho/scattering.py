@@ -221,7 +221,7 @@ class CloseEncounters():
             new_binary_from_orbital_elements(hoststar_at_current_encounter.mass, planet.mass, planet.semimajor_axis, \
                                              eccentricity = planet.eccentricity, inclination=planet.inclination, \
                                              longitude_of_the_ascending_node=planet.longitude_of_ascending_node, \
-                                             argument_of_periapsis=planet.argument_of_periapsis, G=units.constants.G, \
+                                             argument_of_periapsis=planet.argument_of_pericenter, G=units.constants.G, \
                                              true_anomaly = 360*rp.uniform(0.0,1.0) | units.deg) # random point in the orbit
             planet.position = nbody_PlanetStarPair[1].position
             planet.velocity = nbody_PlanetStarPair[1].velocity
