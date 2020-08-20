@@ -245,8 +245,14 @@ class CloseEncounters():
                     next_planet.velocity = current_planet.velocity + hoststar_at_next_encounter.velocity
                     break
 
+        for planet in planets_at_next_encounter:
+            print(planet.id, planet.position)
+        for particle in sys_1:
+            print(particle.id, particle.position)
+
+
         # Recombine Seperated Systems to Feed into SimSingleEncounter
-        UpdatedNextEncounter = Particles()
+        UpdatedNextEncounter = Partciles()
         UpdatedNextEncounter.add_particles(sys1)
         UpdatedNextEncounter.add_particles(sys2)
 
