@@ -253,8 +253,8 @@ class CloseEncounters():
 
         # Recombine Seperated Systems to Feed into SimSingleEncounter
         UpdatedNextEncounter = Particles()
-        UpdatedNextEncounter.add_particles(sys1)
-        UpdatedNextEncounter.add_particles(sys2)
+        UpdatedNextEncounter.add_particles(sys_1)
+        UpdatedNextEncounter.add_particles(sys_2)
 
         # Return the Updated and Patched Encounter as a Partcile Set for the N-Body Simulation
         return UpdatedNextEncounter
