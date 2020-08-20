@@ -239,8 +239,8 @@ class CloseEncounters():
         for next_planet in planets_at_next_encounter:
             for current_planet in planets_at_current_encounter:
                 if next_planet.id == current_planet.id:
-                    print(current_planet.position, hoststar_at_next_encounter.id, hoststar_at_next_encounter.position)
-                    next_planet.position = current_planet.position + hoststar_at_next_encounter.position
+                    print(current_planet.position, hoststar_at_next_encounter.id, hoststar_at_next_encounter.position[0])
+                    next_planet.position = current_planet.position + hoststar_at_next_encounter.position[0]
                     next_planet.velocity = current_planet.velocity + hoststar_at_next_encounter.velocity
                     break
 
