@@ -213,7 +213,7 @@ class CloseEncounters():
         planets_at_current_encounter = util.get_planets(children_at_EndingState)
         hoststar_at_current_encounter = util.get_stars(children_at_EndingState)[0]
         planets_at_next_encounter = util.get_planets(sys_1)
-        hoststar_at_next_encounter = util.get_stars(sys_1).select(lambda x : x == self.KeySystemID, ["id"])
+        hoststar_at_next_encounter = util.get_stars(sys_1).select(lambda x : x == self.KeySystemID, ["id"])[0]
         print(hoststar_at_next_encounter)
 
         # Update Current Positions & Velocitys from Orbital Parameters!!
@@ -240,8 +240,8 @@ class CloseEncounters():
         for next_planet in planets_at_next_encounter:
             for current_planet in planets_at_current_encounter:
                 if next_planet.id == current_planet.id:
-                    print(current_planet.position, hoststar_at_next_encounter.id, hoststar_at_next_encounter.position[0])
-                    next_planet.position = current_planet.position + hoststar_at_next_encounter.position[0]
+                    print(current_planet.position, hoststar_at_next_encounter.id, hoststar_at_next_encounter.position)
+                    next_planet.position = current_planet.position + hoststar_at_next_encounter.position
                     next_planet.velocity = current_planet.velocity + hoststar_at_next_encounter.velocity
                     break
 
