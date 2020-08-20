@@ -228,6 +228,10 @@ class CloseEncounters():
                                              true_anomaly = 360*rp.uniform(0.0,1.0) | units.deg) # random point in the orbit
             planet.position = nbody_PlanetStarPair[1].position
             planet.velocity = nbody_PlanetStarPair[1].velocity
+            print(planet.id, planet.position)
+
+        for planet in planets_at_current_encounter:
+            print(planet.id, planet.position)
 
         # Get Relative Position + Velocity of Planets at the Current Encounter
         planets_at_current_encounter.position -= hoststar_at_current_encounter.position
