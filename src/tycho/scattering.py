@@ -205,7 +205,7 @@ class CloseEncounters():
         # Seperate Next Encounter Systems to Locate the Primary System
         systems_at_next_encounter = stellar_systems.get_heirarchical_systems_from_set(NextEncounter)
         sys_1 = systems_at_next_encounter[self.KeySystemID]
-        secondary_sysID = [key for key in list(systems_in_next_encounter.keys()) if key!=int(self.KeySystemID)][0]
+        secondary_sysID = [key for key in list(systems_at_next_encounter.keys()) if key!=int(self.KeySystemID)][0]
         sys_2 = systems_at_next_encounter[secondary_sysID]
 
         # Get Planet and Star Subsets for the Current and Next Encounter
