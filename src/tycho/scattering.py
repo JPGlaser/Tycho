@@ -243,7 +243,7 @@ class CloseEncounters():
                 if next_planet.id == current_planet.id:
                     next_planet.position = current_planet.position + hoststar_at_next_encounter.position
                     next_planet.velocity = current_planet.velocity + hoststar_at_next_encounter.velocity
-                    print(current_planet.id, current_planet.position)
+                    print(next_planet.id, next_planet.position)
                     break
 
         # Recombine Seperated Systems to Feed into SimSingleEncounter
