@@ -209,8 +209,9 @@ class CloseEncounters():
         sys_2 = systems_at_next_encounter[secondary_sysID]
 
         # Get Planet and Star Subsets for the Current and Next Encounter
-        planets_at_current_encounter = util.get_planets(EndingState).select(lambda x : x == False, ["is_binary"])[0]
-        hoststar_at_current_encounter = util.get_stars(EndingState).select(lambda x : x == False, ["is_binary"])[0]
+        children_at_EndingState = EndingState.select(lambda x : x == False, ["is_binary"])
+        planets_at_current_encounter = util.get_planets(EndingState)
+        hoststar_at_current_encounter = util.get_stars(EndingState)[0]
         planets_at_next_encounter = util.get_planets(sys_1)
         hoststar_at_next_encounter = util.get_stars(sys_1)
 
