@@ -128,7 +128,7 @@ class CloseEncounters():
                 # -OR- the time to the Next Encounter is Reached
                 if len(self.StartTimes[RotationKey]) == 1 or i+1 == len(self.StartTimes[RotationKey]):
                     current_max_endtime = self.max_end_time
-                elif i+1 >= len(self.ICs[RotationKey]):
+                else:
                     current_max_endtime = self.StartTimes[RotationKey][i+1]
                 EndingState = Encounter_Inst.SimSingleEncounter(current_max_endtime, \
                                                                 start_time = self.StartTimes[RotationKey][i], \
