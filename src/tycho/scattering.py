@@ -214,12 +214,12 @@ class CloseEncounters():
         hoststar_at_current_encounter = util.get_stars(children_at_EndingState)[0]
         planets_at_next_encounter = util.get_planets(sys_1)
         hoststar_at_next_encounter = util.get_stars(sys_1).select(lambda x : x == self.KeySystemID, ["id"])[0]
-        print(hoststar_at_next_encounter)
+        #print(hoststar_at_next_encounter)
 
-        # Update Current Positions & Velocitys from Orbital Parameters!!
+        # Update Current Positions & Velocitys to Relative Coordinates from Orbital Parameters!!
         # TO-DO: Does not handle Binary Star Systems
         for planet in planets_at_current_encounter:
-            print(planet.id, planet.position)
+            #print(planet.id, planet.position)
             nbody_PlanetStarPair = \
             new_binary_from_orbital_elements(hoststar_at_current_encounter.mass, planet.mass, planet.semimajor_axis, \
                                              eccentricity = planet.eccentricity, inclination=planet.inclination, \
@@ -228,14 +228,10 @@ class CloseEncounters():
                                              true_anomaly = 360*rp.uniform(0.0,1.0) | units.deg) # random point in the orbit
             planet.position = nbody_PlanetStarPair[1].position
             planet.velocity = nbody_PlanetStarPair[1].velocity
-            print(planet.id, planet.position)
+            #print(planet.id, planet.position)
 
         for planet in planets_at_current_encounter:
             print(planet.id, planet.position)
-
-        # Get Relative Position + Velocity of Planets at the Current Encounter
-        planets_at_current_encounter.position -= hoststar_at_current_encounter.position
-        planets_at_current_encounter.velocity -= hoststar_at_current_encounter.velocity
 
         # Release a Warning when Odd Planet Number Combinations Occur (Very Unlikely, More of a Safe Guard)
         if len(planets_at_current_encounter) != len(planets_at_next_encounter):
@@ -245,9 +241,9 @@ class CloseEncounters():
         for next_planet in planets_at_next_encounter:
             for current_planet in planets_at_current_encounter:
                 if next_planet.id == current_planet.id:
-                    print(current_planet.id, current_planet.position)
                     next_planet.position = current_planet.position + hoststar_at_next_encounter.position
                     next_planet.velocity = current_planet.velocity + hoststar_at_next_encounter.velocity
+                    print(current_planet.id, current_planet.position)
                     break
 
         # Recombine Seperated Systems to Feed into SimSingleEncounter
