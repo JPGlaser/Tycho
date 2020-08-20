@@ -116,6 +116,7 @@ class CloseEncounters():
         # Begin Looping over Rotation Keys ...
         for RotationKey in self.ICs.keys():
             for i in range(len(self.ICs[RotationKey])):
+                print("!!!!!!", self.KeySystemID, RotationKey)
 
                 # Identify the Current Encounter in the List for This Rotation
                 CurrentEncounter = self.ICs[RotationKey][i]
