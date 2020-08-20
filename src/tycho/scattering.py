@@ -193,7 +193,7 @@ class CloseEncounters():
             self.SecularCode.stop()
         return None
 
-    def PatchedEncounter(self, EndingState, NextEncounter, final_time):
+    def PatchedEncounter(self, EndingState, NextEncounter):
         ''' Call this function to Patch Encounter Endstates to the Next Encounter'''
         # Determine Time to Next Encounter
         current_time = max(EndingState.time)
