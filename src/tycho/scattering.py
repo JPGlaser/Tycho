@@ -140,9 +140,9 @@ class CloseEncounters():
                 print("The Encounter was over after:", (EndingStateTime- self.StartTimes[RotationKey][i]).value_in(units.Myr))
 
 
-                #print(EndingState)
-                #print('----------')
-                #print(Encounter_Inst.particles)
+                print(EndingState.id, EndingState.x)
+                print('----------')
+                print(Encounter_Inst.particles.id, Encounter_Inst.particles.x)
 
                 # Strip off Anything Not Associated with the Key System
                 systems_in_current_encounter = stellar_systems.get_heirarchical_systems_from_set(EndingState, kepler_workers=self.kep)
