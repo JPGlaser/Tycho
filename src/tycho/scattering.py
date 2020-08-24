@@ -221,6 +221,7 @@ class CloseEncounters():
         planets_at_current_encounter = util.get_planets(children_at_EndingState)
         hoststar_at_current_encounter = util.get_stars(children_at_EndingState).select(lambda x : x == self.KeySystemID, ["id"])[0]
         planets_at_next_encounter = util.get_planets(sys_1)
+        print("Planets at Next Encount:", planets_at_next_encounter.id)
         hoststar_at_next_encounter = util.get_stars(sys_1).select(lambda x : x == self.KeySystemID, ["id"])[0]
         #print(hoststar_at_next_encounter)
 
@@ -251,7 +252,9 @@ class CloseEncounters():
                 if next_planet.id == current_planet.id:
                     next_planet.position = current_planet.position + hoststar_at_next_encounter.position
                     next_planet.velocity = current_planet.velocity + hoststar_at_next_encounter.velocity
+                    #planets_updated.append(next_planet.id)
                     break
+        #extra_planets = planets_at_next_encounter -
 
         #for planet in planets_at_next_encounter:
         #    print(planet.id, planet.position)
