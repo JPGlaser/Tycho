@@ -175,7 +175,7 @@ class CloseEncounters():
                     Encounter_Inst = self.SingleEncounter(EndingState)
                     FinalState, data = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
                                                                  start_time = EndingStateTime, \
-                                                                 GCode = self.SecularCode, getOEData=self.getOEData \
+                                                                 GCode = self.SecularCode, getOEData=self.getOEData, \
                                                                  KeySystemID = self.KeySystemID)
                     print("After Secular:", FinalState.id)
 
