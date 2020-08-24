@@ -83,7 +83,7 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
             print('First Pass')
             pass
         list_of_sqd = bodies.distances_squared(body).number
-        for nonzero_sqd in list_of_sqd[np.nonzero(list_of_sqd)]:
+        for nonzero_sqd in sorted(list_of_sqd[np.nonzero(list_of_sqd)]):
             print("Finding closet Neighbor for ID:", body.id)
             # Assign the Closest Partner
             closest_partner = bodies[[i for i, j in enumerate(list_of_sqd) if j == nonzero_sqd]]
