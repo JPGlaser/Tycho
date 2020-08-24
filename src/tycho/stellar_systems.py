@@ -381,14 +381,14 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
                 kep_s.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
                                       star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
                 a_s, e_s = kep_s.get_elements()
-                print(star.id, other_star.id, e_s)
+                print("Checking Stars' Eccentricity:", star.id, other_star.id, e_s)
                 # If they ARE NOT bound ...
                 if e_s >= 1.0:
                     noStellarHierarchy = True
                 # If they ARE bound ...
                 else:
                     # If the star is the star's neighbour's neighbour and visa-versa, then proceed.
-                    print(star.id, other_star.id, star_neighbour_id, neighbour_neighbour_id)
+                    #print(star.id, other_star.id, star_neighbour_id, neighbour_neighbour_id)
                     if star.id == neighbour_neighbour_id and other_star.id == star_neighbour_id:
                         noStellarHierarchy = False
                         print("Binary composed of Star", star.id, "and Star", other_star.id, "has been detected!")

@@ -56,7 +56,7 @@ def get_physical_radius(particle):
             elif particle.mass <= 0.1 | units.MJupiter:
                 return 4 | units.REarth
             else:
-                print(particle.id, particle.mass.value_in(units.MJupiter), "MJupiter")
+                #print(particle.id, particle.mass.value_in(units.MJupiter), "MJupiter")
                 return 1 | units.RJupiter
         else:
             return util.get_stellar_radius(particle)
@@ -70,9 +70,9 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
     '''
     hierarchical_set = Particles()
     for body in bodies:
-        print(body.id)
+        #print(body.id)
         body.radius = get_physical_radius(body)
-        print(body.radius)
+        #print(body.radius)
     # Calculate Distances to All Bodies for Each Body
     for index, body in enumerate(bodies):
         try:
@@ -95,14 +95,14 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                 if node != None:
                     print('Heirarchical Set when finding nodes:',[x.id for x in hierarchical_set if x.is_binary==True])
                     closest_partner = node
-            print("Closest Neighbor is:", closest_partner.id)
+            print("New Closest Neighbor is:", closest_partner.id)
 
             # Calculate the Orbital Elements
             k_set = Particles()
             k_set.add_particle(body.copy())
             k_set.add_particle(closest_partner.copy())
             k_set_sorted = k_set.sorted_by_attribute('mass')[::-1] # Ensures Heaviest is First
-            print(k_set.id)
+            #print(k_set.id)
             (mass1, mass2, semimajor_axis, eccentricity, \
              true_anomaly, inclination, long_asc_node, arg_per) \
                 = get_orbital_elements_from_binary(k_set_sorted, G=constants.G)
@@ -121,7 +121,7 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                     temp.radius = bigbro.radius
                     temp.position = bigbro.position
                     temp.velocity = bigbro.velocity
-                    print(bigbro.velocity)
+                    #print(bigbro.velocity)
                     hierarchical_set.add_particle(temp) # Child1 is at -2
                 if lilsis not in hierarchical_set:
                     temp = Particle()
@@ -133,7 +133,7 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                     temp.radius = lilsis.radius
                     temp.position = lilsis.position
                     temp.velocity = lilsis.velocity
-                    print(lilsis.velocity)
+                    #print(lilsis.velocity)
                     hierarchical_set.add_particle(temp) # Child2 is at -1
                 # Reset bigbro and lilsis to the copies in the set
                 i1 = np.where(hierarchical_set.id==bigbro.id)[0][0]

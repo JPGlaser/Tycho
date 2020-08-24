@@ -120,7 +120,7 @@ class CloseEncounters():
 
                 # Identify the Current Encounter in the List for This Rotation
                 CurrentEncounter = self.ICs[RotationKey][i]
-                print(CurrentEncounter[0].position)
+                #print(CurrentEncounter[0].position)
 
                 # Create the Encounter Instance with the Current Encounter
                 Encounter_Inst = self.SingleEncounter(CurrentEncounter)
@@ -136,22 +136,23 @@ class CloseEncounters():
                                                                 GCodes = self.NBodyCodes)
                 EndingStateTime = np.max(np.unique(EndingState.time))
 
-                print(Encounter_Inst.particles[0].position)
+                #print(Encounter_Inst.particles[0].position)
                 print("The Encounter was over after:", (EndingStateTime- self.StartTimes[RotationKey][i]).value_in(units.Myr))
 
 
-                print(EndingState.id, EndingState.x)
+                #print(EndingState.id, EndingState.x)
                 print('----------')
-                print(Encounter_Inst.particles.id, Encounter_Inst.particles.x)
+                #print(Encounter_Inst.particles.id, Encounter_Inst.particles.x)
 
                 # Strip off Anything Not Associated with the Key System
                 systems_in_current_encounter = stellar_systems.get_heirarchical_systems_from_set(EndingState, kepler_workers=self.kep)
 
                 # Reassign the EndingState to include the Primary System ONLY
                 EndingState = systems_in_current_encounter[self.KeySystemID]
+                print("Before Secular:", EndingState.id,  EndingState.x)
                 #print(EndingState[0].position)
 
-                print(len(self.ICs[RotationKey])-1)
+                #print(len(self.ICs[RotationKey])-1)
                 # If Encounter Patching is Desired -AND- it isn't the last Encounter
                 if i + 1 < len(self.ICs[RotationKey]) and self.doEncounterPatching:
 
@@ -163,7 +164,7 @@ class CloseEncounters():
                     FinalState, data = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1], \
                                                                  start_time = EndingStateTime, \
                                                                  GCode = self.SecularCode, getOEData=self.getOEData)
-
+                    print("After Secular:", FinalState.id)
                     # Begin Patching of the End State to the Next Encounter
                     self.ICs[RotationKey][i+1] = self.PatchedEncounter(FinalState, NextEncounter)
                 else:
@@ -174,7 +175,7 @@ class CloseEncounters():
                     FinalState, data = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
                                                                  start_time = EndingStateTime, \
                                                                  GCode = self.SecularCode, getOEData=self.getOEData)
-                    #print(FinalState[0].position)
+                    print("After Secular:", FinalState.id)
 
                 # Append the FinalState of Each Encounter to its Dictionary
                 self.FinalStates[RotationKey].append(FinalState)
@@ -218,7 +219,7 @@ class CloseEncounters():
         # Get Planet and Star Subsets for the Current and Next Encounter
         children_at_EndingState = EndingState.select(lambda x : x == False, ["is_binary"])
         planets_at_current_encounter = util.get_planets(children_at_EndingState)
-        hoststar_at_current_encounter = util.get_stars(children_at_EndingState)[0]
+        hoststar_at_current_encounter = util.get_stars(children_at_EndingState).select(lambda x : x == self.KeySystemID, ["id"])[0]
         planets_at_next_encounter = util.get_planets(sys_1)
         hoststar_at_next_encounter = util.get_stars(sys_1).select(lambda x : x == self.KeySystemID, ["id"])[0]
         #print(hoststar_at_next_encounter)
@@ -260,9 +261,11 @@ class CloseEncounters():
 
         # Recombine Seperated Systems to Feed into SimSingleEncounter
         UpdatedNextEncounter = Particles()
+        print("IDs in System 1", sys_1.id)
         UpdatedNextEncounter.add_particles(sys_1)
         if not BoundObjOnly:
             UpdatedNextEncounter.add_particles(sys_2)
+            print("IDs in System 2", sys_2.id)
 
         # Return the Updated and Patched Encounter as a Partcile Set for the N-Body Simulation
         return UpdatedNextEncounter
@@ -361,8 +364,8 @@ class CloseEncounters():
                     over = util.check_isOver(gravity.particles, over_grav)
                     print("Is it Over?", over)
                     if over:
-                        print(gravity.particles[0].position)
-                        print(GravitatingBodies[0].position)
+                        #print(gravity.particles[0].position)
+                        #print(GravitatingBodies[0].position)
                         current_time += 100 | units.yr
                         # Get to a Final State After Several Planet Orbits
                         gravity.evolve_model(current_time)
