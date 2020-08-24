@@ -376,7 +376,7 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
             # Check to see if the Nearest Neighbor is Mutual
             star_neighbour_id = closest_neighbours[index].id
             neighbour_neighbour_id = closest_neighbours[stars.id == star_neighbour_id].id[0]
-            for other_star in (stars-star)
+            for other_star in (stars-star):
                 # Check to see if the two stars are bound.
                 kep_s.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
                                       star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
