@@ -153,8 +153,8 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
                 root_particle.period = 2.0*np.pi/np.sqrt(constants.G*(bigbro.mass))*semimajor_axis**(3./2.)
                 root_particle.child1 = bigbro
                 root_particle.child2 = lilsis
-                root_particle.position = (hierarchical_set.select(lambda x : x == False, ["is_binary"])).center_of_mass()
-                root_particle.velocity = (hierarchical_set.select(lambda x : x == False, ["is_binary"])).center_of_mass_velocity()
+                root_particle.position = (hierarchical_set.select(lambda x : x == bigbro.id or x == lilsis.id, ["id"])).center_of_mass()
+                root_particle.velocity = (hierarchical_set.select(lambda x : x == bigbro.id or x == lilsis.id, ["id"])).center_of_mass_velocity()
                 root_particle.id = root_particle.child1.id+root_particle.child2.id
                 hierarchical_set.add_particle(root_particle)
                 break
