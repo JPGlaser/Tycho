@@ -383,6 +383,7 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
         py_particles.time = time
         if exportData:
             plot_times_Myr.append(time.value_in(units.Myr))
+            nodes = py_particles.select(lambda x : x == True, ["is_binary"])
             for i, node in enumerate(nodes):
                 plot_a_AU[node.child2.id].append(node.semimajor_axis.value_in(units.AU))
                 plot_e[node.child2.id].append(node.eccentricity)
