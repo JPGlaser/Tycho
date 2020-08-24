@@ -206,8 +206,14 @@ class CloseEncounters():
         # Seperate Next Encounter Systems to Locate the Primary System
         systems_at_next_encounter = stellar_systems.get_heirarchical_systems_from_set(NextEncounter)
         sys_1 = systems_at_next_encounter[self.KeySystemID]
-        secondary_sysID = [key for key in list(systems_at_next_encounter.keys()) if key!=int(self.KeySystemID)][0]
-        sys_2 = systems_at_next_encounter[secondary_sysID]
+        # Note: This was changed to handle encounters of which result in one
+        #       bound object of multiple subsystems. ~ Joe G. | 8/24/20
+        BoundObjOnly = False
+        if len(systems_at_next_encounter.keys()) == 1:
+            BoundObjOnly = True
+        else:
+            secondary_sysID = [key for key in list(systems_at_next_encounter.keys()) if key!=int(self.KeySystemID)][0]
+            sys_2 = systems_at_next_encounter[secondary_sysID]
 
         # Get Planet and Star Subsets for the Current and Next Encounter
         children_at_EndingState = EndingState.select(lambda x : x == False, ["is_binary"])
@@ -255,7 +261,8 @@ class CloseEncounters():
         # Recombine Seperated Systems to Feed into SimSingleEncounter
         UpdatedNextEncounter = Particles()
         UpdatedNextEncounter.add_particles(sys_1)
-        UpdatedNextEncounter.add_particles(sys_2)
+        if not BoundObjOnly:
+            UpdatedNextEncounter.add_particles(sys_2)
 
         # Return the Updated and Patched Encounter as a Partcile Set for the N-Body Simulation
         return UpdatedNextEncounter

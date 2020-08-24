@@ -368,14 +368,15 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
         current_system = systems.setdefault(system_id, Particles())
         current_system.add_particle(star)
         noStellarHierarchy = False
-        # If there is only a single star, there is obviously no stellar heirarchy
+        # If there is only one stars, there is obviously no stellar heirarchy in
+        # the encounter that is occuring.
         if len(stars) == 1:
             noStellarHierarchy = True
         # Check to see if the Nearest Neighbor is Mutual
         star_neighbour_id = closest_neighbours[index].id
         neighbour_neighbour_id = closest_neighbours[stars.id == star_neighbour_id].id[0]
 
-        for other_star in (stars-star):
+        for other_star in (stars-star) and not noStellarHierarchy:
             # Check to see if the two stars are bound.
             kep_s.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
                                   star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
@@ -406,6 +407,9 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
             kep_vel = star.velocity - planet.velocity
             kep_p.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
             a_p, e_p = kep_p.get_elements()
+            P_p =  kep_p.get_period()
+            Ta_p, Ma_p = kep_p.get_angles()
+            host_star_id = star.id
             if e_p < 1.0:
                 # Check to See if The Planetary System is tied to a Stellar Binary
                 # Note: Things get complicated if it is ...
@@ -413,15 +417,41 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
                     # Get Additional Information on Orbit
                     planet.semimajor_axis = a_p
                     planet.eccentricity = e_p
-                    planet.period = kep_p.get_period()
-                    planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
+                    planet.period = P_p
+                    planet.true_anomaly = Ta_p
+                    planet.mean_anomaly = Ma_p
+                    planet.host_star = star.id
                     # Add the Planet to the System Set
                     current_system.add_particle(planet)
                 else:
                     # Handling for Planetary Systems in Stellar Heirarchical Structures
-                    # Note: This is empty for now, maybe consider doing it by the
-                    #       heaviest bound stellar object as the primary.
-                    pass
+                    # Note: We check to see which other star in the current systems
+                    #       have a better boundness with the planet and choose that
+                    #       as the new host star.
+                    for other_star in util.get_stars(current_system):
+                        total_mass = other_star.mass + planet.mass
+                        kep_pos = other_star.position - planet.position
+                        kep_vel = other_star.velocity - planet.velocity
+                        kep_p.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
+                        a_p2, e_p2 = kep_p.get_elements()
+                        # Check to see if the planet is more bound to 'star' or
+                        # 'other_star'. If its more bound to 'other_star',
+                        # set the attributes to the more bound object. This will
+                        # replace *_p with the better values with each loop.
+                        if e_p2 < e_p:
+                            a_p = ap2
+                            e_p = e_p2
+                            P_p =  kep_p.get_period()
+                            Ta_p, Ma_p = kep_p.get_angles()
+                            host_star_id = other_star.id
+                    planet.semimajor_axis = a_p
+                    planet.eccentricity = e_p
+                    planet.period = P_p
+                    planet.true_anomaly = Ta_p
+                    planet.mean_anomaly = Ma_p
+                    planet.host_star = host_star_id
+                    # Add the Planet to the System Set
+                    current_system.add_particle(planet)
             else:
                 continue
     if kepler_workers == None:
