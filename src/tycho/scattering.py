@@ -205,7 +205,8 @@ class CloseEncounters():
         enc_patching.map_node_oe_to_lilsis(EndingState)
 
         # Seperate Next Encounter Systems to Locate the Primary System
-        systems_at_next_encounter = stellar_systems.get_heirarchical_systems_from_set(NextEncounter)
+        systems_at_next_encounter = stellar_systems.get_heirarchical_systems_from_set(NextEncounter, \
+                                                KeySystemID=self.KeySystemID)
         sys_1 = systems_at_next_encounter[self.KeySystemID]
         # Note: This was changed to handle encounters of which result in one
         #       bound object of multiple subsystems. ~ Joe G. | 8/24/20

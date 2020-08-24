@@ -63,7 +63,7 @@ def get_physical_radius(particle):
 
 
 
-def get_full_hierarchical_structure(bodies, RelativePosition=False):
+def get_full_hierarchical_structure(bodies, RelativePosition=False, KeySystemID=None):
     '''
     This function creates a tree-based particle set for use in hierarchical
     particle integrators (like SecularMultiple).
@@ -73,7 +73,15 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False):
         #print(body.id)
         body.radius = get_physical_radius(body)
         #print(body.radius)
-    # Calculate Distances to All Bodies for Each Body
+    # If Desired, Center the Structure on a Specific Key Body's ID
+    if KeySystemID!= None:
+        # We do this by sorting the next loop to advance in ascending order
+        # according to distance from the designated KeyBody.
+        KeyBody = bodies[bodies.id == KeySystemID]
+        for i, dist in enumerate(bodies.distances_squared(KeyBody)):
+            bodies[i].distsqd_KeyCenter = dist[0].number | dist[0].unit
+        bodies = bodies.sorted_by_attribute("distsqd_KeyCenter")
+
     for index, body in enumerate(bodies):
         try:
             if body.id in hierarchical_set.id:
