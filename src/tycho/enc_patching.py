@@ -169,7 +169,7 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False, KeySystemID=
             continue
     return hierarchical_set.copy()
 
-def check_for_stellar_collision(hierarchical_set):
+def check_for_stellar_collision(hierarchical_set, KeySystemID=None):
     '''
     This function checks for a planet entering into the Roche Limit
     of its parent star. This is meant to be used as a check for Secular
@@ -196,7 +196,7 @@ def check_for_stellar_collision(hierarchical_set):
             # Update Position and Velocity Vectors
             temp = update_posvel_from_oe(temp)
             # Hierarchy is Rebuilt and Returned
-            return get_full_hierarchical_structure(temp)
+            return get_full_hierarchical_structure(temp, KeySystemID=KeySystemID)
     return None
 
 def update_posvel_from_oe(particle_set):
@@ -286,7 +286,7 @@ def update_oe_for_PlanetarySystem(PS, hierarchical_set):
 
 def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
                         N_output=100, debug_mode=False, genT4System=False, \
-                        exportData=True, useAMD=True, GCode = None):
+                        exportData=True, useAMD=True, GCode = None, KeySystemID=None):
     '''Does what it says on the tin.'''
     try:
         hierarchical_test = [x for x in particle_set if x.is_binary == True]
@@ -294,7 +294,7 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
         py_particles = particle_set
     except:
         print("The supplied set is NOT a tree set! Building tree ...")
-        py_particles = get_full_hierarchical_structure(particle_set)
+        py_particles = get_full_hierarchical_structure(particle_set, KeySystemID=KeySystemID)
         hierarchical_test =  [x for x in py_particles if x.is_binary == True]
         print("Tree has been built with", len(hierarchical_test), "node particles.")
     nodes = py_particles.select(lambda x : x == True, ["is_binary"])

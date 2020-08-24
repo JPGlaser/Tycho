@@ -163,7 +163,8 @@ class CloseEncounters():
                     Encounter_Inst = self.SingleEncounter(EndingState)
                     FinalState, data = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1], \
                                                                  start_time = EndingStateTime, \
-                                                                 GCode = self.SecularCode, getOEData=self.getOEData)
+                                                                 GCode = self.SecularCode, getOEData=self.getOEData, \
+                                                                 KeySystemID = self.KeySystemID)
                     print("After Secular:", FinalState.id)
                     # Begin Patching of the End State to the Next Encounter
                     self.ICs[RotationKey][i+1] = self.PatchedEncounter(FinalState, NextEncounter)
@@ -174,7 +175,8 @@ class CloseEncounters():
                     Encounter_Inst = self.SingleEncounter(EndingState)
                     FinalState, data = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
                                                                  start_time = EndingStateTime, \
-                                                                 GCode = self.SecularCode, getOEData=self.getOEData)
+                                                                 GCode = self.SecularCode, getOEData=self.getOEData \
+                                                                 KeySystemID = self.KeySystemID)
                     print("After Secular:", FinalState.id)
 
                 # Append the FinalState of Each Encounter to its Dictionary
@@ -205,8 +207,7 @@ class CloseEncounters():
         enc_patching.map_node_oe_to_lilsis(EndingState)
 
         # Seperate Next Encounter Systems to Locate the Primary System
-        systems_at_next_encounter = stellar_systems.get_heirarchical_systems_from_set(NextEncounter, \
-                                                KeySystemID=self.KeySystemID)
+        systems_at_next_encounter = stellar_systems.get_heirarchical_systems_from_set(NextEncounter)
         sys_1 = systems_at_next_encounter[self.KeySystemID]
         # Note: This was changed to handle encounters of which result in one
         #       bound object of multiple subsystems. ~ Joe G. | 8/24/20
@@ -281,16 +282,19 @@ class CloseEncounters():
         def SimSecularSystem(self, desired_end_time, **kwargs):
             start_time = kwargs.get("start_time", 0 | units.Myr)
             getOEData = kwargs.get("getOEData", False)
+            KeySystemID = kwargs.get("KeySystemID", None)
             GCode = kwargs.get("GCode", None)
             if getOEData:
                 self.particles, data = enc_patching.run_secularmultiple(self.particles, desired_end_time, \
                                                                   start_time = start_time, N_output=1, \
-                                                                  GCode=GCode, exportData=getOEData)
+                                                                  GCode=GCode, exportData=getOEData, \
+                                                                  KeySystemID=KeySystemID)
                 return self.particles, data
             else:
                 self.particles = enc_patching.run_secularmultiple(self.particles, desired_end_time, \
                                                                   start_time = start_time, N_output=1, \
-                                                                  GCode=GCode, exportData=getOEData)
+                                                                  GCode=GCode, exportData=getOEData, \
+                                                                  KeySystemID=KeySystemID)
                 return self.particles, None
 
         def SimSingleEncounter(self, max_end_time, **kwargs):
