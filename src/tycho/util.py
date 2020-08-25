@@ -279,7 +279,7 @@ def get_stellar_radius(star, SEVCode = None):
     if SEVCode == None:
         sev_code.stop()
     else:
-        sev_code.particles = Particles()
+        sev_code.particles.remove_particle(temp_star)
     return radius
 
 def resolve_supernova(supernova_detection, bodies, time):
