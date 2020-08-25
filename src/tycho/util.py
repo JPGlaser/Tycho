@@ -275,7 +275,7 @@ def get_stellar_radius(star, SEVCode = None):
     sev_code.model_time = star.time
     sev_code.evolve_model(star.time)
     radius = sev_code.particles[0].radius
-    print(sev_code.particles[0].radius)
+    print(radius, sev_code.particles[0].age)
     if SEVCode == None:
         sev_code.stop()
     else:
