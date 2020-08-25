@@ -12,6 +12,7 @@ from collections import defaultdict
 from amuse.community.secularmultiple.interface import SecularMultiple
 from amuse.datamodel.trees import BinaryTreesOnAParticleSet
 from amuse.ext.orbital_elements import get_orbital_elements_from_binary
+from amuse.community.sse.interface import SSE
 
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.day, units.deg], precision = 6, prefix = "", separator = "[", suffix = "]")
 
@@ -40,7 +41,7 @@ def get_root_of_leaf(particle_set, chosen_id):
 
 
 
-def get_physical_radius(particle):
+def get_physical_radius(particle, SEVCode=None):
     '''
     This is a very basic function which pulls an estimate for the radius of
     a planet for use in Secular integrators.
@@ -59,11 +60,12 @@ def get_physical_radius(particle):
                 #print(particle.id, particle.mass.value_in(units.MJupiter), "MJupiter")
                 return 1 | units.RJupiter
         else:
-            return util.get_stellar_radius(particle)
+            return util.get_stellar_radius(particle, SEVCode)
 
 
 
-def get_full_hierarchical_structure(bodies, RelativePosition=False, KeySystemID=None):
+def get_full_hierarchical_structure(bodies, RelativePosition=False, \
+                                    KeySystemID=None, SEVCode = None):
     '''
     This function creates a tree-based particle set for use in hierarchical
     particle integrators (like SecularMultiple).
@@ -71,7 +73,7 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False, KeySystemID=
     hierarchical_set = Particles()
     for body in bodies:
         #print(body.id)
-        body.radius = get_physical_radius(body)
+        body.radius = get_physical_radius(body, SEVCode=SEVCode)
         #print(body.radius)
     # If Desired, Center the Structure on a Specific Key Body's ID
     if KeySystemID!= None:
@@ -169,7 +171,7 @@ def get_full_hierarchical_structure(bodies, RelativePosition=False, KeySystemID=
             continue
     return hierarchical_set.copy()
 
-def check_for_stellar_collision(hierarchical_set, KeySystemID=None):
+def check_for_stellar_collision(hierarchical_set, KeySystemID=None, SEVCode=None):
     '''
     This function checks for a planet entering into the Roche Limit
     of its parent star. This is meant to be used as a check for Secular
@@ -196,7 +198,7 @@ def check_for_stellar_collision(hierarchical_set, KeySystemID=None):
             # Update Position and Velocity Vectors
             temp = update_posvel_from_oe(temp)
             # Hierarchy is Rebuilt and Returned
-            return get_full_hierarchical_structure(temp, KeySystemID=KeySystemID)
+            return get_full_hierarchical_structure(temp, KeySystemID=KeySystemID, SEVCode=SEVCode)
     return None
 
 def update_posvel_from_oe(particle_set):
@@ -286,7 +288,8 @@ def update_oe_for_PlanetarySystem(PS, hierarchical_set):
 
 def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
                         N_output=100, debug_mode=False, genT4System=False, \
-                        exportData=True, useAMD=True, GCode = None, KeySystemID=None):
+                        exportData=True, useAMD=True, GCode = None, \
+                        KeySystemID=None, SEVCode=None):
     '''Does what it says on the tin.'''
     try:
         hierarchical_test = [x for x in particle_set if x.is_binary == True]
@@ -294,7 +297,7 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
         py_particles = particle_set
     except:
         print("The supplied set is NOT a tree set! Building tree ...")
-        py_particles = get_full_hierarchical_structure(particle_set, KeySystemID=KeySystemID)
+        py_particles = get_full_hierarchical_structure(particle_set, KeySystemID=KeySystemID, SEVCode=SEVCode)
         hierarchical_test =  [x for x in py_particles if x.is_binary == True]
         print("Tree has been built with", len(hierarchical_test), "node particles.")
     nodes = py_particles.select(lambda x : x == True, ["is_binary"])

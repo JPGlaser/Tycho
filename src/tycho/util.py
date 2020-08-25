@@ -31,6 +31,7 @@ from amuse.io import *
 from amuse.lab import *
 
 from amuse.ic.brokenimf import MultiplePartIMF
+from amuse.community.sse.interface import SSE
 
 # ------------------------------------- #
 #           Defining Functions          #
@@ -262,8 +263,11 @@ def ensure_approaching_binary(primary, secondary, kepler_worker=None):
     return primary, secondary
 
 
-def get_stellar_radius(star):
-    sev_code = SSE()
+def get_stellar_radius(star, SEVCode = None):
+    if SEVCode == None:
+        sev_code = SSE()
+    else:
+        sev_code = SEVCode
     temp_star = Particle()
     temp_star.mass = star.mass
     temp_star.age = star.time
@@ -272,7 +276,10 @@ def get_stellar_radius(star):
     sev_code.evolve_model(star.time)
     radius = sev_code.particles[0].radius
     print(sev_code.particles[0].radius)
-    sev_code.stop()
+    if SEVCode == None:
+        sev_code.stop()
+    else:
+        sev_code.particles = Particles()
     return radius
 
 def resolve_supernova(supernova_detection, bodies, time):

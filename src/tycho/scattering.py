@@ -22,6 +22,7 @@ from amuse.ext.orbital_elements import new_binary_from_orbital_elements
 from amuse.community.smalln.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 from amuse.community.ph4.interface import ph4
+from amuse.community.sse.interface import SSE
 
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.day, units.deg], precision = 6, prefix = "", separator = "[", suffix = "]")
 
@@ -73,7 +74,8 @@ def initialize_isOverCode(**kwargs):
     return isOverCode
 
 class CloseEncounters():
-    def __init__(self, Star_EncounterHistory, KeplerWorkerList = None, NBodyWorkerList = None, SecularWorker = None):
+    def __init__(self, Star_EncounterHistory, KeplerWorkerList = None, \
+                 NBodyWorkerList = None, SecularWorker = None, SEVWorker = None):
         '''EncounterHistory should be a List of the Format {RotationKey: [Encounter0_FilePath, ...]}'''
         # Find the Main System's Host Star's ID and Assign it to 'KeySystemID'
         self.doEncounterPatching = True
@@ -85,6 +87,7 @@ class CloseEncounters():
         self.kep = KeplerWorkerList
         self.NBodyCodes = NBodyWorkerList
         self.SecularCode = SecularWorker
+        self.SEVCode = SEVWorker
         self.getOEData = True
         self.OEData = defaultdict(list)
         # Create a List of StartingTimes and Encounter Initial Conditions (ICs) for all Orientations
@@ -112,6 +115,8 @@ class CloseEncounters():
         # Start up SecularCode if Needed
         if self.SecularCode == None:
             self.SecularCode = SecularMultiple()
+        if self.SEVCode == None:
+            self.SEVCode = SSE()
 
         # Begin Looping over Rotation Keys ...
         for RotationKey in self.ICs.keys():
@@ -165,7 +170,7 @@ class CloseEncounters():
                         FinalState, data, newcode = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1], \
                                                                      start_time = EndingStateTime, \
                                                                      GCode = self.SecularCode, getOEData=self.getOEData, \
-                                                                     KeySystemID = self.KeySystemID)
+                                                                     KeySystemID = self.KeySystemID, SCode=self.SEVCode)
                         if newcode != None:
                             self.SecularCode = newcode
                         print("After Secular:", FinalState.id)
@@ -179,7 +184,7 @@ class CloseEncounters():
                         FinalState, data, newcode = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
                                                                      start_time = EndingStateTime, \
                                                                      GCode = self.SecularCode, getOEData=self.getOEData, \
-                                                                     KeySystemID = self.KeySystemID)
+                                                                     KeySystemID = self.KeySystemID, SCode=self.SEVCode)
                         if newcode != None:
                             self.SecularCode = newcode
                         print("After Secular:", FinalState.id)
@@ -290,11 +295,12 @@ class CloseEncounters():
             getOEData = kwargs.get("getOEData", False)
             KeySystemID = kwargs.get("KeySystemID", None)
             GCode = kwargs.get("GCode", None)
+            SEVCode = kwargs.get("SCode", None)
 
             self.particles, data, newcode = enc_patching.run_secularmultiple(self.particles, desired_end_time, \
                                                                   start_time = start_time, N_output=1, \
                                                                   GCode=GCode, exportData=getOEData, \
-                                                                  KeySystemID=KeySystemID)
+                                                                  KeySystemID=KeySystemID, SEVCode=SEVCode)
             return self.particles, data, newcode
 
         def SimSingleEncounter(self, max_end_time, **kwargs):

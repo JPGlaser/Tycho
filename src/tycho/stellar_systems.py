@@ -33,6 +33,7 @@ from amuse.lab import *
 from tycho import util
 
 from amuse.community.kepler.interface import Kepler
+from amuse.community.sse.interface import SSE
 
 # ------------------------------------- #
 #           Defining Functions          #

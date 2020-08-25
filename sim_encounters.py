@@ -38,6 +38,7 @@ from amuse.community.smalln.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 from amuse.community.ph4.interface import ph4
 from amuse.community.secularmultiple.interface import SecularMultiple
+from amuse.community.sse.interface import SSE
 from amuse.datamodel.trees import BinaryTreesOnAParticleSet
 from amuse.ext.orbital_elements import new_binary_from_orbital_elements
 
@@ -107,12 +108,13 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
         KepW[-1].initialize_code()
     NBodyW = [scattering.initialize_GravCode(ph4), scattering.initialize_isOverCode()]
     SecW = SecularMultiple()
+    SEVW = SSE()
 
     # Loop Over the Stars
     for star_ID in star_IDs:
         # Load the Close Encounter class for the Star
         EncounterHandler = scattering.CloseEncounters(enc_dict[star_ID], KeplerWorkerList = KepW, \
-                                           NBodyWorkerList = NBodyW, SecularWorker = SecW)
+                                           NBodyWorkerList = NBodyW, SecularWorker = SecW, SEVWorer = SEVW)
         # Simulate Encounter
         EncounterHandler.SimAllEncounters()
         # Prepare Data for Pickling
