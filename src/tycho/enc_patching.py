@@ -299,6 +299,7 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
         print("Tree has been built with", len(hierarchical_test), "node particles.")
     nodes = py_particles.select(lambda x : x == True, ["is_binary"])
     Num_nodes = len(nodes)
+    stellarCollisionOccured = False
 
     if GCode == None:
         code = SecularMultiple()
@@ -417,11 +418,13 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
             py_particles = Particles()
             py_particles.add_particles(temp)
             code.particles.add_particles(py_particles)
+            py_particles.time = time
             #code.commit_particles()
             channel_from_particles_to_code = py_particles.new_channel_to(code.particles)
             channel_from_code_to_particles = code.particles.new_channel_to(py_particles)
             channel_from_particles_to_code.copy()
             nodes = py_particles.select(lambda x : x == True, ["is_binary"])
+            stellarCollisionOccured = True
             if useAMD:
                 PS = initialize_PlanetarySystem_from_HierarchicalSet(py_particles)
             #channel_from_code_to_particles.copy_attributes(['semimajor_axis', 'eccentricity', \
@@ -446,6 +449,11 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
             data = plot_times_Myr,plot_a_AU, plot_e, plot_peri_AU, plot_stellar_inc_deg, plot_AMDBeta
         else:
             data = plot_times_Myr,plot_a_AU, plot_e, plot_peri_AU, plot_stellar_inc_deg
-        return py_particles, data
     else:
-        return py_particles
+        data = None
+    # Set the Output Code to be the New Code if a Stellar Collision Occured.
+    if stellarCollisionOccured:
+        newcode = code
+    else:
+        newcode = None
+    return py_particles, data, newcode

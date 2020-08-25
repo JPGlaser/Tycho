@@ -161,10 +161,12 @@ class CloseEncounters():
 
                     # Simulate System till the Next Encounter's Start Time
                     Encounter_Inst = self.SingleEncounter(EndingState)
-                    FinalState, data = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1], \
+                    FinalState, data, newcode = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1], \
                                                                  start_time = EndingStateTime, \
                                                                  GCode = self.SecularCode, getOEData=self.getOEData, \
                                                                  KeySystemID = self.KeySystemID)
+                    if newcode != None:
+                        self.SecularCode = newcode
                     print("After Secular:", FinalState.id)
                     # Begin Patching of the End State to the Next Encounter
                     self.ICs[RotationKey][i+1] = self.PatchedEncounter(FinalState, NextEncounter)
@@ -173,10 +175,12 @@ class CloseEncounters():
                     #print(CurrentEncounter[0].time.value_in(units.Myr))
                     #print(EndingState[0].time.value_in(units.Myr))
                     Encounter_Inst = self.SingleEncounter(EndingState)
-                    FinalState, data = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
+                    FinalState, data, newcode = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
                                                                  start_time = EndingStateTime, \
                                                                  GCode = self.SecularCode, getOEData=self.getOEData, \
                                                                  KeySystemID = self.KeySystemID)
+                    if newcode != None:
+                        self.SecularCode = newcode
                     print("After Secular:", FinalState.id)
 
                 # Append the FinalState of Each Encounter to its Dictionary
@@ -254,9 +258,7 @@ class CloseEncounters():
                 if next_planet.id == current_planet.id:
                     next_planet.position = current_planet.position + hoststar_at_next_encounter.position
                     next_planet.velocity = current_planet.velocity + hoststar_at_next_encounter.velocity
-                    #planets_updated.append(next_planet.id)
                     break
-        #extra_planets = planets_at_next_encounter -
 
         #for planet in planets_at_next_encounter:
         #    print(planet.id, planet.position)
@@ -284,18 +286,12 @@ class CloseEncounters():
             getOEData = kwargs.get("getOEData", False)
             KeySystemID = kwargs.get("KeySystemID", None)
             GCode = kwargs.get("GCode", None)
-            if getOEData:
-                self.particles, data = enc_patching.run_secularmultiple(self.particles, desired_end_time, \
+
+            self.particles, data, newcode = enc_patching.run_secularmultiple(self.particles, desired_end_time, \
                                                                   start_time = start_time, N_output=1, \
                                                                   GCode=GCode, exportData=getOEData, \
                                                                   KeySystemID=KeySystemID)
-                return self.particles, data
-            else:
-                self.particles = enc_patching.run_secularmultiple(self.particles, desired_end_time, \
-                                                                  start_time = start_time, N_output=1, \
-                                                                  GCode=GCode, exportData=getOEData, \
-                                                                  KeySystemID=KeySystemID)
-                return self.particles, None
+            return self.particles, data, newcode
 
         def SimSingleEncounter(self, max_end_time, **kwargs):
             delta_time = kwargs.get("delta_time", 100 | units.yr)
