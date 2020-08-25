@@ -124,6 +124,7 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
         EncounterHandler.kep = None
         EncounterHandler.NBodyCodes = None
         EncounterHandler.SecularCode = None
+        EncounterHandler.SEVCode = None
         # Pickle EncounterHandler Class
         # Note: This allows for ease-of-use when you want to revisit
         #       a specific star's simulation set in detail.
@@ -133,7 +134,7 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
         #       of a memory leak is possible in future updates.
         del EncounterHandler
     # Stop all Workers
-    for Worker in KepW+NBodyW+[SecW]:
+    for Worker in KepW+NBodyW+[SecW]+SEVW:
         Worker.stop()
 
 
