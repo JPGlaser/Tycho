@@ -121,81 +121,81 @@ class CloseEncounters():
         # Begin Looping over Rotation Keys ...
         for RotationKey in self.ICs.keys():
             for i in range(len(self.ICs[RotationKey])):
-                try:
-                    print("!!!!!!", self.KeySystemID, RotationKey, i)
+                #try:
+                print("!!!!!!", self.KeySystemID, RotationKey, i)
 
-                    # Identify the Current Encounter in the List for This Rotation
-                    CurrentEncounter = self.ICs[RotationKey][i]
-                    #print(CurrentEncounter[0].position)
+                # Identify the Current Encounter in the List for This Rotation
+                CurrentEncounter = self.ICs[RotationKey][i]
+                #print(CurrentEncounter[0].position)
 
-                    # Create the Encounter Instance with the Current Encounter
-                    Encounter_Inst = self.SingleEncounter(CurrentEncounter)
+                # Create the Encounter Instance with the Current Encounter
+                Encounter_Inst = self.SingleEncounter(CurrentEncounter)
 
-                    # Simulate the Encounter till the Encounter is Over via N-Body Integrator
-                    # -OR- the time to the Next Encounter is Reached
-                    if len(self.StartTimes[RotationKey]) == 1 or i+1 == len(self.StartTimes[RotationKey]):
-                        current_max_endtime = self.max_end_time
-                    else:
-                        current_max_endtime = self.StartTimes[RotationKey][i+1]
-                    EndingState = Encounter_Inst.SimSingleEncounter(current_max_endtime, \
-                                                                    start_time = self.StartTimes[RotationKey][i], \
-                                                                    GCodes = self.NBodyCodes)
-                    EndingStateTime = np.max(np.unique(EndingState.time))
+                # Simulate the Encounter till the Encounter is Over via N-Body Integrator
+                # -OR- the time to the Next Encounter is Reached
+                if len(self.StartTimes[RotationKey]) == 1 or i+1 == len(self.StartTimes[RotationKey]):
+                    current_max_endtime = self.max_end_time
+                else:
+                    current_max_endtime = self.StartTimes[RotationKey][i+1]
+                EndingState = Encounter_Inst.SimSingleEncounter(current_max_endtime, \
+                                                                start_time = self.StartTimes[RotationKey][i], \
+                                                                GCodes = self.NBodyCodes)
+                EndingStateTime = np.max(np.unique(EndingState.time))
 
-                    #print(Encounter_Inst.particles[0].position)
-                    print("The Encounter was over after:", (EndingStateTime- self.StartTimes[RotationKey][i]).value_in(units.Myr))
+                #print(Encounter_Inst.particles[0].position)
+                print("The Encounter was over after:", (EndingStateTime- self.StartTimes[RotationKey][i]).value_in(units.Myr))
 
 
-                    #print(EndingState.id, EndingState.x)
-                    print('----------')
-                    #print(Encounter_Inst.particles.id, Encounter_Inst.particles.x)
+                #print(EndingState.id, EndingState.x)
+                print('----------')
+                #print(Encounter_Inst.particles.id, Encounter_Inst.particles.x)
 
-                    # Strip off Anything Not Associated with the Key System
-                    systems_in_current_encounter = stellar_systems.get_heirarchical_systems_from_set(EndingState, kepler_workers=self.kep)
+                # Strip off Anything Not Associated with the Key System
+                systems_in_current_encounter = stellar_systems.get_heirarchical_systems_from_set(EndingState, kepler_workers=self.kep)
 
-                    # Reassign the EndingState to include the Primary System ONLY
-                    EndingState = systems_in_current_encounter[self.KeySystemID]
-                    print("Before Secular:", EndingState.id,  EndingState.x)
-                    #print(EndingState[0].position)
+                # Reassign the EndingState to include the Primary System ONLY
+                EndingState = systems_in_current_encounter[self.KeySystemID]
+                print("Before Secular:", EndingState.id,  EndingState.x)
+                #print(EndingState[0].position)
 
-                    #print(len(self.ICs[RotationKey])-1)
-                    # If Encounter Patching is Desired -AND- it isn't the last Encounter
-                    if i + 1 < len(self.ICs[RotationKey]) and self.doEncounterPatching:
+                #print(len(self.ICs[RotationKey])-1)
+                # If Encounter Patching is Desired -AND- it isn't the last Encounter
+                if i + 1 < len(self.ICs[RotationKey]) and self.doEncounterPatching:
 
-                        # Identify the Next Encounter in the List
-                        NextEncounter = self.ICs[RotationKey][i+1]
+                    # Identify the Next Encounter in the List
+                    NextEncounter = self.ICs[RotationKey][i+1]
 
-                        # Simulate System till the Next Encounter's Start Time
-                        Encounter_Inst = self.SingleEncounter(EndingState)
-                        FinalState, data, newcode = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1], \
-                                                                     start_time = EndingStateTime, \
-                                                                     GCode = self.SecularCode, getOEData=self.getOEData, \
-                                                                     KeySystemID = self.KeySystemID, SCode=self.SEVCode)
-                        if newcode != None:
-                            self.SecularCode = newcode
-                        print("After Secular:", FinalState.id)
-                        # Begin Patching of the End State to the Next Encounter
-                        self.ICs[RotationKey][i+1] = self.PatchedEncounter(FinalState, NextEncounter)
-                    else:
-                        # Simulate System till Desired Global Endtime
-                        #print(CurrentEncounter[0].time.value_in(units.Myr))
-                        #print(EndingState[0].time.value_in(units.Myr))
-                        Encounter_Inst = self.SingleEncounter(EndingState)
-                        FinalState, data, newcode = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
-                                                                     start_time = EndingStateTime, \
-                                                                     GCode = self.SecularCode, getOEData=self.getOEData, \
-                                                                     KeySystemID = self.KeySystemID, SCode=self.SEVCode)
-                        if newcode != None:
-                            self.SecularCode = newcode
-                        print("After Secular:", FinalState.id)
+                    # Simulate System till the Next Encounter's Start Time
+                    Encounter_Inst = self.SingleEncounter(EndingState)
+                    FinalState, data, newcode = Encounter_Inst.SimSecularSystem(self.StartTimes[RotationKey][i+1], \
+                                                                 start_time = EndingStateTime, \
+                                                                 GCode = self.SecularCode, getOEData=self.getOEData, \
+                                                                 KeySystemID = self.KeySystemID, SCode=self.SEVCode)
+                    if newcode != None:
+                        self.SecularCode = newcode
+                    print("After Secular:", FinalState.id)
+                    # Begin Patching of the End State to the Next Encounter
+                    self.ICs[RotationKey][i+1] = self.PatchedEncounter(FinalState, NextEncounter)
+                else:
+                    # Simulate System till Desired Global Endtime
+                    #print(CurrentEncounter[0].time.value_in(units.Myr))
+                    #print(EndingState[0].time.value_in(units.Myr))
+                    Encounter_Inst = self.SingleEncounter(EndingState)
+                    FinalState, data, newcode = Encounter_Inst.SimSecularSystem(self.desired_endtime, \
+                                                                 start_time = EndingStateTime, \
+                                                                 GCode = self.SecularCode, getOEData=self.getOEData, \
+                                                                 KeySystemID = self.KeySystemID, SCode=self.SEVCode)
+                    if newcode != None:
+                        self.SecularCode = newcode
+                    print("After Secular:", FinalState.id)
 
-                    # Append the FinalState of Each Encounter to its Dictionary
-                    self.FinalStates[RotationKey].append(FinalState)
-                    if self.getOEData and data != None:
-                        self.OEData[RotationKey].append(data)
-                except:
-                    print("!!!! Alert: Skipping", RotationKey,"-", i, "for Star", self.KeySystemID, "due to unforseen issues!")
-                    print("!!!!        The Particle Set's IDs are as follows:", self.ICs[RotationKey][i].id)
+                # Append the FinalState of Each Encounter to its Dictionary
+                self.FinalStates[RotationKey].append(FinalState)
+                if self.getOEData and data != None:
+                    self.OEData[RotationKey].append(data)
+                #except:
+                    #print("!!!! Alert: Skipping", RotationKey,"-", i, "for Star", self.KeySystemID, "due to unforseen issues!")
+                    #print("!!!!        The Particle Set's IDs are as follows:", self.ICs[RotationKey][i].id)
 
         # Stop the NBody Codes if not Provided
         if self.kep == None:
