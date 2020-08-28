@@ -13,6 +13,8 @@ import random as rp
 from optparse import OptionParser
 import glob
 
+from guppy import hpy
+
 # Tyler's imports
 import hashlib
 import copy
@@ -52,8 +54,11 @@ from amuse.ext.galactic_potentials import MWpotentialBovy2015
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
-#from tycho import multiples3 as multiples
-import amuse.couple.multiples as multiples
+from tycho import multiples as multiples
+#import amuse.couple.multiples as multiples
+
+set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.Myr, units.deg], \
+                       precision = 6, prefix = "", separator = "[", suffix = "]")
 
 
 # ------------------------------------- #
@@ -84,33 +89,34 @@ def print_diagnostics(grav, E0=None):
 
 
 class EncounterHandler(object):
-    def handle_encounter_v5(self, time, star1, star2):
-        # Create the Scattering CoM Particle Set
-        scattering_com = Particles(particles = (star1, star2))
-        com_pos = scattering_com.center_of_mass()
-        com_vel = scattering_com.center_of_mass_velocity()
+    def __init__(self):
+        self.encounterDict = defaultdict(list)
+        self.debug_mode = 0
+        self.limiting_mass_for_planets = 13 | units.MJupiter
 
-        # Expand enconter returns a particle set with all of the children
-        # when given a particle set of two objects involved in an encounter
-        enc_particles = multiples_code.expand_encounter(scattering_com.copy(), delete=False)[0]
-
-        # Assign the time of the encounter to the Encounter Particle Set.
-        enc_particles.time = time
+    def log_encounter(self, time, particles_in_encounter):
+        # Initialize the Temporary Particle Set to Ensure Nothing
+        #    Changes inside "particles_in_encounter"
+        _temp = Particles()
+        _temp.add_particles(particles_in_encounter)
 
         # Set the Origin to be the Center of Mass for the Encounter Particle Set.
-        enc_particles.position -= com_pos
-        enc_particles.velocity -= com_vel
+        _temp.position -= particles_in_encounter.center_of_mass()
+        _temp.velocity -= particles_in_encounter.center_of_mass_velocity()
+        _temp.time = time
 
-        limiting_mass_for_planets = 13 | units.MJupiter
-        enc_stars = enc_particles[enc_particles.mass > limiting_mass_for_planets]
-        enc_planets = enc_particles[enc_particles.mass <= limiting_mass_for_planets]
-
-        # Retrieve Star IDs to Use as Dictionary Keys, and Loop Over Those IDs
-        # to Add Encounter Information to Each Star's Dictionary Entry.
-        for s_id in [str(dict_key) for dict_key in enc_particles.id if dict_key<=len(Gravitating_Bodies)]:
-            encounterInformation[s_id].append(enc_particles)
-
-       # Return True is Necessary for the Multiples Code
+        # Seperate out Stars to Nab Keys for EncounterDictionary Logging
+        enc_stars = _temp[_temp.mass > self.limiting_mass_for_planets]
+        IDs_of_StarsInEncounter = [star.id for star in enc_stars if star.id < 1000000]
+        for star_ID in IDs_of_StarsInEncounter:
+            self.encounterDict[star_ID].append(_temp)
+        if self.debug_mode > 0:
+                enc_planets = _temp[_temp.mass <= self.limiting_mass_for_planets]
+                print("Stars:", enc_stars.id)
+                print("Planets:", enc_planets.id)
+                print("Keys Set for EncounterDictionary:", IDs_of_StarsInEncounter)
+        # Delete the Temporary Particle Set
+        del _temp
         return True
 
 class ChildUpdater(object):
@@ -189,7 +195,7 @@ if __name__=="__main__":
                       help="Enter the number of planetary systems desired.")
     parser.add_option("-s", "--num-stars", dest="num_stars", default=64, type="int",
                       help="Enter the number of stars desired.")
-    parser.add_option("-t", "--timestep", dest="dt", default=0.002, type="float",
+    parser.add_option("-t", "--timestep", dest="dt", default=2**-3, type="float",
                       help="Enter the Top-Level Timestep in Myr.")
     parser.add_option("-c", "--cluster-name", dest="cluster_name", default=None, type="str",
                       help="Enter the name of the cluster (Defaults to Numerical Naming Scheme).")
@@ -207,12 +213,18 @@ if __name__=="__main__":
 		              help = "Enables loading a pregenerated HDF5 file in the Execution Directory.")
     parser.add_option("-N", "--grav_workers", dest="grav_workers", default=1, type="float",
                           help="Enter the desired number of PH4 workers.")
+    parser.add_option("-r", "--virial_radius", dest="vrad", default=2, type="float")
+    parser.add_option("-D", "--galactic_dist", dest="galactic_dist", default = 9, type="float")
+    parser.add_option("-I", "--interactive_debug", dest="debug", action="store_true",
+       		          help = "Enables interactive debugging.")
     (options, args) = parser.parse_args()
 
     # Set Commonly Used Python Variables from Options
     num_stars = options.num_stars
     num_psys = options.num_psys
+    doDebug = options.debug
     w0 = options.w0
+    vrad = options.vrad | units.pc
     t_start = 0.0 | units.Myr
     t_end = options.t_end | units.Myr
     delta_t = options.dt | units.Myr
@@ -268,11 +280,11 @@ if __name__=="__main__":
                 # Generate a New Cluster Matching Desired Initial Conditions & the Large-Scale Converter
                 if doBinaries:
                     Starting_Stars, LargeScaleConverter, Binary_CoMs, Binary_Singles = \
-                        create.king_cluster_v2(num_stars, w0 = w0, do_binaries = True,
+                        create.king_cluster_v2(num_stars, vradius = vrad, w0 = w0, do_binaries = True,
                                                 split_binaries = True, seed = options.seed)
                 else:
                     Starting_Stars, LargeScaleConverter = \
-                        create.king_cluster_v2(num_stars, w0 = w0, do_binaries = False, seed = options.seed)
+                        create.king_cluster_v2(num_stars, vradius = vrad, w0 = w0, do_binaries = False, seed = options.seed)
 
                 # Create Initial Conditions Array
                 initial_conditions = util.store_ic(LargeScaleConverter, options)
@@ -343,7 +355,7 @@ if __name__=="__main__":
     # Setting up Galactic Potential Code (MGalaxy)
     galactic_code = MWpotentialBovy2015()
     # Moving Gravitating_Bodies into a Circular Orbit Around Galactic Core
-    rinit_from_galactic_core = 9.0 | units.kpc
+    rinit_from_galactic_core = options.galactic_dist | units.kpc
     vcircular = galactic_code.circular_velocity(rinit_from_galactic_core)
     Gravitating_Bodies.x += rinit_from_galactic_core
     Gravitating_Bodies.vy += vcircular
@@ -405,13 +417,14 @@ if __name__=="__main__":
                                          gravity_constant=units.constants.G)
     multiples_code.neighbor_perturbation_limit = 0.05
     multiples_code.neighbor_veto = True
-    multiples_code.callback = EncounterHandler().handle_encounter_v5
-    multiples_code.global_debug = 1
+    multiples_code.global_debug = 0
     # ----------------------------------------------------------------------------------------------------
 
     # Setting up Stellar Evolution Code (SeBa)
     sev_code = SeBa()
     sev_code.particles.add_particles(Stellar_Bodies)
+    supernova_detection = sev_code.stopping_conditions.supernova_detection
+    supernova_detection.enable()
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -447,8 +460,9 @@ if __name__=="__main__":
 
     # Piping all Terminal Output to the Log File
     orig_stdout = sys.stdout
-    f = open("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
-    sys.stdout = f
+    if not doDebug:
+        f = open("%s_%s.log" %(cluster_name, tp.strftime("%y%m%d", tp.gmtime())), 'w')
+        sys.stdout = f
     sys.stdout.flush()
 
     # Writing the Initial Conditions & Particle Sets
@@ -459,10 +473,9 @@ if __name__=="__main__":
     # Each Key (Star's ID) will Associate with a List of Encounter Particle
     # Sets as Encounters are Detected
     encounter_file = None
-    encounterInformation = defaultdict(list)
-    for star in Individual_Stars:
-        dict_key = str(star.id)
-        encounterInformation[dict_key] = []
+    EH = EncounterHandler()
+    EH.debug_mode = 0
+    multiples_code.encounterLogger = EH.log_encounter
 
     snapshots_dir = os.getcwd()+"/Snapshots"
     snapshots_s_dir = os.getcwd()+"/Snapshots/Stars"
@@ -482,9 +495,11 @@ if __name__=="__main__":
     elif not crash:
         t_start = 10 | units.Myr # Average for Age of After Gas Ejection
         sev_code.evolve_model(t_start)
+        util.resolve_supernova(supernova_detection, Stellar_Bodies, t_start)
+
     channel_from_sev_to_stellar.copy_attributes(["mass", "luminosity", "stellar_type",
                                                  "temperature", "age"])
-    channel_from_gravitating_to_multi.copy_attributes(["mass"])
+    channel_from_gravitating_to_multi.copy_attributes(["mass", "vx", "vy", "vz"])
 
     # Ensuring that Multiples Picks up All Desired Systems
     gravity_code.parameters.begin_time = t_start
@@ -514,56 +529,49 @@ if __name__=="__main__":
     #increase_index = False
     #timestep_reset = False
 
-    while t_current <= t_end:
-        ## Artificially Evolve the Cluster to Get Multiples to Pickup Planetary Systems & Binaries
-        #if t_current >= t_start and t_current <= t_catch:
-        #    bridge_code.timestep = dt_small
-        #    t_current += dt_small
-        #    #gravity_code.parameters.timestep_parameter = 2**(-5)
-        #    gravity_code.parameters.force_sync = True
-        ## Increase the Current Time by the Normal Time-Step
-        #else:
-        t_current += delta_t
-        #    increase_index = True
-        #if increase_index and not timestep_reset:
-        #    bridge_code.timestep = delta_t
-        #    #gravity_code.parameters.timestep_parameter = 2**(-5)
-        #    gravity_code.parameters.force_sync = False
-        #    timestep_reset = True
+    write_out_step = np.floor((5 | units.Myr)/delta_t)
 
+    if doDebug:
+        hp = hpy()
+        before = hp.heap()
+    while t_current <= t_end:
+        t_current += delta_t
         # Evolve the Gravitational Codes ( via Bridge Code)
         bridge_code.evolve_model(t_current)
+
+        # Update the Leaves of the Multiples Code Particles
+        multiples_code.update_leaves_pos_vel()
 
         # Sync the Gravitational Codes w/ the "Gravitating_Bodies" Superset
         channel_from_multi_to_gravitating.copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz'])
 
         # (On a Copy) Recursively Expand All Top-Level Parent Particles & Update Subsets
         # Note: This Updates the Children's Positions Relative to their Top-Level Parent's Position
-        subset_sync = ChildUpdater()
-        subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
+        #subset_sync = ChildUpdater()
+        #subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
 
         # Evolve the Stellar Codes (via SEV Code with Channels)
-        # TODO: Ensure Binaries are Evolved Correctly (See Section 3.2.8)
+        # TODO: Ensure Tight Binaries are Evolved Correctly (See Section 3.2.8)
         sev_code.evolve_model(t_current)
+        util.resolve_supernova(supernova_detection, Stellar_Bodies, t_current)
 
         # Sync the Stellar Code w/ the "Stellar_Bodies" Superset
         channel_from_sev_to_stellar.copy_attributes(["mass", "luminosity", "stellar_type",
                                                     "temperature", "age"])
 
         # Sync the Multiples Particle Set's Masses to the Stellar_Bodies' Masses
-        # TODO: Ensure that the
-        channel_from_gravitating_to_multi.copy_attributes(["mass"])
+        channel_from_gravitating_to_multi.copy_attributes(["mass", "vx", "vy", "vz"])
         # Note: The "mass" Attribute in "Gravitating_Bodies" is synced when "Stellar_Bodies" is.
 
         if step_index == 5:
             E0_1 = print_diagnostics(multiples_code)
 
         # Write out the "Gravitating_Bodies" Superset Every 5 Time-Steps
-        if step_index%5 == 0:
+        if step_index%write_out_step == 0:
             snapshot_s_filename = snapshots_s_dir+"/"+cluster_name+"_stars_t%.3f.hdf5" %(t_current.number)
-            write_set_to_file(Individual_Stars, snapshot_s_filename, format="hdf5", close_file=True, version=2)
+            write_set_to_file(Individual_Stars, snapshot_s_filename, format="hdf5", close_file=True, version='2.0')
             snapshot_p_filename = snapshots_p_dir+"/"+cluster_name+"_planets_t%.3f.hdf5" %(t_current.number)
-            write_set_to_file(Planets, snapshot_p_filename, format="hdf5", close_file=True, version=2)
+            write_set_to_file(Planets, snapshot_p_filename, format="hdf5", close_file=True, version='2.0')
 
         # TODO: Write out a Crash File Every 50 Time-Steps
         #crash_base = "CrashSave/"+cluster_name+"_time_"+t_current.in_(units.Myr)
@@ -586,13 +594,20 @@ if __name__=="__main__":
                           cluster_name+"_encounters_backup.pkl")
             # Finally, Save the Encounter Dictionary!
             encounter_file = open(cluster_name+"_encounters.pkl", "wb")
-            pickle.dump(encounterInformation, encounter_file)
+            pickle.dump(EH.encounterDict, encounter_file)
             encounter_file.close()
             # Log that a the Encounters have been Saved!
             print('\n-------------')
             print('[UPDATE] Encounters Saved at %s!' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
             print('-------------\n')
             sys.stdout.flush()
+
+            if step_index%500 == 0 and step_index != 0 and doDebug:
+                after = hp.heap()
+                leftover = after - before
+                #sys.stdout = orig_stdout
+                sys.stdout.flush()
+                import pdb; pdb.set_trace()
 
         # Increase the Step Index
         #if increase_index:
@@ -614,7 +629,8 @@ if __name__=="__main__":
     print_diagnostics(multiples_code, E0_1)
     sys.stdout.flush()
 
-    sys.stdout = orig_stdout
+    if not doDebug:
+        sys.stdout = orig_stdout
     print('\n[UPDATE] Run Finished at %s! \n' %(tp.strftime("%Y/%m/%d-%H:%M:%S", tp.gmtime())))
     print_diagnostics(multiples_code, E0)
     print_diagnostics(multiples_code, E0_1)

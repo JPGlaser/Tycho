@@ -33,6 +33,7 @@ from amuse.lab import *
 from tycho import util
 
 from amuse.community.kepler.interface import Kepler
+from amuse.community.sse.interface import SSE
 
 # ------------------------------------- #
 #           Defining Functions          #
@@ -50,6 +51,7 @@ def get_periods(host_star, planets):
     for planet in planets:
         mu = constants.G*(planet.mass+host_star.mass)
         a = planet.semimajor_axis
+        print(mu, a, 2.0*np.pi/np.sqrt(mu)*a**(3./2.))
         planet.period = 2.0*np.pi/np.sqrt(mu)*a**(3./2.)
 
 def update_orb_elem(host_star, planets, converter=None, kepler_worker=None):
@@ -333,7 +335,9 @@ def get_planetary_systems_from_set(bodies, converter=None, RelativePosition=Fals
 
 # Note: The below function is nearly identical to the above function. However,
 #       it is to be used for determining "clumps" of systems for the CutOrAdvance
-#        function primarily. ~ Joe G. 4/1/20
+#       function primarily. ~ Joe G. 4/1/20
+# Note: This was updated to deal with stars who are bound but not mutually their
+#       respected closest neighbours. ~ Joe G. 8/21/20
 def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=None, RelativePosition=False):
     # Initialize Kepler
     if kepler_workers == None:
@@ -357,59 +361,141 @@ def get_heirarchical_systems_from_set(bodies, kepler_workers=None, converter=Non
     closest_neighbours = stars.nearest_neighbour()
     # Start Looping Through Stars to Find Bound Planets
     for index, star in enumerate(stars):
+        # If the star is already in Binary_IDs, just go to the next star.
         if star.id in binary_ids:
             continue
+        # If not, Set the System ID and Set-up Data Structure.
         system_id = star.id
-        #star.semimajor_axis, star.eccentricity, star.period, star.true_anomaly, star.mean_anomaly, star.kep_energy, star.angular_momentum = \
-        #    None, None, None, None, None, None, None
         current_system = systems.setdefault(system_id, Particles())
         current_system.add_particle(star)
-        noStellarHeirarchy = False
+        noStellarHierarchy = False
+        # If there is only one stars, there is obviously no stellar heirarchy in
+        # the encounter that is occuring.
         if len(stars) == 1:
-            noStellarHeirarchy = True
-        for other_star in (stars-star):
-            if other_star.id in binary_ids:
-                continue
-            kep_s.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
+            noStellarHierarchy = True
+        if not noStellarHierarchy:
+            # Check to see if the Nearest Neighbor is Mutual
+            star_neighbour_id = closest_neighbours[index].id
+            neighbour_neighbour_id = closest_neighbours[stars.id == star_neighbour_id].id[0]
+            for other_star in (stars-star):
+                # Check to see if the two stars are bound.
+                kep_s.initialize_from_dyn(star.mass + other_star.mass, star.x - other_star.x, star.y - other_star.y, star.z - other_star.z,
                                       star.vx - other_star.vx, star.vy - other_star.vy, star.vz - other_star.vz)
-            a_s, e_s = kep_s.get_elements()
-            #print a_s, e_s
-            #r_apo = kep_s.get_apastron()
-            #HillR = util.calc_HillRadius(a_s, e_s, other_star.mass, star.mass)
-            #print r_apo, HillR
-            if e_s >= 1.0 and other_star.id != closest_neighbours[index]:
-                noStellarHeirarchy = True
-            else:
-                noStellarHeirarchy = False
-                print("Binary composed of Star", star.id, "and Star", other_star.id, "has been detected!")
-                current_system.add_particle(other_star)
-                binary_ids.append(star.id)
-                binary_ids.append(other_star.id)
-
+                a_s, e_s = kep_s.get_elements()
+                print(star.id, other_star.id, e_s)
+                # If they ARE NOT bound ...
+                if e_s >= 1.0:
+                    noStellarHierarchy = True
+                # If they ARE bound ...
+                else:
+                    # If the star is the star's neighbour's neighbour and visa-versa, then proceed.
+                    print(star.id, other_star.id, star_neighbour_id, neighbour_neighbour_id)
+                    if star.id == neighbour_neighbour_id and other_star.id == star_neighbour_id:
+                        noStellarHierarchy = False
+                        print("Binary composed of Star", star.id, "and Star", other_star.id, "has been detected!")
+                        current_system.add_particle(other_star)
+                        binary_ids.append(star.id)
+                        binary_ids.append(other_star.id)
+                    else:
+                        print("!!! Alert: Bound Stars are not closest neighbours ...")
+                        print("!!! Current Star:", star.id,"| Other Star:", other_star.id)
+                        print("!!! CS's Neighbour:", star_neighbour_id, \
+                              "| CS's Neighbour's Neighbour:", neighbour_neighbour_id)
+    checked_planet_ids = []
+    for KeyID in systems.keys():
+        current_system = systems[KeyID]
+        sys_stars = util.get_stars(current_system)
+        noStellarHierarchy = False
+        # If there is only one stars, there is obviously no stellar heirarchy in
+        # the encounter that is occuring.
+        if len(sys_stars) == 1:
+            noStellarHierarchy = True
         for planet in planets:
+            if planet.id in checked_planet_ids:
+                continue
+            star = sys_stars[sys_stars.id == KeyID][0]
             total_mass = star.mass + planet.mass
             kep_pos = star.position - planet.position
             kep_vel = star.velocity - planet.velocity
             kep_p.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
             a_p, e_p = kep_p.get_elements()
+            P_p =  kep_p.get_period()
+            Ta_p, Ma_p = kep_p.get_angles()
+            host_star_id = star.id
             if e_p < 1.0:
                 # Check to See if The Planetary System is tied to a Stellar Binary
                 # Note: Things get complicated if it is ...
-                if noStellarHeirarchy:
+                if noStellarHierarchy:
                     # Get Additional Information on Orbit
                     planet.semimajor_axis = a_p
                     planet.eccentricity = e_p
-                    planet.period = kep_p.get_period()
-                    planet.true_anomaly, planet.mean_anomaly = kep_p.get_angles()
-                    #planet.kep_energy, planet.angular_momentum = kep_p.get_integrals()
+                    planet.period = P_p
+                    planet.true_anomaly = Ta_p
+                    planet.mean_anomaly = Ma_p
+                    planet.host_star = star.id
                     # Add the Planet to the System Set
                     current_system.add_particle(planet)
                 else:
                     # Handling for Planetary Systems in Stellar Heirarchical Structures
-                    # Note: This is empty for now, maybe consider doing it by the heaviest bound stellar object as the primary.
-                    pass
+                    # Note: We check to see which other star in the current systems
+                    #       have a better boundness with the planet and choose that
+                    #       as the new host star.
+                    for other_star in sys_stars-star:
+                        total_mass = other_star.mass + planet.mass
+                        kep_pos = other_star.position - planet.position
+                        kep_vel = other_star.velocity - planet.velocity
+                        kep_p.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
+                        a_p2, e_p2 = kep_p.get_elements()
+                        # Check to see if the planet is more bound to 'star' or
+                        # 'other_star'. If its more bound to 'other_star',
+                        # set the attributes to the more bound object. This will
+                        # replace *_p with the better values with each loop.
+                        if e_p2 < e_p:
+                            a_p = a_p2
+                            e_p = e_p2
+                            P_p =  kep_p.get_period()
+                            Ta_p, Ma_p = kep_p.get_angles()
+                            host_star_id = other_star.id
+                    planet.semimajor_axis = a_p
+                    planet.eccentricity = e_p
+                    planet.period = P_p
+                    planet.true_anomaly = Ta_p
+                    planet.mean_anomaly = Ma_p
+                    planet.host_star = host_star_id
+                    # Add the Planet to the System Set
+                    current_system.add_particle(planet)
+                checked_planet_ids.append(planet.id)
+            elif not noStellarHierarchy:
+                # Handling for Planetary Systems in Stellar Heirarchical Structures
+                # Note: We check to see which other star in the current systems
+                #       have a better boundness with the planet and choose that
+                #       as the new host star.
+                for other_star in sys_stars-star:
+                    total_mass = other_star.mass + planet.mass
+                    kep_pos = other_star.position - planet.position
+                    kep_vel = other_star.velocity - planet.velocity
+                    kep_p.initialize_from_dyn(total_mass, kep_pos[0], kep_pos[1], kep_pos[2], kep_vel[0], kep_vel[1], kep_vel[2])
+                    a_p2, e_p2 = kep_p.get_elements()
+                    # Check to see if the planet is more bound to 'star' or
+                    # 'other_star'. If its more bound to 'other_star',
+                    # set the attributes to the more bound object. This will
+                    # replace *_p with the better values with each loop.
+                    if e_p2 < e_p:
+                        a_p = a_p2
+                        e_p = e_p2
+                        P_p =  kep_p.get_period()
+                        Ta_p, Ma_p = kep_p.get_angles()
+                        host_star_id = other_star.id
+                planet.semimajor_axis = a_p
+                planet.eccentricity = e_p
+                planet.period = P_p
+                planet.true_anomaly = Ta_p
+                planet.mean_anomaly = Ma_p
+                planet.host_star = host_star_id
+                # Add the Planet to the System Set
+                current_system.add_particle(planet)
             else:
-                continue
+                print("!!! Alert: Planet is not bound nor is it bound to any other star.")
     if kepler_workers == None:
         kep_p.stop()
         kep_s.stop()

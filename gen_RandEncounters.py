@@ -74,7 +74,7 @@ def gen_scatteringIC(encounter_db, doMultipleClusters=False):
                         continue
                 # Remove Jupiter and Add Desired Planetary System
                 enc_bodies = replace_planetary_system(encounter.copy(), kepler_workers=kepler_workers)
-                write_set_to_file(enc_bodies.savepoint(0 | units.Myr), output_HDF5File, 'hdf5', version='2.0')
+                write_set_to_file(enc_bodies, output_HDF5File, 'hdf5', version='2.0',  close_file=True)
                 printID = str(star_ID)+"-"+str(encounter_ID)+"-"+str(rotation_ID)
                 print(util.timestamp(), "Finished Generating Random Encounter ID:", printID, "...")
                 rotation_ID += 1
@@ -102,7 +102,9 @@ def replace_planetary_system(bodies, kepler_workers=None, base_planet_ID=50000, 
             sys_with_planets.append(sys_key)
     # Add in a New Planetary System
     for sys_key in sys_with_planets:
-        planets = create.planetary_systems_v2(enc_systems[sys_key], 1, Jupiter=True, Earth=True, Neptune=True)
+        planets = create.planetary_systems_v2(enc_systems[sys_key], 1, Jupiter=True, \
+                                                Earth=True, Neptune=True, \
+                                                kepler_worker=kepler_workers[0])
         enc_systems[sys_key].add_particles(planets)
     new_bodies = Particles()
     for sys_key in enc_systems:

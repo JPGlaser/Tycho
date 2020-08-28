@@ -36,11 +36,20 @@ from tycho import create, util, read, write, stellar_systems
 #           Defining Functions          #
 # ------------------------------------- #
 
-def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
+def CutOrAdvance(enc_bodies, primary_sysID, converter=None, **kwargs):
     bodies = enc_bodies.copy()
-    if converter==None:
-        converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
-    systems = stellar_systems.get_heirarchical_systems_from_set(bodies, converter=converter, RelativePosition=False)
+    KeplerWorkerList = kwargs.get("kepler_workers", None)
+    # Initialize Kepler Workers if they Don't Exist
+    if KeplerWorkerList == None:
+        if converter == None:
+            converter = nbody_system.nbody_to_si(bodies.mass.sum(), 2 * np.max(bodies.radius.number) | bodies.radius.unit)
+        KeplerWorkerList = []
+        for i in range(3):
+            KeplerWorkerList.append(Kepler(unit_converter = converter, redirection = 'none'))
+            KeplerWorkerList[-1].initialize_code()
+    systems = stellar_systems.get_heirarchical_systems_from_set(bodies, \
+                                    kepler_workers=KeplerWorkerList[:2], \
+                                    RelativePosition=False)
     # Deal with Possible Key Issues with Encounters with 3+ Star Particles Being Run More than Other Systems ...
     if int(primary_sysID) not in list(systems.keys()):
         print("...: Error: Previously run binary system has been found! Not running this system ...")
@@ -68,15 +77,16 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     rel_pos = sys_1.center_of_mass() - sys_2.center_of_mass()
     rel_vel = sys_1.center_of_mass_velocity() - sys_2.center_of_mass_velocity()
     # Initialize Kepler Worker
-    kep = Kepler(unit_converter = converter, redirection = 'none')
-    kep.initialize_code()
+    kep = KeplerWorkerList[-1]
     kep.initialize_from_dyn(total_mass, rel_pos[0], rel_pos[1], rel_pos[2], rel_vel[0], rel_vel[1], rel_vel[2])
     # Check to See if the Periastron is within the Ignore Distance for 10^3 Perturbation
     p = kep.get_periastron()
     ignore_distance = mass_ratio**(1./3.) * 600 | units.AU
     if p > ignore_distance:
         print("Encounter Ignored due to Periastron of", p.in_(units.AU), "and an IgnoreDistance of",ignore_distance)
-        kep.stop()
+        if KeplerWorkerList == None:
+            for K in KeplerWorkerList:
+                K.stop()
         print("---------------------------------")
         return None
     # Move the Particles to be Relative to their Respective Center of Mass
@@ -109,8 +119,10 @@ def CutOrAdvance(enc_bodies, primary_sysID, converter=None):
     for particle in sys_2:
         particle.position += cm_pos_2
         particle.velocity += cm_vel_2
-    # Stop Kepler and Return the Systems as a Particle Set
-    kep.stop()
+    # If not provided, stop Kepler and return the Systems as a Particle Set
+    if KeplerWorkerList == None:
+        for K in KeplerWorkerList:
+            K.stop()
     # Collect the Collective Particle Set to be Returned Back
     final_set = Particles()
     final_set.add_particles(sys_1)
@@ -139,6 +151,13 @@ if __name__ == '__main__':
     log_file = open(os.getcwd()+"/cut_encounters.log","w")
     sys.stdout = log_file
 
+    # Create the Kepler Workers
+    KeplerWorkerList = []
+    converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
+    for i in range(3):
+        KeplerWorkerList.append(Kepler(unit_converter = converter, redirection = 'none'))
+        KeplerWorkerList[-1].initialize_code()
+
     # Read in Encounter Directory
     encounter_file = open(os.getcwd()+"/"+cluster_name+"_encounters.pkl", "rb")
     encounter_db = pickle.load(encounter_file)
@@ -146,19 +165,29 @@ if __name__ == '__main__':
 
     sys.stdout.flush()
     print(util.timestamp(), "Performing First Cut on Encounter Database ...")
+    print(len(encounter_db.keys()))
     sys.stdout.flush()
     # Perform a Cut on the Encounter Database
     for star_ID in list(encounter_db.keys()):
         # Cut Out Stars Recorded with Only Initialization Pickups
-        if len(encounter_db[star_ID]) <= 1:
+        if len(encounter_db[star_ID]) == 0:
             del encounter_db[star_ID]
-            continue
+        if len(encounter_db[star_ID]) == 1:
+            # Check to Ensure it is an Actual Multiples Initialization (AKA: 1 System)
+            temp = stellar_systems.get_heirarchical_systems_from_set(encounter_db[star_ID][0], kepler_workers=KeplerWorkerList[:2])
+            print(temp)
+            if len(temp.keys()) <= 1:
+                print(encounter_db[star_ID][0].id)
+                del encounter_db[star_ID]
+    print("After Removal of Just Initializations", len(encounter_db.keys()))
     for star_ID in list(encounter_db.keys()):
         # Cut Out Stars with No Planets
         enc_id_to_cut = []
         for enc_id, encounter in enumerate(encounter_db[star_ID]):
             # Refine "No Planet" Cut to Deal with Hierarchical Stellar Systems
             # We are Looping Through Encounters to Deal with Rogue Jupiter Captures
+            print(star_ID, encounter.id)
+            sys.stdout.flush()
             if len([ID for ID in encounter.id if ID >= base_planet_ID]) == 0:
                 enc_id_to_cut.append(enc_id)
             elif len([ID for ID in encounter.id if ID >= base_planet_ID]) > 0:
@@ -166,7 +195,7 @@ if __name__ == '__main__':
                     enc_id_to_cut.append(enc_id)
         for enc_id in sorted(enc_id_to_cut, reverse=True):
             del encounter_db[star_ID][enc_id]
-
+    print("After no planet encounters are removed", len(encounter_db.keys()))
     sys.stdout.flush()
     print(util.timestamp(), "Performing Second Cut on Encounter Database ...")
     sys.stdout.flush()
@@ -175,6 +204,7 @@ if __name__ == '__main__':
     for star_ID in list(encounter_db.keys()):
         if len(encounter_db[star_ID]) == 0:
             star_id_to_cut.append(star_ID)
+    print(len(star_id_to_cut))
     for star_ID in sorted(star_id_to_cut, reverse=True):
         del encounter_db[star_ID]
 
@@ -182,7 +212,7 @@ if __name__ == '__main__':
     for star_ID in list(encounter_db.keys()):
         enc_id_to_cut = []
         for enc_id, encounter in enumerate(encounter_db[star_ID]):
-            PeriastronCut = CutOrAdvance(encounter, star_ID)
+            PeriastronCut = CutOrAdvance(encounter, star_ID, kepler_workers=KeplerWorkerList)
             if PeriastronCut != None:
                 encounter_db[star_ID][enc_id] = PeriastronCut
             elif PeriastronCut == None:
@@ -194,12 +224,17 @@ if __name__ == '__main__':
     for star_ID in list(encounter_db.keys()):
         if len(encounter_db[star_ID]) == 0:
             star_id_to_cut.append(star_ID)
+    print("Star IDs to Cut:", star_id_to_cut)
     for star_ID in sorted(star_id_to_cut, reverse=True):
         del encounter_db[star_ID]
-
+    print(encounter_db.keys())
     encounter_cut_file = open(os.getcwd()+"/"+cluster_name+"_encounters_cut.pkl", "wb")
     pickle.dump(encounter_db, encounter_cut_file)
     encounter_cut_file.close()
 
     sys.stdout = orig_stdout
     log_file.close()
+
+    for K in KeplerWorkerList:
+        K.stop()
+    print("Finished cutting encounter database.")

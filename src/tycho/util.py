@@ -31,6 +31,7 @@ from amuse.io import *
 from amuse.lab import *
 
 from amuse.ic.brokenimf import MultiplePartIMF
+from amuse.community.sse.interface import SSE
 
 # ------------------------------------- #
 #           Defining Functions          #
@@ -260,3 +261,47 @@ def ensure_approaching_binary(primary, secondary, kepler_worker=None):
     if kepler_worker == None:
         kep.stop()
     return primary, secondary
+
+
+def get_stellar_radius(star, SEVCode = None):
+    if SEVCode == None:
+        sev_code = SSE()
+    else:
+        sev_code = SEVCode
+    temp_star = Particle()
+    temp_star.mass = star.mass
+    temp_star.age = star.time
+    sev_code.particles.add_particle(temp_star)
+    sev_code.model_time = star.time
+    sev_code.evolve_model(star.time)
+    radius = sev_code.particles[0].radius
+    print(radius, sev_code.particles[0].age)
+    if SEVCode == None:
+        sev_code.stop()
+    else:
+        sev_code.particles.remove_particle(temp_star)
+    return radius
+
+def resolve_supernova(supernova_detection, bodies, time):
+    # Drawn from gravity_stellar_eventdriven.py in AMUSE Textbook
+    if supernova_detection.is_set():
+        print("At time=", time.in_(units.Myr), \
+              len(supernova_detection.particles(0)), 'supernova(e) detected')
+
+        Nsn = 0
+        for ci in range(len(supernova_detection.particles(0))):
+            print(supernova_detection.particles(0))
+            particles_in_supernova \
+                = Particles(particles=supernova_detection.particles(0))
+            natal_kick_x = particles_in_supernova.natal_kick_x
+            natal_kick_y = particles_in_supernova.natal_kick_y
+            natal_kick_z = particles_in_supernova.natal_kick_z
+
+            particles_in_supernova \
+                = particles_in_supernova.get_intersecting_subset_in(bodies)
+            particles_in_supernova.vx += natal_kick_x
+            particles_in_supernova.vy += natal_kick_y
+            particles_in_supernova.vz += natal_kick_z
+            Nsn += 1
+
+        print('Resolved', Nsn, 'supernova(e)')
