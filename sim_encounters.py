@@ -17,6 +17,9 @@ import multiprocessing as mp
 import queue
 import threading
 
+# Importing Iteration Tools
+from itertools import islice
+
 # Importing cPickle/Pickle
 try:
    import pickle as pickle
