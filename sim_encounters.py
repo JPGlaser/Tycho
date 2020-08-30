@@ -141,7 +141,7 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
         #       of a memory leak is possible in future updates.
         del EncounterHandler
     # Stop all Workers
-    for Worker in KepW+NBodyW+[SecW]+SEVW:
+    for Worker in KepW+NBodyW+[SecW]+[SEVW]:
         Worker.stop()
 
 

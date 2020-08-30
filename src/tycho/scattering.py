@@ -209,6 +209,8 @@ class CloseEncounters():
         # Start up SecularCode if Needed
         if self.SecularCode == None:
             self.SecularCode.stop()
+        if self.SEVCode == None:
+            self.SEVCode.stop()
         return None
 
     def PatchedEncounter(self, EndingState, NextEncounter):
