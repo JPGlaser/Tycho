@@ -17,6 +17,9 @@ import multiprocessing as mp
 import queue
 import threading
 
+# Importing Iteration Tools
+from itertools import islice
+
 # Importing cPickle/Pickle
 try:
    import pickle as pickle
@@ -87,6 +90,7 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
     max_number_of_rotations = kwargs.get("maxRotations", 100)
     max_runtime = kwargs.get("maxRunTime", 10**5) # Units Years
     delta_time = kwargs.get("dt", 10) # Units Years
+    num_of_rotations_to_sim = kwargs.get("numRot", 100)
     # Strip off Extra '/' if added by user to bring inline with os.cwd()
     if rootExecDir.endswith("/"):
         rootExecDir = rootExecDir[:-1]
@@ -112,6 +116,9 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
 
     # Loop Over the Stars
     for star_ID in star_IDs:
+        # If desired, slice the dictionary to only simulate N Rotations
+        if num_of_rotations_to_sim != 100:
+            enc_dict[star_ID] = dict(islice(enc_dict[star_ID].items(), num_of_rotations_to_sim))
         # Load the Close Encounter class for the Star
         EncounterHandler = scattering.CloseEncounters(enc_dict[star_ID], KeplerWorkerList = KepW, \
                                            NBodyWorkerList = NBodyW, SecularWorker = SecW, SEVWorker = SEVW)
@@ -134,7 +141,7 @@ def simulate_all_close_encounters(rootExecDir, **kwargs):
         #       of a memory leak is possible in future updates.
         del EncounterHandler
     # Stop all Workers
-    for Worker in KepW+NBodyW+[SecW]+SEVW:
+    for Worker in KepW+NBodyW+[SecW]+[SEVW]:
         Worker.stop()
 
 
@@ -159,6 +166,8 @@ if __name__=="__main__":
                       help="Flag to turn on for running the script over a series of multiple clusters.")
     parser.add_option("-S", "--serial", dest="doSerial", action="store_true",
                       help="Run the program in serial?.")
+    parser.add_option("-n", "--numRot", dest="numRot", default=100, type="int",
+                      help="Number of Rotations it should sample?.")
     (options, args) = parser.parse_args()
 
     if options.doMultipleClusters:
@@ -176,6 +185,7 @@ if __name__=="__main__":
         rootDir = rootDir[:-1]
 
     doSerial = options.doSerial
+    num_of_rotations_to_sim = options.numRot
 
     base_planet_ID = 50000
 
@@ -197,7 +207,7 @@ if __name__=="__main__":
             sys.stdout.flush()
             print(util.timestamp(), "Cluster", clusterDir.split("/")[-2], "has begun processing!")
             sys.stdout.flush()
-            simulate_all_close_encounters(clusterDir)
+            simulate_all_close_encounters(clusterDir, numRot=num_of_rotations_to_sim)
     else:
         # Begin Looping Through Clusters (Each Cluster is a Queued Process)
         mpScatterExperiments(all_clusterDirs, simulate_all_close_encounters)
