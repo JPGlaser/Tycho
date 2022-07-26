@@ -61,6 +61,10 @@ from amuse.support.console import (
     set_printing_strategy, get_current_printing_strategy,
 )
 
+from amuse.datamodel import (
+    particle_attributes, Particle, Particles, ParticlesSuperset, Grid,
+)
+
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.Myr, units.deg], \
                        precision = 6, prefix = "", separator = "[", suffix = "]")
 
