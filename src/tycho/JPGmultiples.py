@@ -635,7 +635,7 @@ class Multiples(object):
                     zero_mode = self.gravity_code.parameters.zero_step_mode
                     print("Currently Set ZeroStep Mode:", zero_mode)
                     if callback != None and zero_mode==0:
-                        if self.global_debg > 0:
+                        if self.global_debug > 0:
                             print("Initiating Callback Function with CoMs:")
                             print(star1.id, star2.id)
                         cont = callback(time, star1, star2)
