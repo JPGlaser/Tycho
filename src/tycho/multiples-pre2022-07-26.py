@@ -138,7 +138,7 @@ class Multiples(object):
                  gravity_code,
                  resolve_collision_code_creation_function,
                  kepler_code,
-                 gravity_constant = None, encounter_callback = None **options):
+                 gravity_constant = None, **options):
 
         # Codes to use.
 
@@ -146,7 +146,6 @@ class Multiples(object):
         self.resolve_collision_code_creation_function \
             = resolve_collision_code_creation_function
         self.kepler = kepler_code
-        self.callback = encounter_callback
 
         # Data structures.
 
@@ -267,6 +266,17 @@ class Multiples(object):
 
         # Turn on/off experimental code to check tidal perturbation.
         self.check_tidal_perturbation = False
+
+        # Store Callback Function to be executed on a Zero-Step Encounter
+        # Restored from Tycho's Version of Multiples
+        self.callback = None
+
+        # The encounterLogger is used to store information about an encounter
+        # before said encounter is processed by the Multiples module.
+        # It has a similar function to the callback property above and is a
+        # function with the format of: encounterLogger(time, particles_in_encounter)
+        #                  Added by Joe Glaser, 8/12/20
+        self.encounterLogger = None
 
     @property
     def particles(self):
@@ -541,8 +551,8 @@ class Multiples(object):
             print('number of multiples:', len(self.root_to_tree))
             sys.stdout.flush()
 
-    def evolve_model(self, end_time, callback=self.callback):
-
+    def evolve_model(self, end_time, **kwargs):
+        callback = kwargs.get("callback", self.callback)
         stopping_condition = \
             self.gravity_code.stopping_conditions.collision_detection
         #stopping_condition.enable()  # allow user to set this; don't override
@@ -626,16 +636,7 @@ class Multiples(object):
 
                     star1 = star1.as_particle_in_set(self._inmemory_particles)
                     star2 = star2.as_particle_in_set(self._inmemory_particles)
-
                     cont = True
-                    # Change Made by Joe Glaser 08/08/2020
-                    # This moves the callback function to not be called if
-                    # an encounter if it is not in zero-timestep mode.
-                    zero_mode = self.gravity_code.parameters.zero_step_mode
-                    print("Currently Set ZeroStep Mode:", zero_mode)
-                    if callback != None and zero_mode==0:
-                        print("Initiating Callback Function ...")
-                        cont = callback(time, star1, star2)
 
                     if self.global_debug > 0:
                         print('initial top-level:',         \
@@ -647,7 +648,14 @@ class Multiples(object):
                         print('                   v.r =', vr)
                     sys.stdout.flush()
 
-                    # Do the scattering.
+                    # Change Made by Joe Glaser 08/08/2020
+                    # This moves the callback function to not be called if
+                    # an encounter if it is not in zero-timestep mode.
+                    zero_mode = self.gravity_code.parameters.zero_step_mode
+                    print("Currently Set ZeroStep Mode:", zero_mode)
+                    if callback != None and zero_mode==0:
+                        print("Initiating Callback Function ...")
+                        cont = callback(time, star1, star2)
 
                     veto, dE_top_level_scatter, dphi_top, dE_mul, \
                         dphi_int, dE_int, final_particles \
@@ -657,7 +665,6 @@ class Multiples(object):
                                                 self.kepler)
 
                     if cont and not veto:
-
                         # Recommit is done automatically and reinitializes all
                         # particles.  Later we will just reinitialize a list if
                         # gravity_code supports it. TODO
@@ -836,6 +843,10 @@ class Multiples(object):
         # Add stars to the encounter set, add in components when we
         # encounter a binary/multiple.
 
+        # Added in delete keyword (default is True which is the same
+        # as before. This allows for use in Tycho's callback function.
+        # Added by Joe Glaser on 8/11/20
+
         particles_in_encounter = Particles(0)
         Emul = zero
 
@@ -845,9 +856,6 @@ class Multiples(object):
                 isbin, dEmul = get_multiple_energy2(tree, self.gravity_constant)
                 Emul += dEmul
                 openup_tree(star, tree, particles_in_encounter)
-                # Added in delete keyword (default is True which is the same
-                # as before. This allows for use in Tycho's callback function.
-                # Added by Joe Glaser on 8/11/20
                 if delete: del self.root_to_tree[star]
             else:
                 particles_in_encounter.add_particle(star)
@@ -1072,7 +1080,7 @@ class Multiples(object):
             gravity_stars.remove_particle(s)
 
         #----------------------------------------------------------------
-        # 3. Create a particle set to perform the close encounter
+        # 3a. Create a particle set to perform the close encounter
         #    calculation.
 
         # Note this has to delete the root_to_tree particle in
@@ -1082,7 +1090,6 @@ class Multiples(object):
 
         particles_in_encounter, Emul_init \
                 = self.expand_encounter(scattering_stars)
-
         # Terminology from the PDF description:
 
         E1 = particles_in_encounter.kinetic_energy() + \
@@ -1094,6 +1101,14 @@ class Multiples(object):
             print('E1 =', E1)
             print('Emul_init =', Emul_init)
             print('dphi_1 =', dphi_1)
+
+        #----------------------------------------------------------------
+        # 3b. Log the Encounter with the user provided encounterLogger.
+        #     Only runs this if the gravity_code is NOT in zero_step_mode.
+        #     Added by Joe Glaser on 8/12/20
+        zeromode = self.gravity_code.parameters.zero_step_mode
+        if self.encounterLogger != None and zeromode == 0:
+            self.encounterLogger(global_time, particles_in_encounter)
 
         #----------------------------------------------------------------
         # 4. Run the small-N encounter in the center of mass frame.
@@ -2305,15 +2320,15 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
     M,th = kep.get_angles()
     a,e = kep.get_elements()
 
-    rescale = (compress and sep12 > scale**2) \
-                or (not compress and sep12 < scale**2)
-
-    min_scale = 0.1*scale			# see note above
-
     if 0:
         print(pre, 'M, th, a, e, =', M, th, a, e)
         print(pre, 'compress =', compress)
         print(pre, sep12, scale**2, min_scale**2)
+
+    rescale = (compress and sep12 > scale**2) \
+                or (not compress and sep12 < scale**2)
+
+    min_scale = 0.1*scale			# see note above
 
     if compress == True:
         rescale = rescale or sep12 < min_scale**2

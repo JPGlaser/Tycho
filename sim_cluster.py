@@ -494,12 +494,21 @@ if __name__=="__main__":
     util.init_smalln(unit_converter=SmallScaleConverter)
     # ----------------------------------------------------------------------------------------------------
 
+    # Initializing the Encounters Dictionary
+    # Each Key (Star's ID) will Associate with a List of Encounter Particle
+    # Sets as Encounters are Detected
+    encounter_file = None
+    EH = EncounterHandler()
+    EH.debug_mode = 1
+
     # Setting up Encounter Handler (Multiples)
     multiples_code = multiples.Multiples(gravity_code, util.new_smalln, kep,
-                                         gravity_constant=units.constants.G)
+                                         gravity_constant=units.constants.G,
+                                         encounter_callback = EH.log_encounter_v5)
     multiples_code.neighbor_perturbation_limit = 0.05
     multiples_code.neighbor_veto = True
     multiples_code.global_debug = 0
+
     # ----------------------------------------------------------------------------------------------------
 
     # Setting up Stellar Evolution Code (SeBa)
@@ -550,15 +559,6 @@ if __name__=="__main__":
     # Writing the Initial Conditions & Particle Sets
     if not crash:
         write.write_initial_state(Gravitating_Bodies, initial_conditions, cluster_name)
-
-    # Initializing the Encounters Dictionary
-    # Each Key (Star's ID) will Associate with a List of Encounter Particle
-    # Sets as Encounters are Detected
-    encounter_file = None
-    EH = EncounterHandler()
-    EH.debug_mode = 1
-    #multiples_code.encounterLogger = EH.log_encounter
-    multiples_code.callback = EH.log_encounter_v5
 
     snapshots_dir = os.getcwd()+"/Snapshots"
     snapshots_s_dir = os.getcwd()+"/Snapshots/Stars"
