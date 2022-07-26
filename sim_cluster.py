@@ -124,7 +124,7 @@ class EncounterHandler(object):
     def log_encounter_v5(self, time, star1, star2):
         # Create the Scattering CoM Particle Set
         if self.debug_mode > 0:
-            f = open(os.getcwd()+"EH-Debug.log", "wa")
+            f = open(os.getcwd()+"/EH-Debug.log", "a")
             sys.stdout = f
 
         if self.debug_mode > 0:
@@ -132,6 +132,7 @@ class EncounterHandler(object):
             print(star1)
             print(star2)
             print("!-----------------------------")
+            sys.stdout.flush()
         scattering_com = Particles()
         scattering_com.add_particle(star1)
         scattering_com.add_particle(star2)
@@ -157,15 +158,17 @@ class EncounterHandler(object):
         # Set the Origin to be the Center of Mass for the Encounter Particle Set.
         enc_particles.position -= com_pos
         enc_particles.velocity -= com_vel
+        enc_stars = enc_particles[enc_particles.mass > self.limiting_mass_for_planets]
+        enc_planets = enc_particles[enc_particles.mass <= self.limiting_mass_for_planets]
         if self.debug_mode > 0:
-            enc_stars = enc_particles[enc_particles.mass > self.limiting_mass_for_planets]
-            enc_planets = enc_particles[enc_particles.mass <= self.limiting_mass_for_planets]
             print("Stars:", enc_stars.id)
             print("Planets:", enc_planets.id)
+            sys.stdout.flush()
 
         IDs_of_StarsInEncounter = [star.id for star in enc_stars if star.id < 1000000]
         if self.debug_mode > 0:
             print(IDs_of_StarsInEncounter)
+            sys.stdout.flush()
         for star_ID in IDs_of_StarsInEncounter:
             self.encounterDict[star_ID].append(enc_particles.copy())
 
@@ -509,7 +512,7 @@ if __name__=="__main__":
 
 
     # Setting up Gravity Coupling Code (Bridge)
-    bridge_code = Bridge(verbose=False)
+    bridge_code = Bridge()
     bridge_code.add_system(multiples_code, (galactic_code,))
     #bridge_code.timestep = delta_t
     # ----------------------------------------------------------------------------------------------------
