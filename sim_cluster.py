@@ -93,6 +93,7 @@ class EncounterHandler(object):
         self.encounterDict = defaultdict(list)
         self.debug_mode = 0
         self.limiting_mass_for_planets = 13 | units.MJupiter
+        self.original_stdout = sys.stdout
 
     def log_encounter_classbased_v1(self, time, particles_in_encounter):
         # Initialize the Temporary Particle Set to Ensure Nothing
@@ -122,6 +123,10 @@ class EncounterHandler(object):
 
     def log_encounter_v5(self, time, star1, star2):
         # Create the Scattering CoM Particle Set
+        if self.debug_mode > 0:
+            f = open(os.getcwd()+"EH-Debug.log", "wa")
+            sys.stdout = f
+
         if self.debug_mode > 0:
             print("!-----------------------------")
             print(star1)
@@ -159,10 +164,15 @@ class EncounterHandler(object):
             print("Planets:", enc_planets.id)
 
         IDs_of_StarsInEncounter = [star.id for star in enc_stars if star.id < 1000000]
-        print(IDs_of_StarsInEncounter)
+        if self.debug_mode > 0:
+            print(IDs_of_StarsInEncounter)
         for star_ID in IDs_of_StarsInEncounter:
             self.encounterDict[star_ID].append(enc_particles.copy())
 
+        if self.debug_mode > 0:
+            print(self.encounterDict[star_ID])
+            sys.stdout.flush()
+            sys.stdout = self.original_stdout
        # Return True is Necessary for the Multiples Code
         return True
 
