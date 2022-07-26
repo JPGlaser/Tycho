@@ -509,7 +509,7 @@ if __name__=="__main__":
     # Sets as Encounters are Detected
     encounter_file = None
     EH = EncounterHandler()
-    EH.debug_mode = 1
+    EH.debug_mode = 0
 
     # Setting up Encounter Handler (Multiples)
     multiples_code = TychoMultiples.Multiples(gravity_code, util.new_smalln, kep,
