@@ -37,7 +37,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.datamodel import particle_attributes
 from amuse.io import *
-from amuse.lab import *
+#from amuse.lab import *
 
 # Import the Amuse Stellar Packages
 from amuse.ic.kingmodel import new_king_model
