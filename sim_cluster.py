@@ -256,8 +256,11 @@ if __name__=="__main__":
         # Check if a Pregenerated Cluster is Desired
         if pregen:
             # Load the Pregenerated Cluster
-            pregen_file = "/home/draco/jthornton/Tycho/PregenClusters/DracoM3V02AnewSFplt0975.amuse"
-            Starting_Stars = read_set_from_file(pregen_file, format='amuse')
+            #pregen_file = "/home/draco/jthornton/Tycho/PregenClusters/DracoM3V02AnewSFplt0975.amuse"
+            pregen_file = os.getcwd()+"/"+cluster_name+"_IC.amuse"
+            Starting_Stars = read_set_from_file(pregen_file, format='amuse', close_file=True)
+            # Remove Stellar Type to Prevent Errors from Kepler Worker
+            Starting_Stars.remove_attribute_from_store('stellar_type')
             # Define Necessary Varriables & Particle Traits
             num_stars = len(Starting_Stars)
             Starting_Stars.type = "star"
@@ -268,7 +271,21 @@ if __name__=="__main__":
                                                            Starting_Stars.virial_radius())
             initial_conditions = util.store_ic(LargeScaleConverter, options)
             # Add Planets to the Pregenerated Cluster
-            Starting_Planets = create.planetary_systems_v2(Starting_Stars, num_psys, Jupiter=False, TestP=True)
+            # Select Possible Stars to Become Planetary Systems (NO BINARIES ATM)
+            HostStar_MinMass = 0.09 | units.MSun # TRAPPIST-1
+            HostStar_MaxMass = 4.00 | units.MSun # NGC 4349-127 or HD 13189
+            PossibleHostStars = Starting_Stars.copy()
+            for star in PossibleHostStars:
+                if star.mass < HostStar_MinMass or star.mass > HostStar_MaxMass:
+                    PossibleHostStars.remove_particle(star)
+            if num_psys = 32:
+                num_psys = int(len(PossibleHostStars)*0.6)
+            # Create the Planetary Systems in SU Units
+            PSysConverter = nbody_system.nbody_to_si(2*np.mean(PossibleHostStars.mass),
+                                                           2*np.mean(PossibleHostStars.radius))
+            kep_p = Kepler(unit_converter = PSysConverter, redirection = 'none')
+            Starting_Planets = create.planetary_systems_v2(PossibleHostStars, num_psys, Earth=False, Jupiter=True, TestP=False, kepler_worker = kep_p)
+            kep_p.stop()
         else:
             # Attempt to Load Matching Initial Conditions
             if os.path.exists(os.getcwd()+"/InitialState"):
@@ -312,13 +329,12 @@ if __name__=="__main__":
                                                    2*np.mean(Starting_Stars.radius))
     # Ensuring the Minimum Interaction Radius for Stars is Held
     for star in Starting_Stars:
-        min_star_radius = 500 | units.AU
+        min_star_radius = 1000 | units.AU
         max_star_radius = 10000 | units.AU
         if star.radius <= min_star_radius:
             star.radius = min_star_radius
         elif star.radius >= max_star_radius:
             star.radius = max_star_radius
-
 
 # ------------------------------------- #
 #    Setting up Req Particle Subsets    #
@@ -326,7 +342,9 @@ if __name__=="__main__":
 
     # Setting up "Individual_Stars" (Tracking Individual Stellar Bodies)
     Individual_Stars = Starting_Stars.copy()
-    Individual_Stars.original_mass = Individual_Stars.mass
+    if not pregen:
+        # Set Initial Mass to the Initial Stellar Mass
+        Individual_Stars.initial_mass = Individual_Stars.mass
 
     # Setting up "Planets" (Tracking Planets)
     Planets = Starting_Planets.copy()
@@ -490,8 +508,9 @@ if __name__=="__main__":
     # Artificially Age the Stars
     # TODO: Work on Non-Syncronus Stellar Evolution
     if pregen:
-        t_start = 0.360453276406 | units.Myr # Average for Age of Draco Cluster
+        t_start = Starting_Stars.ht.mean().value_in(units.Myr) | units.Myr # Average for Age of the Pregen Cluster's Stars
         sev_code.evolve_model(t_start)
+        util.resolve_supernova(supernova_detection, Stellar_Bodies, t_start)
     elif not crash:
         t_start = 10 | units.Myr # Average for Age of After Gas Ejection
         sev_code.evolve_model(t_start)
