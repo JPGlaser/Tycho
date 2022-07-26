@@ -57,6 +57,10 @@ from tycho import create, util, read, write, encounter_db
 from tycho import multiples as multiples
 #import amuse.couple.multiples as multiples
 
+from amuse.support.console import (
+    set_printing_strategy, get_current_printing_strategy,
+)
+
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.Myr, units.deg], \
                        precision = 6, prefix = "", separator = "[", suffix = "]")
 
