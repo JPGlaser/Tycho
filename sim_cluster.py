@@ -258,13 +258,17 @@ if __name__=="__main__":
             # Load the Pregenerated Cluster
             #pregen_file = "/home/draco/jthornton/Tycho/PregenClusters/DracoM3V02AnewSFplt0975.amuse"
             pregen_file = os.getcwd()+"/"+cluster_name+"_IC.amuse"
-            Starting_Stars = read_set_from_file(pregen_file, format='amuse', close_file=True)
+            Imported_Stars = read_set_from_file(pregen_file, format='amuse', close_file=True)
             # Remove Stellar Type to Prevent Errors from Kepler Worker
-            Starting_Stars.remove_attribute_from_store('stellar_type')
+            try:
+                Imported_Stars.remove_attribute_from_store('stellar_type')
+            except:
+                pass
             # Define Necessary Varriables & Particle Traits
-            num_stars = len(Starting_Stars)
+            num_stars = len(Imported_Stars)
+            Starting_Stars = Imported_Stars.sorted_by_attribute('id')
             Starting_Stars.type = "star"
-            Starting_Stars.id = np.arange(num_stars) + 1
+            Starting_Stars.se_radius = Imported_Stars.radius
             Starting_Stars.radius = 2000*Starting_Stars.mass/(1.0 | units.MSun) | units.AU
             # Create the Large Scale Converter & Store the Converter & Initial Conditions
             LargeScaleConverter = nbody_system.nbody_to_si(Starting_Stars.total_mass(),
@@ -278,7 +282,7 @@ if __name__=="__main__":
             for star in PossibleHostStars:
                 if star.mass < HostStar_MinMass or star.mass > HostStar_MaxMass:
                     PossibleHostStars.remove_particle(star)
-            if num_psys = 32:
+            if num_psys == 32:
                 num_psys = int(len(PossibleHostStars)*0.6)
             # Create the Planetary Systems in SU Units
             PSysConverter = nbody_system.nbody_to_si(2*np.mean(PossibleHostStars.mass),
