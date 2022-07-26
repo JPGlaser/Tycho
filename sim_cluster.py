@@ -676,6 +676,10 @@ if __name__=="__main__":
                           cluster_name+"_encounters_backup.pkl")
             # Finally, Save the Encounter Dictionary!
             encounter_file = open(cluster_name+"_encounters.pkl", "wb")
+            if EH.debug_mode > 0:
+                stars_in_EHDB = EH.encounter_db.keys()
+                print(stars_in_EHDB)
+                print(EH.encounter_db[stars_in_EHDB[0]])
             pickle.dump(EH.encounterDict, encounter_file)
             encounter_file.close()
             # Log that a the Encounters have been Saved!
