@@ -651,9 +651,9 @@ if __name__=="__main__":
             snapshot_p_filename = snapshots_p_dir+"/"+cluster_name+"_planets_t%.3f.hdf5" %(t_current.number)
             write_set_to_file(Planets, snapshot_p_filename, format="hdf5", close_file=True, version='2.0')
             snapshot_gb_filename = snapshots_gb_dir+"/"+cluster_name+"_gravitating_t%.3f.hdf5" %(t_current.number)
-            write_set_to_file(GravitatingBodies, snapshot_gb_filename, format="hdf5", close_file=True, version='2.0')
+            write_set_to_file(Gravitating_Bodies, snapshot_gb_filename, format="hdf5", close_file=True, version='2.0')
             snapshot_sb_filename = snapshots_sb_dir+"/"+cluster_name+"_sev_t%.3f.hdf5" %(t_current.number)
-            write_set_to_file(StellarBodies, snapshot_sb_filename, format="hdf5", close_file=True, version='2.0')
+            write_set_to_file(Stellar_Bodies, snapshot_sb_filename, format="hdf5", close_file=True, version='2.0')
 
         # TODO: Write out a Crash File Every 50 Time-Steps
         #crash_base = "CrashSave/"+cluster_name+"_time_"+t_current.in_(units.Myr)
