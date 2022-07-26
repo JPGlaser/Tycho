@@ -542,7 +542,7 @@ class Multiples(object):
             sys.stdout.flush()
 
     def evolve_model(self, end_time, callback=None):
-        if self.callback != None
+        if self.callback != None:
             callback = self.callback
         stopping_condition = \
             self.gravity_code.stopping_conditions.collision_detection
