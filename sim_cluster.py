@@ -54,8 +54,8 @@ from amuse.ext.galactic_potentials import MWpotentialBovy2015
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
-from tycho import multiples as multiples
-#import amuse.couple.multiples as multiples
+#from tycho import multiples as multiples
+import amuse.couple.multiples as multiples
 
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.Myr, units.deg], \
                        precision = 6, prefix = "", separator = "[", suffix = "]")
@@ -94,7 +94,7 @@ class EncounterHandler(object):
         self.debug_mode = 0
         self.limiting_mass_for_planets = 13 | units.MJupiter
 
-    def log_encounter(self, time, particles_in_encounter):
+    def log_encounter_classbased_v1(self, time, particles_in_encounter):
         # Initialize the Temporary Particle Set to Ensure Nothing
         #    Changes inside "particles_in_encounter"
         _temp = Particles()
@@ -118,6 +118,52 @@ class EncounterHandler(object):
                 print(self.encounterDict[star_ID][-1])
         # Delete the Temporary Particle Set
         #del _temp
+        return True
+
+    def log_encounter_v5(self, time, star1, star2):
+        # Create the Scattering CoM Particle Set
+        if self.debug_mode > 0:
+            print("!-----------------------------")
+            print(star1)
+            print(star2)
+            print("!-----------------------------")
+        scattering_com = Particles()
+        scattering_com.add_particle(star1)
+        scattering_com.add_particle(star2)
+        com_pos = scattering_com.center_of_mass()
+        com_vel = scattering_com.center_of_mass_velocity()
+
+        # Expand enconter returns a particle set with all of the children
+        # when given a particle set of two objects involved in an encounter
+        enc_particles = multiples_code.expand_encounter(scattering_com, delete=False)[0]
+        if self.debug_mode > 0:
+            try:
+                print("Scattering:", scattering_com.id, scattering_com.child1.id, scattering_com.child2.id)
+            except:
+                print("Scattering:", scattering_com.id, scattering_com.child1, scattering_com.child2)
+            try:
+                print("EncPart:", enc_particles.id, enc_particles.child1.id, enc_particles.child2.id)
+            except:
+                print("EncPart:", enc_particles.id, enc_particles.child1, enc_particles.child2)
+
+        # Assign the time of the encounter to the Encounter Particle Set.
+        enc_particles.time = time
+
+        # Set the Origin to be the Center of Mass for the Encounter Particle Set.
+        enc_particles.position -= com_pos
+        enc_particles.velocity -= com_vel
+        if self.debug_mode > 0:
+            enc_stars = enc_particles[enc_particles.mass > self.limiting_mass_for_planets]
+            enc_planets = enc_particles[enc_particles.mass <= self.limiting_mass_for_planets]
+            print("Stars:", enc_stars.id)
+            print("Planets:", enc_planets.id)
+
+        IDs_of_StarsInEncounter = [star.id for star in enc_stars if star.id < 1000000]
+        print(IDs_of_StarsInEncounter)
+        for star_ID in IDs_of_StarsInEncounter:
+            self.encounterDict[star_ID].append(enc_particles.copy())
+
+       # Return True is Necessary for the Multiples Code
         return True
 
 class ChildUpdater(object):
@@ -498,7 +544,8 @@ if __name__=="__main__":
     encounter_file = None
     EH = EncounterHandler()
     EH.debug_mode = 1
-    multiples_code.encounterLogger = EH.log_encounter
+    #multiples_code.encounterLogger = EH.log_encounter
+    multiples_code.callback = EH.log_encounter_v5
 
     snapshots_dir = os.getcwd()+"/Snapshots"
     snapshots_s_dir = os.getcwd()+"/Snapshots/Stars"
@@ -555,6 +602,8 @@ if __name__=="__main__":
 
     write_out_step = np.floor((5 | units.Myr)/delta_t)
 
+    subset_sync = ChildUpdater()
+
     if doDebug:
         hp = hpy()
         before = hp.heap()
@@ -568,11 +617,6 @@ if __name__=="__main__":
 
         # Sync the Gravitational Codes w/ the "Gravitating_Bodies" Superset
         channel_from_multi_to_gravitating.copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz'])
-
-        # (On a Copy) Recursively Expand All Top-Level Parent Particles & Update Subsets
-        # Note: This Updates the Children's Positions Relative to their Top-Level Parent's Position
-        #subset_sync = ChildUpdater()
-        #subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
 
         # Evolve the Stellar Codes (via SEV Code with Channels)
         # TODO: Ensure Tight Binaries are Evolved Correctly (See Section 3.2.8)
@@ -592,6 +636,9 @@ if __name__=="__main__":
 
         # Write out the "Gravitating_Bodies" Superset Every 5 Time-Steps
         if step_index%write_out_step == 0:
+            # (On a Copy) Recursively Expand All Top-Level Parent Particles & Update Subsets
+            # Note: This Updates the Children's Positions Relative to their Top-Level Parent's Position
+            subset_sync.update_children_bodies(multiples_code, Individual_Stars, Planets)
             snapshot_s_filename = snapshots_s_dir+"/"+cluster_name+"_stars_t%.3f.hdf5" %(t_current.number)
             write_set_to_file(Individual_Stars, snapshot_s_filename, format="hdf5", close_file=True, version='2.0')
             snapshot_p_filename = snapshots_p_dir+"/"+cluster_name+"_planets_t%.3f.hdf5" %(t_current.number)
