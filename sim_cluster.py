@@ -37,7 +37,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.datamodel import particle_attributes
 from amuse.io import *
-from amuse.lab import *
+#from amuse.lab import *
 
 # Import the Amuse Stellar Packages
 from amuse.ic.kingmodel import new_king_model
@@ -50,12 +50,20 @@ from amuse.community.kepler.interface import Kepler
 from amuse.community.seba.interface import SeBa
 from amuse.couple.bridge import Bridge
 from amuse.ext.galactic_potentials import MWpotentialBovy2015
-#from amuse.couple import multiples
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
-from tycho import multiples as multiples
-#import amuse.couple.multiples as multiples
+from tycho import JPGmultiples as TychoMultiples
+
+import tycho
+
+from amuse.support.console import (
+    set_printing_strategy, get_current_printing_strategy,
+)
+
+from amuse.datamodel import (
+    particle_attributes, Particle, Particles, ParticlesSuperset, Grid,
+)
 
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.Myr, units.deg], \
                        precision = 6, prefix = "", separator = "[", suffix = "]")
@@ -123,6 +131,7 @@ class EncounterHandler(object):
 
     def log_encounter_v5(self, time, star1, star2):
         # Create the Scattering CoM Particle Set
+        print("Entering Encounter Logger ...")
         if self.debug_mode > 0:
             f = open(os.getcwd()+"/EH-Debug.log", "a")
             sys.stdout = f
@@ -175,6 +184,7 @@ class EncounterHandler(object):
         if self.debug_mode > 0:
             print(self.encounterDict[star_ID])
             sys.stdout.flush()
+            f.close()
             sys.stdout = self.original_stdout
        # Return True is Necessary for the Multiples Code
         return True
@@ -502,12 +512,12 @@ if __name__=="__main__":
     EH.debug_mode = 1
 
     # Setting up Encounter Handler (Multiples)
-    multiples_code = multiples.Multiples(gravity_code, util.new_smalln, kep,
+    multiples_code = TychoMultiples.Multiples(gravity_code, util.new_smalln, kep,
                                          gravity_constant=units.constants.G,
                                          encounter_callback = EH.log_encounter_v5)
     multiples_code.neighbor_perturbation_limit = 0.05
     multiples_code.neighbor_veto = True
-    multiples_code.global_debug = 0
+    multiples_code.global_debug = 1
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -523,7 +533,7 @@ if __name__=="__main__":
     # Setting up Gravity Coupling Code (Bridge)
     bridge_code = Bridge()
     bridge_code.add_system(multiples_code, (galactic_code,))
-    #bridge_code.timestep = delta_t
+    bridge_code.timestep = delta_t
     # ----------------------------------------------------------------------------------------------------
 
 
@@ -631,6 +641,7 @@ if __name__=="__main__":
         t_current += delta_t
         # Evolve the Gravitational Codes ( via Bridge Code)
         bridge_code.evolve_model(t_current)
+        #multiples_code.evolve_model(t_current)
 
         # Update the Leaves of the Multiples Code Particles
         multiples_code.update_leaves_pos_vel()
