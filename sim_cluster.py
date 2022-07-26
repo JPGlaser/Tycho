@@ -512,7 +512,7 @@ if __name__=="__main__":
     # Artificially Age the Stars
     # TODO: Work on Non-Syncronus Stellar Evolution
     if pregen:
-        t_start = Starting_Stars.ht.mean().value_in(units.Myr) | units.Myr # Average for Age of the Pregen Cluster's Stars
+        t_start = (Starting_Stars.ct.max()-Starting_Stars.ct.min()).value_in(units.Myr) | units.Myr # Time Since Stars Begun Forming To Last Formed
         sev_code.evolve_model(t_start)
         util.resolve_supernova(supernova_detection, Stellar_Bodies, t_start)
     elif not crash:
