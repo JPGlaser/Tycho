@@ -57,6 +57,8 @@ from tycho import create, util, read, write, encounter_db
 from tycho import multiples as multiples
 #import amuse.couple.multiples as multiples
 
+import tycho
+
 from amuse.support.console import (
     set_printing_strategy, get_current_printing_strategy,
 )
@@ -131,6 +133,7 @@ class EncounterHandler(object):
 
     def log_encounter_v5(self, time, star1, star2):
         # Create the Scattering CoM Particle Set
+        print("Entering Encounter Logger ...")
         if self.debug_mode > 0:
             f = open(os.getcwd()+"/EH-Debug.log", "a")
             sys.stdout = f
@@ -183,6 +186,7 @@ class EncounterHandler(object):
         if self.debug_mode > 0:
             print(self.encounterDict[star_ID])
             sys.stdout.flush()
+            f.close()
             sys.stdout = self.original_stdout
        # Return True is Necessary for the Multiples Code
         return True
@@ -510,7 +514,7 @@ if __name__=="__main__":
     EH.debug_mode = 1
 
     # Setting up Encounter Handler (Multiples)
-    multiples_code = multiples.Multiples(gravity_code, util.new_smalln, kep,
+    multiples_code = tycho.multiples.Multiples(gravity_code, util.new_smalln, kep,
                                          gravity_constant=units.constants.G,
                                          encounter_callback = EH.log_encounter_v5)
     multiples_code.neighbor_perturbation_limit = 0.05

@@ -138,7 +138,7 @@ class Multiples(object):
                  gravity_code,
                  resolve_collision_code_creation_function,
                  kepler_code,
-                 gravity_constant = None, encounter_callback = None **options):
+                 gravity_constant = None, encounter_callback = None, **options):
 
         # Codes to use.
 
@@ -541,8 +541,9 @@ class Multiples(object):
             print('number of multiples:', len(self.root_to_tree))
             sys.stdout.flush()
 
-    def evolve_model(self, end_time, callback=self.callback):
-
+    def evolve_model(self, end_time, callback=None):
+        if self.callback != None
+            callback = self.callback
         stopping_condition = \
             self.gravity_code.stopping_conditions.collision_detection
         #stopping_condition.enable()  # allow user to set this; don't override
@@ -634,7 +635,9 @@ class Multiples(object):
                     zero_mode = self.gravity_code.parameters.zero_step_mode
                     print("Currently Set ZeroStep Mode:", zero_mode)
                     if callback != None and zero_mode==0:
-                        print("Initiating Callback Function ...")
+                        if self.global_debg > 0:
+                            print("Initiating Callback Function with CoMs:")
+                            print(star1.id, star2.id)
                         cont = callback(time, star1, star2)
 
                     if self.global_debug > 0:
