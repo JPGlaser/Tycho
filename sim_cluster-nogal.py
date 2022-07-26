@@ -48,13 +48,13 @@ from amuse.community.ph4.interface import ph4
 from amuse.community.smalln.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 from amuse.community.seba.interface import SeBa
-from amuse.couple.bridge import Bridge
-from amuse.ext.galactic_potentials import MWpotentialBovy2015
+#from amuse.couple.bridge import Bridge
+#from amuse.ext.galactic_potentials import MWpotentialBovy2015
 #from amuse.couple import multiples
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
-from tycho import multiples as multiples
+from tycho import multiples as TychoMultiples
 #import amuse.couple.multiples as multiples
 
 import tycho
@@ -514,7 +514,7 @@ if __name__=="__main__":
     EH.debug_mode = 1
 
     # Setting up Encounter Handler (Multiples)
-    multiples_code = tycho.multiples.Multiples(gravity_code, util.new_smalln, kep,
+    multiples_code = TychoMultiples.Multiples(gravity_code, util.new_smalln, kep,
                                          gravity_constant=units.constants.G,
                                          encounter_callback = EH.log_encounter_v5)
     multiples_code.neighbor_perturbation_limit = 0.05
