@@ -54,7 +54,7 @@ from amuse.community.seba.interface import SeBa
 
 # Import the Tycho Packages
 from tycho import create, util, read, write, encounter_db
-from tycho import multiples as TychoMultiples
+from tycho import JPGmultiples as TychoMultiples
 #import amuse.couple.multiples as multiples
 
 import tycho
