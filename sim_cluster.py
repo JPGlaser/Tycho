@@ -679,7 +679,7 @@ if __name__=="__main__":
             if EH.debug_mode > 0:
                 stars_in_EHDB = EH.encounterDict.keys()
                 print(stars_in_EHDB)
-                print(EH.encounterDict[stars_in_EHDB[0]])
+                print(EH.encounterDict)
             pickle.dump(EH.encounterDict, encounter_file)
             encounter_file.close()
             # Log that a the Encounters have been Saved!
