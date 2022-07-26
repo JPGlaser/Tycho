@@ -109,14 +109,15 @@ class EncounterHandler(object):
         enc_stars = _temp[_temp.mass > self.limiting_mass_for_planets]
         IDs_of_StarsInEncounter = [star.id for star in enc_stars if star.id < 1000000]
         for star_ID in IDs_of_StarsInEncounter:
-            self.encounterDict[star_ID].append(_temp)
+            self.encounterDict[star_ID].append(_temp.copy())
         if self.debug_mode > 0:
                 enc_planets = _temp[_temp.mass <= self.limiting_mass_for_planets]
                 print("Stars:", enc_stars.id)
                 print("Planets:", enc_planets.id)
                 print("Keys Set for EncounterDictionary:", IDs_of_StarsInEncounter)
+                print(self.encounterDict[star_ID][-1])
         # Delete the Temporary Particle Set
-        del _temp
+        #del _temp
         return True
 
 class ChildUpdater(object):
@@ -496,7 +497,7 @@ if __name__=="__main__":
     # Sets as Encounters are Detected
     encounter_file = None
     EH = EncounterHandler()
-    EH.debug_mode = 0
+    EH.debug_mode = 1
     multiples_code.encounterLogger = EH.log_encounter
 
     snapshots_dir = os.getcwd()+"/Snapshots"
