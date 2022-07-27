@@ -14,6 +14,14 @@ from amuse.datamodel.trees import BinaryTreesOnAParticleSet
 from amuse.ext.orbital_elements import get_orbital_elements_from_binary
 from amuse.community.sse.interface import SSE
 
+from amuse.support.console import (
+    set_printing_strategy, get_current_printing_strategy,
+)
+
+from amuse.datamodel import (
+    particle_attributes, Particle, Particles, ParticlesSuperset, Grid,
+)
+
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.day, units.deg], precision = 6, prefix = "", separator = "[", suffix = "]")
 
 def get_node_of_leaf(particle_set, chosen_id):
