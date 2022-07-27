@@ -62,7 +62,7 @@ if __name__=="__main__":
     if options.rootDir != None:
         rootDir = options.rootDir
     else:
-        rootDir = '/home/draco/jglaser/Public/Tycho_Runs/MarkG/'
+        rootDir = os.getcwd()
     doSerial = options.doSerial
     sample_rate = options.sample_rate
     num_rot = options.num_rot
