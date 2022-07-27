@@ -4,13 +4,18 @@ from tycho import enc_patching
 from amuse import *
 import numpy as np
 import matplotlib.pyplot as plt
-from amuse.units import units
 
 import glob
-
 import hashlib
-
 import pickle
+
+# Import the Amuse Base Packages
+from amuse import datamodel
+from amuse.units import nbody_system
+from amuse.units import units
+from amuse.units import constants
+from amuse.datamodel import particle_attributes
+from amuse.io import *
 
 from collections import defaultdict
 

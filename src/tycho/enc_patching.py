@@ -3,11 +3,18 @@ from tycho import stellar_systems
 from amuse import *
 import numpy as np
 import matplotlib.pyplot as plt
-from amuse.units import units
 
 import hashlib
 
 from collections import defaultdict
+
+# Import the Amuse Base Packages
+from amuse import datamodel
+from amuse.units import nbody_system
+from amuse.units import units
+from amuse.units import constants
+from amuse.datamodel import particle_attributes
+from amuse.io import *
 
 from amuse.community.secularmultiple.interface import SecularMultiple
 from amuse.datamodel.trees import BinaryTreesOnAParticleSet
