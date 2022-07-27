@@ -36,10 +36,10 @@ from tycho import create, util, read, write, stellar_systems
 #           Defining Functions          #
 # ------------------------------------- #
 
-def gen_scatteringIC(encounter_db, doMultipleClusters=False):
+def gen_scatteringIC(encounter_db, doMultipleClusters=False, **kwargs):
     global rootDir
     global cluster_name
-    max_number_of_rotations = 100
+    max_number_of_rotations = kwargs.get("num_rot", 100)
     if doMultipleClusters:
         output_ICDirectory = rootDir+'/'+cluster_name+'/Scatter_IC/'
     else:
@@ -121,6 +121,8 @@ if __name__ == '__main__':
                       help="Enter the full directory of the Root Folder. Defaults to your CWD unless -M is on.")
     parser.add_option("-M", "--doMultipleClusters", dest="doMultipleClusters", action="store_true",
                       help="Flag to turn on for running the script over a series of multiple clusters.")
+    parser.add_option("-n", "--number_of_rotations", dest="num_rot", default=100, type="int",
+                      help="Flag to turn on for running the script over a series of multiple clusters.")
     (options, args) = parser.parse_args()
 
     if options.doMultipleClusters:
@@ -155,7 +157,7 @@ if __name__ == '__main__':
         print(util.timestamp(), "Generating initial conditions for", cluster_name,"...")
         sys.stdout.flush()
         # Generate IC for Scattering Experiments
-        gen_scatteringIC(encounter_db, doMultipleClusters=options.doMultipleClusters)
+        gen_scatteringIC(encounter_db, doMultipleClusters=options.doMultipleClusters, num_rot=options.num_rot)
 
     sys.stdout = orig_stdout
     log_file.close()
