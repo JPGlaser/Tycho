@@ -136,7 +136,7 @@ class PlanetarySystem():
         self.system_name = system_name
         self.r = (sp.special.kv(1, 2.0/3.0) + 2*sp.special.kv(0, 2.0/3.0))/np.pi
         try:
-            self.planets.period.sorted_by_attribute('period')
+            self.planets.sorted_by_attribute('period')
         except:
             get_periods(self.host_star, self.planets)
 
