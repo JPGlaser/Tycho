@@ -24,6 +24,14 @@ from amuse.community.kepler.interface import Kepler
 from amuse.community.ph4.interface import ph4
 from amuse.community.sse.interface import SSE
 
+from amuse.support.console import (
+    set_printing_strategy, get_current_printing_strategy,
+)
+
+from amuse.datamodel import (
+    particle_attributes, Particle, Particles, ParticlesSuperset, Grid,
+)
+
 set_printing_strategy("custom", preferred_units = [units.MSun, units.AU, units.day, units.deg], precision = 6, prefix = "", separator = "[", suffix = "]")
 
 def build_ClusterEncounterHistory(rootExecDir):
