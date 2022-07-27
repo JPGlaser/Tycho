@@ -56,6 +56,8 @@ if __name__=="__main__":
                       help="Run the program in serial?.")
     parser.add_option("-r", "--sample", dest="sample_rate", default=10, type="int",
                       help="Sampling Rate for the clusters.")
+    parser.add_option("-n", "--number_of_rotations", dest="num_rot", default=100, type="int",
+                      help="Flag to turn on for running the script over a series of multiple clusters.")
     (options, args) = parser.parse_args()
     if options.rootDir != None:
         rootDir = options.rootDir
@@ -63,6 +65,7 @@ if __name__=="__main__":
         rootDir = '/home/draco/jglaser/Public/Tycho_Runs/MarkG/'
     doSerial = options.doSerial
     sample_rate = options.sample_rate
+    num_rot = options.num_rot
 
     # Bring Root Directory Path Inline with os.cwd()
     if rootDir.endswith("/"):
@@ -78,11 +81,12 @@ if __name__=="__main__":
 
     counter_finished = 0
     for rot_ID in rot_IDs:
-        if rot_ID == '100':
+        if rot_ID == str(num_rot):
             counter_finished += 1
     print("Number of Encounters Fully Simulated:", counter_finished)
     print("Number of Initial States Simulated:", len(rot_IDs))
-    print("Total Number of Initial States to Simulate:", int(len(glob.glob(rootDir+'/*/Encounters/*/')))*101)
+    if len(cluster_names) > 1:
+        print("Total Number of Initial States Simulated:", int(len(glob.glob(rootDir+'/*/Encounters/*/')))*(num_rot+1))
 
     converter = nbody_system.nbody_to_si(1 | units.MSun, 100 |units.AU)
     kep = Kepler(unit_converter = converter, redirection = 'none')
