@@ -251,7 +251,7 @@ class PlanetarySystem():
             fig,ax=plt.subplots(figsize=(8,3))
             ax.set_ylim(0,2)
             ax.set_xscale('log')
-            ax.set_xlim(1e-3,1e5)
+            ax.set_xlim(1e-1,1e8)
             ax.set_xlabel('Period [days]')
             ax.minorticks_on()
             ax.set_yticklabels('')
