@@ -260,7 +260,8 @@ class PlanetarySystem():
         if clrbar:
             _clrbar(ax,norm,'coolwarm')
         ax.axhline(zeropoint,c='k',ls=':',zorder=0)
-        print('For ', self.system_name, ':')
+        if self.debug_mode > 0:
+            print('For ', self.system_name, ':')
         for i, planet in enumerate(self.planets):
             beta = self.get_AMDBeta(i)
             stest = planet.stability_type
