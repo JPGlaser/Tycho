@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import hashlib
+from tqdm import tqdm
 
 from collections import defaultdict
 
@@ -304,7 +305,7 @@ def update_oe_for_PlanetarySystem(PS, hierarchical_set):
 def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
                         N_output=100, debug_mode=False, genT4System=False, \
                         exportData=True, useAMD=True, GCode = None, \
-                        KeySystemID=None, SEVCode=None):
+                        KeySystemID=None, SEVCode=None, progress=False):
     '''Does what it says on the tin.'''
     try:
         hierarchical_test = [x for x in particle_set if x.is_binary == True]
@@ -384,6 +385,8 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
             plot_peri_AU[node.child2.id].append(node.semimajor_axis.value_in(units.AU)*(1.0-node.eccentricity))
             plot_stellar_inc_deg[node.child2.id].append(node.inclination.value_in(units.deg))
     counter = 0
+    if progress:
+        pbar = tqdm(total=N_output)
     while time <= end_time:
         #print('Start of Time Loop')
         #print(output_time_step)
@@ -396,6 +399,8 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
         #print('Evolved model to:', time.value_in(units.Myr), "Myr")
         #print(code.particles.semimajor_axis)
         channel_from_code_to_particles.copy()
+        if progress:
+            pbar.update(1)
         #channel_from_code_to_particles.copy_attributes(['semimajor_axis', 'eccentricity', \
             #'longitude_of_ascending_node', 'argument_of_pericenter', 'inclination'])
         #print('Hello')
@@ -458,6 +463,8 @@ def run_secularmultiple(particle_set, end_time, start_time=(0 |units.Myr), \
             if counter%100==0 and len(PS.planets.select(lambda x : x < 1.0, ["AMDBeta"])) > 1:
                 break
 
+    if progress:
+        pbar.close()
     if GCode == None:
         code.stop()
     else:
