@@ -134,6 +134,7 @@ class PlanetarySystem():
         self.host_star = host_star.copy()
         self.number_of_planets = len(planets)
         self.system_name = system_name
+        self.debug_mode = 0
         self.r = (sp.special.kv(1, 2.0/3.0) + 2*sp.special.kv(0, 2.0/3.0))/np.pi
         try:
             self.planets.sorted_by_attribute('period')
@@ -266,7 +267,8 @@ class PlanetarySystem():
             mass = planet.mass
             period = planet.period
             size = 200*np.log10(mass.value_in(units.MJupiter) * 1e-2/(3e-6) / (.1))
-            print('Planet #', i, 'has a AMDBeta of', beta, 'from the', stest, 'stability test.')
+            if self.debug_mode > 0:
+                print('Planet #', i, 'has a AMDBeta of', beta, 'from the', stest, 'stability test.')
             ax.scatter(period.value_in(units.day),zeropoint,s=size,c=beta,cmap='coolwarm',norm=norm)
         return fig,ax
 
